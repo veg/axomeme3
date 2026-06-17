@@ -43,7 +43,11 @@ AxoMeme 3 relies on several CDNs and external libraries, running entirely client
 4. **HyPhy WebAssembly** — For client-side branch length optimization.
 
 > [!IMPORTANT]
-> **HyPhy WASM Assets**: The large compiled WebAssembly assets (`hyphy.js`, `hyphy.wasm`, and `hyphy.data`) are **not** committed to this repository. They must be downloaded from the primary [hyphy-wasm](https://github.com/veg/hyphy-wasm) repository and placed in the project root directory during deployment.
+> **HyPhy WASM Assets**: The large compiled WebAssembly assets (`hyphy.js`, `hyphy.wasm`, and `hyphy.data`) are **not** committed to this repository. They can be obtained by either:
+> 1. Downloading the pre-compiled `hyphy-wasm` artifacts from the latest successful run in [GitHub Actions](https://github.com/veg/hyphy/actions) of the primary [veg/hyphy](https://github.com/veg/hyphy) repository, or
+> 2. Building them from source following the WebAssembly build instructions in the main repository.
+> 
+> Once obtained, place `hyphy.js`, `hyphy.wasm`, and `hyphy.data` in the project root directory during deployment.
 
 ---
 
