@@ -1848,15 +1848,41 @@
                 
                 alignmentRawContent = text;
                 const trimmedText = text.trim();
-                if (trimmedText.startsWith('>')) {
-                    parsedAlignment = parseFastaAlignment(text);
-                    if (Object.keys(parsedAlignment.seqDict).length === 0) {
-                        throw new Error(`No sequences could be parsed from FASTA file. Preview: "${text.substring(0, 100).replace(/\r?\n/g, ' ')}"`);
+                let parsedSuccessfully = false;
+                
+                try {
+                    if (trimmedText.startsWith('>')) {
+                        parsedAlignment = parseFastaAlignment(text);
+                        if (Object.keys(parsedAlignment.seqDict).length === 0) {
+                            throw new Error("No sequences could be parsed from FASTA file.");
+                        }
+                    } else {
+                        parsedAlignment = parseNexusAlignmentAndEmbeddedTree(text);
+                        if (Object.keys(parsedAlignment.seqDict).length === 0) {
+                            throw new Error("No sequences could be parsed from NEXUS file.");
+                        }
                     }
-                } else {
-                    parsedAlignment = parseNexusAlignmentAndEmbeddedTree(text);
-                    if (Object.keys(parsedAlignment.seqDict).length === 0) {
-                        throw new Error(`No sequences could be parsed from NEXUS file. (Taxlabels: ${parsedAlignment.taxlabelsCount}, Matrix lines: ${parsedAlignment.matrixLinesCount}, Text length: ${text.length}, ArrayBuffer size: ${arrayBuffer.byteLength}, Preview: "${text.substring(0, 100).replace(/\r?\n/g, ' ')}")`);
+                    parsedSuccessfully = true;
+                } catch (parseError) {
+                    console.warn("Direct parsing failed, attempting HyPhy auto-conversion:", parseError);
+                    showToast("Alignment format not directly recognized; attempting HyPhy auto-conversion...", "warning");
+                    
+                    try {
+                        const convertedFasta = await convertAlignmentToFastaUsingHyphy(text);
+                        if (!convertedFasta || !convertedFasta.trim()) {
+                            throw new Error("HyPhy produced empty output.");
+                        }
+                        
+                        parsedAlignment = parseFastaAlignment(convertedFasta);
+                        if (Object.keys(parsedAlignment.seqDict).length === 0) {
+                            throw new Error("No sequences could be parsed from converted FASTA output.");
+                        }
+                        alignmentRawContent = convertedFasta;
+                        parsedSuccessfully = true;
+                        showToast("Alignment converted and loaded using HyPhy successfully.", "success");
+                    } catch (hyphyError) {
+                        console.error("HyPhy auto-conversion failed:", hyphyError);
+                        throw new Error(`Alignment parsing failed: ${parseError.message} (HyPhy auto-conversion fallback failed: ${hyphyError.message})`);
                     }
                 }
                 
@@ -3091,6 +3117,48 @@ fprintf("/output.nwk", Format(T, 1, 1));
             ModuleInstance.FS.unlink('/output.nwk');
             
             return optimizedTree;
+        }
+
+        async function convertAlignmentToFastaUsingHyphy(rawText) {
+            let hyphyFactory = window.createHyphyModule || window.Module;
+            if (!hyphyFactory) {
+                // Load script dynamically
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = getAbsoluteUrl('hyphy.js');
+                    script.onload = () => {
+                        hyphyFactory = window.createHyphyModule || window.Module;
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error("Failed to load local hyphy.js glue script"));
+                    document.head.appendChild(script);
+                });
+            }
+            
+            const ModuleInstance = await hyphyFactory({
+                locateFile: (path) => getAbsoluteUrl(path),
+                print: (text) => console.log(`[HyPhy WASM Parser Stdout] ${text}`),
+                printErr: (text) => console.error(`[HyPhy WASM Parser Stderr] ${text}`)
+            });
+            
+            const hblScript = `
+NORMALIZE_SEQUENCE_NAMES = 0;
+DataSet ds = ReadDataFile("/input_align.txt");
+fprintf("/output_align.fa", CLEAR_FILE, ds);
+`;
+            
+            ModuleInstance.FS.writeFile('/input_align.txt', rawText);
+            ModuleInstance.FS.writeFile('/convert.bf', hblScript);
+            
+            try {
+                ModuleInstance.callMain(['/convert.bf']);
+                const convertedFasta = ModuleInstance.FS.readFile('/output_align.fa', { encoding: 'utf8' });
+                return convertedFasta;
+            } finally {
+                try { ModuleInstance.FS.unlink('/input_align.txt'); } catch(_) {}
+                try { ModuleInstance.FS.unlink('/convert.bf'); } catch(_) {}
+                try { ModuleInstance.FS.unlink('/output_align.fa'); } catch(_) {}
+            }
         }
 
         function updateProgressBar(percentage) {
