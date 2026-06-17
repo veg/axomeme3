@@ -1,0 +1,4030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AxoMeme Selection Analyzer</title>
+    <meta name="description" content="Client-side codon-level selection strength prediction using AxoMeme, WebAssembly, and ONNX Runtime Web.">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ONNX Runtime Web & fflate CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    
+    <!-- D3.js and phylotree.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/underscore@1.13.6/underscore-umd.min.js"></script>
+    <script>
+        // Save Underscore to prevent Lodash from overwriting it
+        window._underscore = window._;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script>
+        // Map Lodash to _$1 as expected by phylotree Rollup build
+        window._$1 = window._;
+        // Restore Underscore to _ as expected by phylotree Rollup build
+        window._ = window._underscore;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/phylotree@2.0.1/dist/phylotree.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/phylotree@2.0.1/dist/phylotree.css" />
+    
+    <style>
+        :root {
+            --brand-royal: #2563eb;
+            --brand-royal-hover: #1d4ed8;
+            --brand-whisper: #f0f7ff;
+            --accent-copper: #ea580c;
+            --accent-copper-hover: #c2410c;
+            --bg-brand-ghost: #f8fafc;
+            --border-platinum: #e5e7eb;
+            --text-rich: #0f172a;
+            --text-slate: #475569;
+            --text-silver: #94a3b8;
+            --status-success: #10b981;
+            --status-error: #ef4444;
+
+            /* Compatibility aliases */
+            --bg-primary: var(--bg-brand-ghost);
+            --bg-secondary: #f1f5f9;
+            --bg-terminal: #ffffff;
+            --bg-titlebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --border-color: var(--border-platinum);
+            --border-hover: #cbd5e1;
+            --text-primary: var(--text-rich);
+            --text-secondary: var(--text-slate);
+            --text-muted: var(--text-silver);
+            --accent-cyan: var(--brand-royal);
+            --accent-blue: var(--brand-royal);
+            --accent-purple: #7c3aed;
+            --accent-pink: #db2777;
+            --accent-green: var(--status-success);
+            --accent-orange: #ea580c;
+            --accent-red: var(--status-error);
+            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-brand-ghost);
+            color: var(--text-rich);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prime-banner {
+            background: linear-gradient(135deg, var(--accent-copper) 0%, #db2777 100%);
+            padding: 0.6rem 1rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .prime-banner a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        nav {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+        }
+
+        main {
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Responsive spacing */
+        @media (max-width: 768px) {
+            main {
+                padding: 1.5rem 1rem;
+                gap: 1.5rem;
+            }
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modern card layout from Datamonkey 3 */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.75rem;
+            box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px 0 rgba(15, 23, 42, 0.06);
+            border-color: var(--border-hover);
+        }
+
+        .section-title {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: var(--text-rich);
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+        }
+
+        .section-title i {
+            font-size: 1.15rem;
+        }
+
+        /* Dropzone styling */
+        .dropzone-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--brand-royal);
+            background-color: var(--brand-whisper);
+        }
+
+        .dropzone i {
+            font-size: 2.25rem;
+            color: var(--brand-royal);
+            transition: var(--transition-smooth);
+        }
+
+        .dropzone:hover i, .dropzone.dragover i {
+            transform: translateY(-2px);
+        }
+
+        .dropzone-text {
+            font-size: 0.95rem;
+            color: var(--text-rich);
+            font-weight: 600;
+        }
+
+        .dropzone-subtext {
+            font-size: 0.8rem;
+            color: var(--text-slate);
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+
+        .file-info-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-rich);
+        }
+
+        .file-info-remove {
+            cursor: pointer;
+            color: var(--text-silver);
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+
+        .file-info-remove:hover {
+            color: var(--status-error);
+        }
+
+        /* Inputs and Forms */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+        }
+
+        .input-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-slate);
+        }
+
+        .select-input, .text-input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-rich);
+            padding: 0.65rem 0.85rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .select-input:focus, .text-input:focus {
+            border-color: var(--brand-royal);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--brand-royal);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--brand-royal-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Progress Card and Bar */
+        .progress-card {
+            display: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1.25rem 0;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--brand-royal);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-slate);
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .progress-step::before {
+            content: "Pending";
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e2e8f0;
+            color: #64748b;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            margin-right: 0.75rem;
+        }
+
+        .progress-step.active {
+            color: var(--brand-royal);
+            background: var(--brand-whisper);
+            font-weight: 500;
+        }
+
+        .progress-step.active::before {
+            content: "Running";
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .progress-step.completed {
+            color: var(--status-success);
+        }
+
+        .progress-step.completed::before {
+            content: "Finished";
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Results dashboard */
+        .results-container {
+            display: none;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        }
+
+        .summary-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        .summary-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: var(--text-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-rich);
+            margin-top: 0.1rem;
+        }
+
+        /* Chart Canvas Card */
+        .chart-card {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: var(--text-slate);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 320px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        /* Table Card */
+        .table-card {
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .table-search {
+            position: relative;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .table-search i {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-silver);
+            font-size: 0.9rem;
+        }
+
+        .table-search input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-rich);
+            padding: 0.6rem 0.85rem 0.6rem 2.25rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition-smooth);
+            font-family: inherit;
+        }
+
+        .table-search input:focus {
+            border-color: var(--brand-royal);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-rich);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--brand-royal);
+            color: var(--brand-royal);
+            background: var(--brand-whisper);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-slate);
+            font-weight: 700;
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            user-select: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+
+        th.sort-active {
+            color: var(--brand-royal);
+        }
+
+        th i {
+            margin-left: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-rich);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        /* Modern status pills */
+        .badge {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid transparent;
+        }
+
+        .badge-neutral {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .badge-t1 {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .badge-t2 {
+            background: #ffedd5;
+            border-color: #fed7aa;
+            color: #9a3412;
+        }
+
+        /* Status Dot */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.success {
+            background-color: var(--status-success);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0% {
+                box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-slate);
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .pagination-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-rich);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--brand-royal);
+            color: var(--brand-royal);
+            background: var(--brand-whisper);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-rich);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition-smooth);
+            z-index: 10000;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success i {
+            color: var(--status-success);
+        }
+
+        .toast-error i {
+            color: var(--status-error);
+        }
+
+        .toast-info i {
+            color: var(--brand-royal);
+        }
+
+        /* Tooltip style on canvas */
+        .custom-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-rich);
+            pointer-events: none;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(6px);
+            font-family: inherit;
+        }
+
+        .custom-tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .custom-tooltip-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .custom-tooltip-label {
+            color: var(--text-slate);
+            font-weight: 500;
+        }
+
+        .custom-tooltip-value {
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* Custom overrides for phylotree.js in stark light theme */
+        .branch {
+            stroke: var(--text-slate);
+            stroke-width: 1.5px;
+            fill: none;
+            transition: stroke 0.15s ease-in-out;
+        }
+
+        .branch:hover {
+            stroke: var(--brand-royal);
+            stroke-dasharray: none;
+        }
+
+        .node text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            fill: var(--text-rich);
+        }
+
+        .node circle {
+            fill: var(--text-silver);
+            stroke: #ffffff;
+            stroke-width: 1px;
+        }
+
+        .node.internal circle {
+            display: none;
+        }
+
+        .node.selected circle {
+            fill: var(--brand-royal);
+        }
+
+        .node.selected text {
+            font-weight: 700;
+            fill: var(--brand-royal);
+        }
+
+        .phylotree-container svg {
+            background: transparent;
+        }
+        
+        .btn-outline.active {
+            background-color: var(--brand-royal);
+            border-color: var(--brand-royal);
+            color: #ffffff;
+        }
+
+        /* Clickable Help Badges */
+        .help-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0.35rem;
+            color: var(--text-silver);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition-smooth);
+            vertical-align: middle;
+        }
+        .help-badge:hover {
+            color: var(--brand-royal);
+        }
+        .help-text-block {
+            display: none;
+            background: var(--brand-whisper);
+            border: 1px dashed rgba(37, 99, 235, 0.25);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--text-slate);
+            margin-top: 0.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            position: relative;
+            width: 100%;
+            text-transform: none;
+            font-weight: normal;
+        }
+        .help-text-block.show {
+            display: block;
+            animation: helpFadeIn 0.15s ease-out;
+        }
+        @keyframes helpFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal Window Styling */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 700px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .modal-backdrop.show .modal-window {
+            transform: scale(1);
+        }
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: var(--text-slate);
+            transition: var(--transition-smooth);
+            line-height: 1;
+        }
+        .modal-close-btn:hover {
+            color: var(--status-error);
+        }
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: #f8fafc;
+        }
+        .modal-tab-btn {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            padding: 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: var(--text-slate);
+            transition: var(--transition-smooth);
+            font-family: inherit;
+        }
+        .modal-tab-btn:hover {
+            color: var(--brand-royal);
+            background: rgba(37, 99, 235, 0.03);
+        }
+        .modal-tab-btn.active {
+            border-bottom-color: var(--brand-royal);
+            color: var(--brand-royal);
+            background: #ffffff;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            line-height: 1.5;
+            color: var(--text-slate);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- PRIME-style Banner from Datamonkey 3 -->
+    <div class="prime-banner">
+        🚀 <strong>AxoMeme v3.0</strong>: Client-side maximum likelihood selection inference powered by 
+        <a href="https://hyphy.org" target="_blank">HyPhy WebAssembly</a> &amp; 
+        <a href="https://onnxruntime.ai" target="_blank">ONNX Runtime Web</a>. 
+        Your sequences remain private and process locally.
+    </div>
+
+    <!-- Navigation Header -->
+    <nav>
+        <div class="container">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <!-- Beautiful Modern DNA Double Helix SVG Logo -->
+                    <svg viewBox="0 0 24 24" width="30" height="30" style="color: var(--brand-royal);">
+                        <path fill="none" stroke="var(--brand-royal)" stroke-width="2" stroke-linecap="round" d="M4.5,6 C7,10 17,14 19.5,18 M4.5,18 C7,14 17,10 19.5,6"/>
+                        <circle cx="4.5" cy="6" r="3" fill="var(--accent-copper)"/>
+                        <circle cx="19.5" cy="18" r="3" fill="var(--accent-copper)"/>
+                        <circle cx="4.5" cy="18" r="3" fill="var(--brand-royal)"/>
+                        <circle cx="19.5" cy="6" r="3" fill="var(--brand-royal)"/>
+                        <line x1="8" y1="9" x2="8" y2="15" stroke="var(--text-slate)" stroke-width="1.5"/>
+                        <line x1="12" y1="10" x2="12" y2="14" stroke="var(--text-slate)" stroke-width="1.5"/>
+                        <line x1="16" y1="9" x2="16" y2="15" stroke="var(--text-slate)" stroke-width="1.5"/>
+                    </svg>
+                    <span style="font-family: 'Source Sans 3', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text-rich); letter-spacing: -0.02em;">AxoMeme <span style="color: var(--brand-royal);">3</span></span>
+                </div>
+                <span style="background: var(--brand-whisper); color: var(--brand-royal); font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid rgba(37, 99, 235, 0.15);">Beta</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div style="display: flex; gap: 1.25rem; font-size: 0.9rem; font-weight: 500;">
+                    <a href="https://github.com/veg/datamonkey3" target="_blank" style="color: var(--text-slate); text-decoration: none; display: flex; align-items: center; gap: 0.35rem;"><i class="fa-brands fa-github"></i> GitHub</a>
+                    <a href="#" id="methodology-link" style="color: var(--text-slate); text-decoration: none; display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-circle-info"></i> Model Details</a>
+                </div>
+                <div class="system-status">
+                    <span id="model-status" class="badge badge-neutral"><i class="fa-solid fa-circle-notch fa-spin"></i> Initializing model...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Inputs Block -->
+        <div class="grid-inputs">
+            <!-- Alignment Upload -->
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-file-lines" style="color: var(--accent-cyan);"></i>
+                    NEXUS Alignment Input
+                    <span class="help-badge" data-help-target="help-alignment" title="Click for help"><i class="fa-regular fa-circle-question"></i></span>
+                </div>
+                <div id="help-alignment" class="help-text-block">
+                    Provide a multiple sequence alignment in NEXUS format. The nucleotide sequences must be codon-aligned (multiples of 3). Gzipped NEXUS files (.nex.gz) are supported for faster uploads.
+                </div>
+                <div class="dropzone-container">
+                    <div id="align-dropzone" class="dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <div class="dropzone-text">Drag & drop alignment file here</div>
+                        <div class="dropzone-subtext">Supports NEXUS format (.nex, .nexus) & Gzip (.nex.gz)</div>
+                        <input type="file" id="align-file-input" style="display: none;" accept=".nex,.nexus,.gz,.nex.gz,.nexus.gz">
+                    </div>
+                    <div id="align-file-info" class="file-info">
+                        <div class="file-info-name">
+                            <i class="fa-solid fa-file-code" style="color: var(--accent-cyan);"></i>
+                            <span id="align-filename">No file selected</span>
+                        </div>
+                        <i id="align-remove" class="fa-solid fa-xmark file-info-remove"></i>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label" for="ref-seq-select">
+                        Reference Sequence
+                        <span class="help-badge" data-help-target="help-ref-seq" title="Click for help"><i class="fa-regular fa-circle-question"></i></span>
+                    </label>
+                    <div id="help-ref-seq" class="help-text-block">
+                        Select the specific sequence in your alignment that will act as the coordinate system reference. All predicted selection sites (e.g. Site 42) will be reported in terms of this sequence's coordinates, ignoring gaps.
+                    </div>
+                    <select id="ref-seq-select" class="select-input">
+                        <option value="">-- Load alignment first --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tree Upload -->
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-diagram-project" style="color: var(--accent-purple);"></i>
+                    Phylogenetic Tree Input
+                    <span class="help-badge" data-help-target="help-tree" title="Click for help"><i class="fa-regular fa-circle-question"></i></span>
+                </div>
+                <div id="help-tree" class="help-text-block">
+                    Provide an optional phylogenetic tree in Newick or NEXUS format. If the tree does not contain estimated branch lengths, HyPhy WebAssembly will automatically estimate them client-side using the HKY85 model. If omitted entirely, a flat star-like topology will be assumed.
+                </div>
+                <div class="dropzone-container">
+                    <div id="tree-dropzone" class="dropzone">
+                        <i class="fa-solid fa-network-wired"></i>
+                        <div class="dropzone-text">Drag & drop tree file here (optional)</div>
+                        <div class="dropzone-subtext">Newick/NEXUS format. If omitted, uses embedded tree or flat topology.</div>
+                        <input type="file" id="tree-file-input" style="display: none;" accept=".nwk,.tree,.newick,.nex,.nexus">
+                    </div>
+                    <div id="tree-file-info" class="file-info">
+                        <div class="file-info-name">
+                            <i class="fa-solid fa-file-nodes" style="color: var(--accent-purple);"></i>
+                            <span id="tree-filename">No file selected</span>
+                        </div>
+                        <i id="tree-remove" class="fa-solid fa-xmark file-info-remove"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="max-species-input">
+                        Max Species Cap (max_species)
+                        <span class="help-badge" data-help-target="help-max-species" title="Click for help"><i class="fa-regular fa-circle-question"></i></span>
+                    </label>
+                    <div id="help-max-species" class="help-text-block">
+                        Controls the maximum number of sequences included in the analysis. If your alignment has more species than this cap, the pipeline will prune the tree down to this threshold using diversity-maximizing selection to speed up computation.
+                    </div>
+                    <input type="number" id="max-species-input" class="text-input" value="256" min="4" max="1024">
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit card -->
+        <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
+            <p style="color: var(--text-secondary); text-align: center; max-width: 600px; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                Upon submission, if the tree does not contain branch lengths, the engine will run <strong>HyPhy WebAssembly</strong> client-side to fit the HKY85 model and estimate branch lengths automatically!
+            </p>
+            <button id="run-inference-btn" class="btn" disabled>
+                <i class="fa-solid fa-play"></i> Run Selection Inference
+            </button>
+        </div>
+
+        <!-- Progress Card -->
+        <div id="progress-card" class="card progress-card">
+            <div class="section-title">
+                <i class="fa-solid fa-gears fa-spin" style="color: var(--accent-cyan);"></i>
+                Inference Processing Pipeline
+            </div>
+            <div class="progress-bar-container">
+                <div id="progress-bar-fill" class="progress-bar-fill"></div>
+            </div>
+            <div class="progress-steps">
+                <div id="step-decompression" class="progress-step"><span>Decompressing & Parsing Alignment...</span><i class="fa-regular fa-circle"></i></div>
+                <div id="step-tree" class="progress-step"><span>Parsing & Pruning Phylogenetic Tree...</span><i class="fa-regular fa-circle"></i></div>
+                <div id="step-hyphy" class="progress-step"><span>Running HyPhy WASM (Branch Optimization)...</span><i class="fa-regular fa-circle"></i></div>
+                <div id="step-distances" class="progress-step"><span>Calculating Patristic Distances & MDS...</span><i class="fa-regular fa-circle"></i></div>
+                <div id="step-onnx" class="progress-step"><span>Running Neural Network Inference...</span><i class="fa-regular fa-circle"></i></div>
+                <div id="step-stats" class="progress-step"><span>Post-processing LRT & calling selection Tiers...</span><i class="fa-regular fa-circle"></i></div>
+            </div>
+        </div>
+
+        <!-- Results Dashboard -->
+        <div id="results-container" class="results-container">
+            <div class="section-title" style="font-size: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-chart-pie" style="color: var(--accent-cyan);"></i>
+                Inference Results
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-blue);">
+                        <i class="fa-solid fa-dna"></i>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Codon Sites</span>
+                        <span id="sum-sites" class="summary-value">-</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);">
+                        <i class="fa-solid fa-circle-nodes"></i>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Species Analyzed</span>
+                        <span id="sum-species" class="summary-value">-</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon" style="background: rgba(219, 39, 119, 0.1); color: var(--accent-pink);">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Tier 1 (High) Sites</span>
+                        <span id="sum-t1" class="summary-value">-</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon" style="background: rgba(234, 88, 12, 0.1); color: var(--accent-orange);">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Tier 2 (Medium) Sites</span>
+                        <span id="sum-t2" class="summary-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manhattan Plot Visualization Card -->
+            <div class="card visualization-card" id="visualization-card" style="display: none; margin-bottom: 2rem; overflow: hidden; padding: 1.5rem;">
+                <div class="chart-header" style="margin-top: 0; padding-top: 0; border: none; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        <i class="fa-solid fa-chart-line" style="color: var(--accent-cyan);"></i>
+                        Manhattan Plot (Predicted Selection Strength)
+                    </div>
+                    <div class="chart-legend" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                        <div class="legend-item"><div class="legend-dot" style="background: var(--accent-pink);"></div>Tier 1 (High)</div>
+                        <div class="legend-item"><div class="legend-dot" style="background: var(--accent-orange);"></div>Tier 2 (Medium)</div>
+                        <div class="legend-item"><div class="legend-dot" style="background: var(--accent-cyan); opacity: 0.6;"></div>Neutral / Variable</div>
+                        <div class="legend-item" style="border-left: 1px solid var(--border-color); padding-left: 0.75rem; margin-left: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <div style="height: 3px; width: 14px; background: rgba(139, 92, 246, 0.75); border-radius: 1px;"></div>Codon Entropy
+                        </div>
+                        <div class="legend-item" style="display: flex; align-items: center; gap: 0.35rem;">
+                            <div style="height: 3px; width: 14px; background: rgba(16, 185, 129, 0.75); border-radius: 1px;"></div>AA Entropy
+                        </div>
+                    </div>
+                </div>
+                <div class="canvas-container" id="canvas-container" style="margin-top: 1rem; position: relative; width: 100%; height: 350px;">
+                    <canvas id="manhattan-canvas"></canvas>
+                    <div id="chart-tooltip" class="custom-tooltip"></div>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-slate); text-align: center; margin-top: 0.75rem; font-style: italic;">
+                    Tip: Click on a site point (or a row in the table below) to view its site-specific phylogenetic tree with parsimony mapping.
+                </div>
+            </div>
+
+            <!-- Table and Exports -->
+            <div class="card table-card">
+                <div class="table-header">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        <i class="fa-solid fa-list-check" style="color: var(--accent-green);"></i>
+                        Codon Sites Table
+                    </div>
+                    <div class="table-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Search codon or amino acid...">
+                    </div>
+                    <div class="table-actions">
+                        <button id="download-csv-btn" class="btn-outline">
+                            <i class="fa-solid fa-file-csv"></i> Download CSV
+                        </button>
+                        <button id="download-tree-btn" class="btn-outline" style="display: none;">
+                            <i class="fa-solid fa-download"></i> Estimated Tree
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th id="th-site" data-column="codon_site">Codon Site <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-codon" data-column="ref_codon">Reference Codon <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-aa" data-column="ref_aa">Reference AA <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-variable" data-column="is_variable">Variable <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-log-lrt" data-column="predicted_log_lrt">Log(LRT) <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-lrt" class="sort-active" data-column="predicted_lrt">Predicted LRT <i class="fa-solid fa-sort-down"></i></th>
+                                <th id="th-zscore" data-column="local_z_score">Local Z-Score <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-percentile" data-column="local_percentile">Local Percentile <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-call" data-column="selection_call">Call <i class="fa-solid fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <span id="pagination-info">Showing 0 to 0 of 0 entries</span>
+                    <div class="pagination-buttons">
+                        <button id="page-prev-btn" class="pagination-btn" disabled><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                        <button id="page-next-btn" class="pagination-btn" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer from Datamonkey 3 -->
+    <footer style="background: #ffffff; border-top: 1px solid var(--border-color); padding: 2rem 1.5rem; text-align: center; color: var(--text-slate); font-size: 0.85rem; margin-top: auto;">
+        <div class="container" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center; justify-content: center;">
+            <p><strong>AxoMeme v3.0.0-beta</strong> • Powered by <a href="https://hyphy.org" target="_blank" style="color: var(--brand-royal); text-decoration: none; font-weight: 600;">HyPhy WebAssembly</a> &amp; <a href="https://onnxruntime.ai" target="_blank" style="color: var(--brand-royal); text-decoration: none; font-weight: 600;">ONNX Runtime Web</a>.</p>
+            <p style="color: var(--text-muted);">Compatible with Datamonkey 3 design patterns. Run selection analyses securely, privately, and locally on your CPU.</p>
+        </div>
+    </footer>
+
+    <!-- Methodology Modal -->
+    <div id="methodology-modal" class="modal-backdrop">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--brand-royal); font-size: 1.25rem;"></i>
+                    <span style="font-weight: 700; font-size: 1.2rem; color: var(--text-rich);">Model Architecture &amp; Methodology</span>
+                </div>
+                <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button id="tab-arch-btn" class="modal-tab-btn active">1. Model Architecture</button>
+                <button id="tab-train-btn" class="modal-tab-btn">2. Training &amp; Regression</button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab 1: Architecture -->
+                <div id="tab-arch-content" class="tab-content active">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--brand-royal); font-size: 1.1rem; font-weight: 700;">Goal of the Model</h4>
+                    <p style="margin-bottom: 1.25rem; font-size: 0.9rem; color: var(--text-slate); line-height: 1.6;">
+                        The primary goal of this model is to <strong>predict codon-level evolutionary selection intensity</strong> (specifically the Likelihood Ratio Test, or <strong>LRT</strong>, statistic computed by the state-of-the-art <strong>MEME</strong> method in HyPhy) directly from a Multiple Sequence Alignment (MSA) and a phylogenetic tree. By learning the complex structural and evolutionary patterns of substitution, the model acts as an extremely fast <strong>surrogate predictor</strong>, bypasses the computationally heavy maximum likelihood numerical optimization loops, and outputs high-confidence selection scans in a fraction of a second.
+                    </p>
+
+                    <h4 style="margin-bottom: 0.75rem; color: var(--brand-royal); font-size: 1.1rem; font-weight: 700;">Phylogenetic Axial Transformer</h4>
+                    <p style="margin-bottom: 1.25rem; font-size: 0.9rem; color: var(--text-slate); line-height: 1.6;">
+                        Standard transformers are designed for 1D sequences of tokens. An alignment (MSA), however, is a 2D grid of tokens where rows represent species (N) and columns represent codon sites (L). To model this grid efficiently, the <strong>PhyloAxialTransformer</strong> uses an <strong>Axial Attention</strong> architecture (alternating attention across columns and rows) augmented by a custom, learnable <strong>Phylogenetic Bias</strong>.
+                    </p>
+                    
+                    <!-- Diagram -->
+                    <div style="background: var(--bg-brand-ghost); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; gap: 1rem;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-slate); letter-spacing: 0.05em;">Axial Processing Workflow</span>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 500px;">
+                            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; text-align: center; font-weight: 600; color: var(--text-rich);">
+                                MSA Window (N species &times; L sites)
+                            </div>
+                            <div style="text-align: center; color: var(--text-silver); line-height: 1;"><i class="fa-solid fa-arrow-down"></i></div>
+                            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; text-align: center; font-weight: 600; border-left: 4px solid var(--brand-royal); color: var(--text-rich);">
+                                Codon &amp; Amino Acid Joint Embedding + Position Encodings
+                            </div>
+                            <div style="text-align: center; color: var(--text-silver); line-height: 1;"><i class="fa-solid fa-arrow-down"></i></div>
+                            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; text-align: center; font-weight: 600; border-left: 4px solid var(--accent-copper); color: var(--text-rich);">
+                                Column Attention (across sites independently per species)
+                            </div>
+                            <div style="text-align: center; color: var(--text-silver); line-height: 1;"><i class="fa-solid fa-arrow-down"></i></div>
+                            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; text-align: center; font-weight: 600; border-left: 4px solid #7c3aed; color: var(--text-rich);">
+                                Row Attention (across species with Phylogenetic Distance Bias)
+                            </div>
+                            <div style="text-align: center; color: var(--text-silver); line-height: 1;"><i class="fa-solid fa-arrow-down"></i></div>
+                            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; text-align: center; font-weight: 600; color: var(--text-rich);">
+                                Attention Pooling (CLS Query) &amp; MLP Regression Head
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">A. Joint Codon-AA Embedding</h5>
+                    <p style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        To capture both codon-level substitution rates and amino acid biochemical shifts, the model embeds codon sequences and translated amino acids jointly:
+                    </p>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-slate); display: flex; flex-direction: column; gap: 0.35rem; list-style-type: disc;">
+                        <li><strong>Codon Tokenizer</strong>: 64 codons + 1 gap + 1 unknown = 66 tokens.</li>
+                        <li><strong>AA Tokenizer</strong>: 20 residues + 1 stop + 1 gap + 1 unknown = 23 tokens.</li>
+                        <li><strong>Embedding Concatenation</strong>: Codon (size 64) and Amino Acid (size 64) embeddings are concatenated to form a joint embedding vector of size 128.</li>
+                        <li><strong>Species Permutation Invariance</strong>: Row attention contains no positional encodings along the species dimension, ensuring the model is invariant to species ordering.</li>
+                    </ul>
+
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">B. Learnable Phylogenetic Attention Bias</h5>
+                    <p style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        The model injects phylogenetic relationships directly into self-attention. The raw attention score between species j and k is penalized by the distance along the evolutionary tree:
+                    </p>
+                    <div style="background: #f1f5f9; border-radius: 6px; padding: 0.75rem; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-rich);">
+                        Score(j, k) = (Q<sub>j</sub> &middot; K<sub>k</sub><sup>T</sup> / &radic;d<sub>head</sub>) - exp(w) &middot; D<sub>jk</sub>
+                    </div>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        Where D<sub>jk</sub> is the <strong>patristic distance</strong> (the sum of branch lengths along the shortest path on the tree) between species, and w is a <strong>learnable scale parameter</strong> optimized during training. Evolutionarily close species receive higher attention weights, whereas evolutionary distance penalizes attention.
+                    </p>
+                </div>
+
+                <!-- Tab 2: Training -->
+                <div id="tab-train-content" class="tab-content">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--brand-royal); font-size: 1.1rem; font-weight: 700;">Regression Training Pipeline</h4>
+                    
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">A. Continuous Selection Target Formulation</h5>
+                    <p style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        To stabilize prediction target variance and handle the massive positive skewness of raw Likelihood Ratio Test (LRT) statistics, a log-transform is applied:
+                    </p>
+                    <div style="background: #f1f5f9; border-radius: 6px; padding: 0.75rem; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-rich);">
+                        y<sub>i</sub> = ln(max(0.0, LRT<sub>i</sub>) + 1.0)
+                    </div>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-slate); display: flex; flex-direction: column; gap: 0.35rem; list-style-type: disc;">
+                        <li>LRT = 0.0 &rArr; y<sub>i</sub> = 0.0 (Neutral or conserved evolution)</li>
+                        <li>LRT = 100.0 &rArr; y<sub>i</sub> &asymp; 4.615 (Decisive positive selection)</li>
+                    </ul>
+
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">B. Weighted Huber Loss</h5>
+                    <p style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        Because positive selection is rare (≈ 3% of sites), the loss function scales individual site predictions based on the magnitude of the ground truth label:
+                    </p>
+                    <div style="background: #f1f5f9; border-radius: 6px; padding: 0.75rem; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 1.25rem; font-weight: 600; color: var(--text-rich);">
+                        Loss = (1/M) &times; &sum; (y<sub>i</sub> + 1.0) &times; Huber(y<sub>i</sub>, ŷ<sub>i</sub>)
+                    </div>
+                    <p style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        The multiplier (y<sub>i</sub> + 1.0) acts as a dynamic weight, penalizing prediction errors on high-selection sites up to 6.3x more heavily than neutral sites.
+                    </p>
+
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">C. Data Splits &amp; Metrics</h5>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        To prevent homology data leakage, training splits are grouped strictly by gene:
+                    </p>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-slate); display: flex; flex-direction: column; gap: 0.35rem; list-style-type: disc;">
+                        <li><strong>Training Set</strong>: 4,352 genes (2,596,611 sites)</li>
+                        <li><strong>Validation Set</strong>: 1,088 genes (627,575 sites)</li>
+                    </ul>
+                    <p style="font-size: 0.85rem; color: var(--text-slate); line-height: 1.5; margin-bottom: 1.25rem;">
+                        The primary optimization objective is maximizing the <strong>Spearman Rank Correlation (ρ)</strong>, which evaluates how well the model ranks codon sites by selection intensity.
+                    </p>
+                    
+                    <h5 style="margin-bottom: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--text-rich);">D. Selection Call Classification (Tiers)</h5>
+                    <p style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-slate); line-height: 1.5;">
+                        To classify codon sites into confidence tiers of positive selection, the model applies a dual-threshold decision tree on <strong>variable sites only</strong>:
+                    </p>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-slate); display: flex; flex-direction: column; gap: 0.35rem; list-style-type: disc;">
+                        <li><strong>Tier 1 (High Confidence)</strong>: The site's local rank percentile among variable sites is ≥ 98% OR its absolute predicted LRT is ≥ 5.0.</li>
+                        <li><strong>Tier 2 (Medium Confidence)</strong>: The site's local rank percentile is ≥ 97% OR its absolute predicted LRT is ≥ 3.0, and it is not already classified as Tier 1.</li>
+                        <li><strong>Neutral / Conserved</strong>: All other sites (including all invariable sites).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Site Tree Popup Modal -->
+    <div id="tree-popup-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-window" style="max-width: 900px; width: 100%;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <i class="fa-solid fa-network-wired" style="color: var(--brand-royal); font-size: 1.25rem;"></i>
+                    <span style="font-weight: 700; font-size: 1.2rem; color: var(--text-rich);">Site-Specific Phylogenetic Tree</span>
+                </div>
+                <button id="tree-popup-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; overflow: hidden; display: flex; flex-direction: column; gap: 1rem; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; background: var(--bg-brand-ghost); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+                        <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--text-slate); flex-wrap: wrap;">
+                            <div><strong>Codon Site:</strong> <span id="tree-popup-site-idx" style="color: var(--accent-cyan); font-weight: 700;">-</span></div>
+                            <div><strong>Reference State:</strong> <span id="tree-popup-ref-state">-</span></div>
+                            <div><strong>Parsimony Substitutions:</strong> <span id="tree-popup-subst-count" style="color: var(--accent-pink); font-weight: 700;">-</span></div>
+                        </div>
+                        <div id="tree-popup-aa-composition">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-slate);">Labels:</span>
+                            <div class="btn-group" style="display: flex; background: var(--border-color); padding: 2px; border-radius: 6px; gap: 2px;">
+                                <button id="popup-label-codon-btn" class="btn-outline active" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; border-radius: 4px;">Codons</button>
+                                <button id="popup-label-aa-btn" class="btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; border-radius: 4px;">AAs</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-slate);">Layout:</span>
+                            <div class="btn-group" style="display: flex; background: var(--border-color); padding: 2px; border-radius: 6px; gap: 2px;">
+                                <button id="popup-layout-linear-btn" class="btn-outline active" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; border-radius: 4px;">Linear</button>
+                                <button id="popup-layout-radial-btn" class="btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; border-radius: 4px;">Radial</button>
+                            </div>
+                        </div>
+                        <button id="popup-align-tips-btn" class="btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 6px;">Align Tips</button>
+                    </div>
+                </div>
+                
+                <div class="canvas-container" id="popup-tree-svg-container" style="background: var(--bg-terminal); overflow: auto; min-height: 480px; flex-grow: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; position: relative;">
+                    <!-- Site-specific tree is generated here dynamically by phylotree -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast message container -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-info"></i>
+        <span id="toast-text">Message</span>
+    </div>
+
+    <script>
+        // =====================================================================
+        // 1. GLOBAL STATE & GENETIC CONSTANTS
+        // =====================================================================
+        let workerPool = [];
+        let modelLoadedCount = 0;
+        
+        const workerCode = `
+            importScripts('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js');
+            
+            let session = null;
+            
+            // Configure WASM paths
+            ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+            
+            async function initModel(modelUrl) {
+                try {
+                    session = await ort.InferenceSession.create(modelUrl);
+                    postMessage({ type: 'status', status: 'ready' });
+                } catch (err) {
+                    postMessage({ type: 'status', status: 'error', error: err.message });
+                }
+            }
+            
+            self.onmessage = async function(e) {
+                const data = e.data;
+                if (data.type === 'init') {
+                    await initModel(data.modelUrl);
+                } else if (data.type === 'run') {
+                    if (!session) {
+                        postMessage({ type: 'error', error: 'Model session not initialized', startIndex: data.startIndex });
+                        return;
+                    }
+                    try {
+                        const msa_codons = new ort.Tensor('int64', data.msaCodonsData, data.msaCodonsShape);
+                        const msa_aas = new ort.Tensor('int64', data.msaAasData, data.msaAasShape);
+                        const dist_matrix = new ort.Tensor('float32', data.distMatrixData, data.distMatrixShape);
+                        const mds_coords = new ort.Tensor('float32', data.mdsCoordsData, data.mdsCoordsShape);
+                        const padding_mask = new ort.Tensor('bool', data.paddingMaskData, data.paddingMaskShape);
+                        
+                        const ortInputs = {
+                            'msa_codons': msa_codons,
+                            'msa_aas': msa_aas,
+                            'dist_matrix': dist_matrix,
+                            'mds_coords': mds_coords,
+                            'padding_mask': padding_mask
+                        };
+                        
+                        const results = await session.run(ortInputs);
+                        const logits = new Float32Array(results.logits.data);
+                        
+                        postMessage({
+                            type: 'results',
+                            logits: logits,
+                            startIndex: data.startIndex,
+                            endIndex: data.endIndex
+                        }, [logits.buffer]);
+                    } catch (err) {
+                        postMessage({ type: 'error', error: err.message, startIndex: data.startIndex });
+                    }
+                }
+            };
+        `;
+        
+        function runWorkerInference(worker, inputs) {
+            return new Promise((resolve, reject) => {
+                worker.onmessage = (e) => {
+                    if (e.data.type === 'results') {
+                        resolve(e.data);
+                    } else if (e.data.type === 'error') {
+                        reject(new Error(e.data.error));
+                    }
+                };
+                worker.onerror = (err) => {
+                    reject(err);
+                };
+                worker.postMessage({
+                    type: 'run',
+                    ...inputs
+                }, [
+                    inputs.msaCodonsData.buffer,
+                    inputs.msaAasData.buffer,
+                    inputs.distMatrixData.buffer,
+                    inputs.mdsCoordsData.buffer,
+                    inputs.paddingMaskData.buffer
+                ]);
+            });
+        }
+        function getAbsoluteUrl(relativePath) {
+            let basePath = window.location.pathname;
+            if (!basePath.endsWith('/')) {
+                const lastSegment = basePath.substring(basePath.lastIndexOf('/') + 1);
+                if (lastSegment.includes('.')) {
+                    basePath = basePath.substring(0, basePath.lastIndexOf('/') + 1);
+                } else {
+                    basePath = basePath + '/';
+                }
+            }
+            return new URL(relativePath, window.location.origin + basePath).href;
+        }
+        let alignmentRawContent = null;
+        let alignmentFilename = null;
+        let treeRawContent = null;
+        let treeFilename = null;
+        
+        let parsedAlignment = null; // { seqDict, taxlabels, embeddedTreeStr }
+        let parsedTree = null; // Newick node representation
+        
+        let finalResults = []; // Table entries
+        let resultsSortColumn = "predicted_lrt";
+        let resultsSortAscending = false;
+        let resultsSearchQuery = "";
+        let resultsCurrentPage = 1;
+        const resultsPageSize = 25;
+        
+        let estimatedTreeStr = null;
+        let currentPopupSiteIdx = null;
+        let currentPopupLabelType = "codon";
+        let currentPopupLayout = "linear";
+        let currentPopupAlignTips = false;
+        let popupPhylotreeInstance = null;
+
+        const GENETIC_CODE = {
+            'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+            'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+            'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+            'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+            'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+            'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+            'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+            'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+            'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+            'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+            'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+            'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+            'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+            'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+            'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*', 'TGA':'*',
+            'TGC':'C', 'TGT':'C', 'TGG':'W',
+        };
+
+        const bases = ["T", "C", "A", "G"];
+        const codonsList = [];
+        for (let a of bases) {
+            for (let b of bases) {
+                for (let c of bases) {
+                    codonsList.push(a + b + c);
+                }
+            }
+        }
+        const CODON_TO_IDX = {};
+        codonsList.forEach((c, idx) => { CODON_TO_IDX[c] = idx; });
+        CODON_TO_IDX['-'] = 64;
+        CODON_TO_IDX['?'] = 65;
+
+        const AA_LIST = "ACDEFGHIKLMNPQRSTVWY*-?";
+        const AA_TO_IDX = {};
+        for (let i = 0; i < AA_LIST.length; i++) {
+            AA_TO_IDX[AA_LIST[i]] = i;
+        }
+
+        // =====================================================================
+        // 2. INITIALIZATION & UTILITIES
+        // =====================================================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            setupDropzones();
+            setupTableListeners();
+            setupSearch();
+            setupDownloadCSV();
+            setupDownloadTree();
+            setupPopupTreeModal();
+            setupHelpBadges();
+            setupMethodologyModal();
+            
+            window.addEventListener('resize', () => {
+                const resultsContainer = document.getElementById('results-container');
+                if (finalResults && finalResults.length > 0 && resultsContainer.style.display === "flex") {
+                    renderManhattanPlot();
+                }
+                const modal = document.getElementById('tree-popup-modal');
+                if (modal && modal.classList.contains('show') && currentPopupSiteIdx !== null) {
+                    updatePopupTree();
+                }
+            });
+            
+            // Initialize ONNX Web Worker Pool
+            try {
+                const numWorkers = Math.min(4, navigator.hardwareConcurrency || 4);
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(blob);
+                
+                showToast(`Spawning ${numWorkers} parallel workers...`, "info");
+                
+                let loadedPromises = [];
+                const modelUrl = getAbsoluteUrl('MEME_transformer.onnx');
+                
+                for (let w = 0; w < numWorkers; w++) {
+                    const worker = new Worker(workerUrl);
+                    workerPool.push(worker);
+                    
+                    const loadPromise = new Promise((resolve, reject) => {
+                        worker.onmessage = (e) => {
+                            if (e.data.type === 'status') {
+                                if (e.data.status === 'ready') {
+                                    modelLoadedCount++;
+                                    validateInputs();
+                                    resolve();
+                                } else {
+                                    reject(new Error(e.data.error));
+                                }
+                            }
+                        };
+                        worker.onerror = (err) => {
+                            reject(err);
+                        };
+                    });
+                    
+                    worker.postMessage({ type: 'init', modelUrl: modelUrl });
+                    loadedPromises.push(loadPromise);
+                }
+                
+                await Promise.all(loadedPromises);
+                
+                document.getElementById('model-status').className = "badge badge-t2";
+                document.getElementById('model-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${numWorkers} Workers ready`;
+                showToast("Parallel selection inference engine ready.", "success");
+            } catch (e) {
+                console.error("Worker pool load failed:", e);
+                document.getElementById('model-status').className = "badge badge-t1";
+                document.getElementById('model-status').innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Load Error';
+                showToast("Failed to initialize parallel workers: " + e.message, "error");
+            }
+        });
+
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            
+            toast.className = `toast show toast-${type}`;
+            toastText.textContent = message;
+            
+            let icon = "fa-circle-info";
+            if (type === "success") icon = "fa-circle-check";
+            if (type === "error") icon = "fa-circle-exclamation";
+            toast.querySelector('i').className = `fa-solid ${icon}`;
+
+            setTimeout(() => {
+                toast.className = "toast";
+            }, 4000);
+        }
+
+        // =====================================================================
+        // 3. FILE PARSERS
+        // =====================================================================
+        function setupDropzones() {
+            const alignDrop = document.getElementById('align-dropzone');
+            const alignInput = document.getElementById('align-file-input');
+            const alignInfo = document.getElementById('align-file-info');
+            const alignName = document.getElementById('align-filename');
+            const alignRemove = document.getElementById('align-remove');
+
+            const treeDrop = document.getElementById('tree-dropzone');
+            const treeInput = document.getElementById('tree-file-input');
+            const treeInfo = document.getElementById('tree-file-info');
+            const treeName = document.getElementById('tree-filename');
+            const treeRemove = document.getElementById('tree-remove');
+
+            // Alignment Dropzone
+            alignDrop.addEventListener('click', () => alignInput.click());
+            alignDrop.addEventListener('dragover', (e) => { e.preventDefault(); alignDrop.classList.add('dragover'); });
+            alignDrop.addEventListener('dragleave', () => alignDrop.classList.remove('dragover'));
+            alignDrop.addEventListener('drop', (e) => {
+                e.preventDefault();
+                alignDrop.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    handleAlignFile(e.dataTransfer.files[0]);
+                }
+            });
+            alignInput.addEventListener('change', () => {
+                if (alignInput.files.length > 0) {
+                    handleAlignFile(alignInput.files[0]);
+                }
+            });
+            alignRemove.addEventListener('click', () => {
+                alignmentRawContent = null;
+                alignmentFilename = null;
+                parsedAlignment = null;
+                alignInfo.style.display = "none";
+                alignDrop.style.display = "block";
+                document.getElementById('ref-seq-select').innerHTML = '<option value="">-- Load alignment first --</option>';
+                validateInputs();
+            });
+
+            // Tree Dropzone
+            treeDrop.addEventListener('click', () => treeInput.click());
+            treeDrop.addEventListener('dragover', (e) => { e.preventDefault(); treeDrop.classList.add('dragover'); });
+            treeDrop.addEventListener('dragleave', () => treeDrop.classList.remove('dragover'));
+            treeDrop.addEventListener('drop', (e) => {
+                e.preventDefault();
+                treeDrop.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    handleTreeFile(e.dataTransfer.files[0]);
+                }
+            });
+            treeInput.addEventListener('change', () => {
+                if (treeInput.files.length > 0) {
+                    handleTreeFile(treeInput.files[0]);
+                }
+            });
+            treeRemove.addEventListener('click', () => {
+                treeRawContent = null;
+                treeFilename = null;
+                parsedTree = null;
+                treeInfo.style.display = "none";
+                treeDrop.style.display = "block";
+                validateInputs();
+            });
+
+            // Run Button
+            document.getElementById('run-inference-btn').addEventListener('click', () => {
+                runPipeline();
+            });
+        }
+
+        async function handleAlignFile(file) {
+            alignmentFilename = file.name;
+            const alignDrop = document.getElementById('align-dropzone');
+            const alignInfo = document.getElementById('align-file-info');
+            const alignName = document.getElementById('align-filename');
+            
+            showToast("Reading alignment file...", "info");
+            
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                let text = "";
+                
+                if (file.name.endsWith('.gz')) {
+                    // Decompress using pako
+                    text = pako.ungzip(new Uint8Array(arrayBuffer), { to: 'string' });
+                } else {
+                    text = new TextDecoder('utf-8').decode(new Uint8Array(arrayBuffer));
+                }
+                
+                alignmentRawContent = text;
+                parsedAlignment = parseNexusAlignmentAndEmbeddedTree(text);
+                
+                if (Object.keys(parsedAlignment.seqDict).length === 0) {
+                    throw new Error(`No sequences could be parsed from NEXUS file. (Taxlabels: ${parsedAlignment.taxlabelsCount}, Matrix lines: ${parsedAlignment.matrixLinesCount}, Text length: ${text.length}, ArrayBuffer size: ${arrayBuffer.byteLength}, Preview: "${text.substring(0, 100).replace(/\r?\n/g, ' ')}")`);
+                }
+                
+                alignName.textContent = `${file.name} (${Object.keys(parsedAlignment.seqDict).length} species, ${parsedAlignment.alignmentLen} nuc)`;
+                alignDrop.style.display = "none";
+                alignInfo.style.display = "flex";
+                
+                // Populate reference dropdown
+                const refSelect = document.getElementById('ref-seq-select');
+                refSelect.innerHTML = "";
+                
+                // Heuristic mapping for standard human seq keys
+                let heuristicRef = null;
+                const heuristics = ['hg', 'hg38', 'human'];
+                
+                parsedAlignment.taxlabels.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    refSelect.appendChild(option);
+                    
+                    if (heuristics.includes(name.toLowerCase())) {
+                        heuristicRef = name;
+                    }
+                });
+                
+                if (heuristicRef) {
+                    refSelect.value = heuristicRef;
+                } else {
+                    refSelect.selectedIndex = 0;
+                }
+                
+                showToast("Alignment loaded successfully.", "success");
+                validateInputs();
+            } catch (e) {
+                console.error(e);
+                showToast("Failed to parse alignment: " + e.message, "error");
+                alignmentRawContent = null;
+            }
+        }
+
+        async function handleTreeFile(file) {
+            treeFilename = file.name;
+            const treeDrop = document.getElementById('tree-dropzone');
+            const treeInfo = document.getElementById('tree-file-info');
+            const treeName = document.getElementById('tree-filename');
+            
+            try {
+                const text = await file.text();
+                treeRawContent = text;
+                
+                // Try to parse tree string
+                let treeStr = parseNexusTreeFile(text);
+                if (!treeStr) {
+                    throw new Error("No valid tree topology found.");
+                }
+                
+                parsedTree = parseNewick(treeStr);
+                const leaves = getLeaves(parsedTree);
+                
+                treeName.textContent = `${file.name} (${leaves.length} leaves)`;
+                treeDrop.style.display = "none";
+                treeInfo.style.display = "flex";
+                
+                showToast("Tree loaded successfully.", "success");
+                validateInputs();
+            } catch (e) {
+                console.error(e);
+                showToast("Failed to parse tree: " + e.message, "error");
+                treeRawContent = null;
+            }
+        }
+
+        function validateInputs() {
+            const runBtn = document.getElementById('run-inference-btn');
+            if (modelLoadedCount > 0 && alignmentRawContent) {
+                runBtn.removeAttribute('disabled');
+            } else {
+                runBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        // =====================================================================
+        // 4. PARSER ALGORITHMS (PORTED FROM PYTHON)
+        // =====================================================================
+        function parseNexusAlignmentAndEmbeddedTree(nexusText) {
+            const taxlabels = [];
+            const matrixLines = [];
+            let embeddedTreeStr = null;
+            
+            // 1. Strip comments in brackets globally (multi-line safe)
+            const cleanText = nexusText.replace(/\[[\s\S]*?\]/g, '');
+            
+            // 2. Split into statements by semicolon
+            const statements = cleanText.split(';');
+            
+            for (let stmt of statements) {
+                let cleanStmt = stmt.trim();
+                if (!cleanStmt) continue;
+                
+                const cleanStmtUpper = cleanStmt.toUpperCase();
+                
+                // Match TAXLABELS statement
+                if (cleanStmtUpper.startsWith('TAXLABELS') || cleanStmtUpper.includes('TAXLABELS ')) {
+                    let idx = cleanStmtUpper.indexOf('TAXLABELS');
+                    let content = cleanStmt.substring(idx + 9).trim();
+                    let tokens = content.replace(/['";]/g, '').split(/\s+/);
+                    tokens.forEach(t => { if (t) taxlabels.push(t); });
+                }
+                
+                // Match MATRIX statement
+                else if (cleanStmtUpper.startsWith('MATRIX') || cleanStmtUpper.includes('MATRIX ')) {
+                    let idx = cleanStmtUpper.indexOf('MATRIX');
+                    let content = cleanStmt.substring(idx + 6).trim();
+                    
+                    const rawLines = content.split(/\r?\n/);
+                    const cleanRawLines = rawLines.map(l => l.trim()).filter(l => l.length > 0);
+                    
+                    if (cleanRawLines.length >= taxlabels.length && taxlabels.length > 0) {
+                        cleanRawLines.forEach(l => matrixLines.push(l));
+                    } else {
+                        // Token-based parsing for single-line / inline matrices
+                        let tokens = [];
+                        let currentToken = "";
+                        let inQuotes = false;
+                        let quoteChar = "";
+                        
+                        for (let i = 0; i < content.length; i++) {
+                            let char = content[i];
+                            if ((char === "'" || char === '"') && (i === 0 || content[i-1] !== '\\')) {
+                                if (inQuotes && char === quoteChar) {
+                                    inQuotes = false;
+                                    tokens.push(currentToken);
+                                    currentToken = "";
+                                } else if (!inQuotes) {
+                                    inQuotes = true;
+                                    quoteChar = char;
+                                } else {
+                                    currentToken += char;
+                                }
+                            } else if (inQuotes) {
+                                  currentToken += char;
+                            } else if (/\s/.test(char)) {
+                                if (currentToken) {
+                                    tokens.push(currentToken);
+                                    currentToken = "";
+                                }
+                            } else {
+                                currentToken += char;
+                            }
+                        }
+                        if (currentToken) {
+                            tokens.push(currentToken);
+                        }
+                        
+                        let i = 0;
+                        while (i < tokens.length) {
+                            let token = tokens[i];
+                            let cleanToken = token.replace(/['"]/g, '');
+                            if (taxlabels.includes(cleanToken)) {
+                                if (i + 1 < tokens.length) {
+                                    matrixLines.push(token + " " + tokens[i+1]);
+                                    i += 2;
+                                } else {
+                                    i++;
+                                }
+                            } else {
+                                if (i + 1 < tokens.length) {
+                                    matrixLines.push(token + " " + tokens[i+1]);
+                                    i += 2;
+                                } else {
+                                    i++;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Match TREE statement
+                else if (cleanStmtUpper.startsWith('TREE ') || cleanStmtUpper.includes(' TREE ')) {
+                    let idx = cleanStmtUpper.indexOf('TREE ');
+                    let content = cleanStmt.substring(idx + 5).trim();
+                    let parts = content.split('=', 2);
+                    if (parts.length > 1) {
+                        embeddedTreeStr = parts[1].trim();
+                    } else {
+                        embeddedTreeStr = content;
+                    }
+                }
+            }
+            
+            const seqDict = {};
+            let alignmentLen = 0;
+            
+            matrixLines.forEach((seqLine, idx) => {
+                if (!seqLine) return;
+                const trimmed = seqLine.trim();
+                if (!trimmed) return;
+                
+                const firstSpaceIdx = trimmed.search(/\s/);
+                if (firstSpaceIdx !== -1) {
+                    const possibleLabel = trimmed.substring(0, firstSpaceIdx).replace(/['"]/g, '').trim();
+                    const remainder = trimmed.substring(firstSpaceIdx).replace(/[\s\t]/g, '');
+                    
+                    if (taxlabels.includes(possibleLabel)) {
+                        seqDict[possibleLabel] = remainder;
+                        alignmentLen = remainder.length;
+                        return;
+                    }
+                }
+                
+                if (idx < taxlabels.length) {
+                    const label = taxlabels[idx];
+                    const seq = trimmed.replace(/[\s\t]/g, '');
+                    seqDict[label] = seq;
+                    alignmentLen = seq.length;
+                }
+            });
+            
+            return { seqDict, taxlabels, embeddedTreeStr, alignmentLen, taxlabelsCount: taxlabels.length, matrixLinesCount: matrixLines.length };
+        }
+
+        function parseNexusTreeFile(treeText) {
+            let treeStr = null;
+            let inTrees = false;
+            
+            const lines = treeText.split(/\r?\n/);
+            const firstLine = lines[0] ? lines[0].toUpperCase() : "";
+            
+            if (firstLine.includes('#NEXUS')) {
+                for (let line of lines) {
+                    let cleanLine = line.trim().replace(/\[.*?\]/g, '');
+                    const cleanLineUpper = cleanLine.toUpperCase();
+                    
+                    if (cleanLineUpper.startsWith('BEGIN TREES') || cleanLineUpper.startsWith('BEGIN TREE')) {
+                        inTrees = true;
+                        continue;
+                    }
+                    if (inTrees) {
+                        if (cleanLineUpper.startsWith('TREE ')) {
+                            let parts = cleanLine.split('=', 2);
+                            if (parts.length > 1) {
+                                treeStr = parts[1].trim();
+                            }
+                        }
+                        if (cleanLineUpper.startsWith('END;')) {
+                            inTrees = false;
+                        }
+                    }
+                }
+            } else {
+                const match = treeText.match(/\(.*\);?/);
+                if (match) {
+                    treeStr = match[0];
+                }
+            }
+            
+            if (treeStr && treeStr.endsWith(';')) {
+                treeStr = treeStr.slice(0, -1);
+            }
+            return treeStr;
+        }
+
+        // Tree structure representation
+        class CladeNode {
+            constructor() {
+                this.name = "";
+                this.branchLength = 0.0;
+                this.children = [];
+                this.parent = null;
+                this.distanceToRoot = 0.0;
+            }
+        }
+
+        function parseNewick(newickStr) {
+            // Strip nested comments and parameters inside curly braces/brackets
+            newickStr = newickStr.trim().replace(/\{[^}]*\}/g, '').replace(/\[[^\]]*\]/g, '').replace(/;$/, "");
+            
+            let root = new CladeNode();
+            let current = root;
+            let i = 0;
+            
+            while (i < newickStr.length) {
+                let char = newickStr[i];
+                if (char === '(') {
+                    let child = new CladeNode();
+                    child.parent = current;
+                    current.children.push(child);
+                    current = child;
+                    i++;
+                } else if (char === ',') {
+                    current = current.parent;
+                    let sibling = new CladeNode();
+                    sibling.parent = current;
+                    current.children.push(sibling);
+                    current = sibling;
+                    i++;
+                } else if (char === ')') {
+                    current = current.parent;
+                    i++;
+                } else {
+                    let token = "";
+                    while (i < newickStr.length && !['(', ')', ',', ';'].includes(newickStr[i])) {
+                        token += newickStr[i];
+                        i++;
+                    }
+                    let parts = token.split(':');
+                    current.name = parts[0].trim().replace(/['"]/g, "");
+                    if (parts.length > 1) {
+                        current.branchLength = parseFloat(parts[1]) || 0.0;
+                    }
+                }
+            }
+            return root;
+        }
+
+        function getLeaves(node) {
+            const leaves = [];
+            function traverse(curr) {
+                if (curr.children.length === 0) {
+                    leaves.push(curr);
+                } else {
+                    curr.children.forEach(traverse);
+                }
+            }
+            traverse(node);
+            return leaves;
+        }
+
+        function pruneTree(node, matchedSpeciesSet) {
+            if (node.children.length === 0) {
+                return matchedSpeciesSet.has(node.name);
+            }
+            node.children = node.children.filter(child => pruneTree(child, matchedSpeciesSet));
+            return node.children.length > 0;
+        }
+
+        function nodeToNewick(node) {
+            if (node.children.length === 0) {
+                return node.name + (node.branchLength !== undefined && node.branchLength !== 0.0 ? ":" + node.branchLength : "");
+            }
+            const childrenStr = node.children.map(child => nodeToNewick(child)).join(",");
+            const nameStr = node.name || "";
+            const lenStr = node.branchLength !== undefined && node.branchLength !== 0.0 ? ":" + node.branchLength : "";
+            return `(${childrenStr})${nameStr}${lenStr}`;
+        }
+
+        function getPatristicDistances(root) {
+            const leaves = [];
+            function findLeaves(node, currentDist) {
+                node.distanceToRoot = currentDist;
+                if (node.children.length === 0) {
+                    leaves.push(node);
+                } else {
+                    for (let child of node.children) {
+                        findLeaves(child, currentDist + child.branchLength);
+                    }
+                }
+            }
+            findLeaves(root, 0.0);
+
+            const names = leaves.map(l => l.name);
+            const n = names.length;
+            const distMatrix = Array.from({ length: n }, () => Array(n).fill(0.0));
+
+            function getPathToRoot(node) {
+                const path = [];
+                let curr = node;
+                while (curr !== null) {
+                    path.push(curr);
+                    curr = curr.parent;
+                }
+                return path;
+            }
+
+            for (let i = 0; i < n; i++) {
+                const pathI = getPathToRoot(leaves[i]);
+                const setI = new Set(pathI);
+                for (let j = i + 1; j < n; j++) {
+                    const pathJ = getPathToRoot(leaves[j]);
+                    let lca = null;
+                    for (let node of pathJ) {
+                        if (setI.has(node)) {
+                            lca = node;
+                            break;
+                        }
+                    }
+                    const dist = lca ? 
+                        (leaves[i].distanceToRoot + leaves[j].distanceToRoot - 2 * lca.distanceToRoot) :
+                        (leaves[i].distanceToRoot + leaves[j].distanceToRoot);
+                        
+                    distMatrix[i][j] = dist;
+                    distMatrix[j][i] = dist;
+                }
+            }
+            return { names, distMatrix };
+        }
+
+        // MDS Implementation (with double centering & Jacobi Eigenvalue decomposition)
+        function jacobiEigenvalue(A, maxSweeps = 25, tolerance = 1e-7) {
+            const n = A.length;
+            const V = Array.from({ length: n }, (_, i) => 
+                Array.from({ length: n }, (_, j) => (i === j ? 1.0 : 0.0))
+            );
+            const D = A.map(row => [...row]);
+
+            for (let sweep = 0; sweep < maxSweeps; sweep++) {
+                let maxOffDiag = 0.0;
+                
+                for (let p = 0; p < n; p++) {
+                    for (let q = p + 1; q < n; q++) {
+                        const apq = D[p][q];
+                        maxOffDiag = Math.max(maxOffDiag, Math.abs(apq));
+                        
+                        if (Math.abs(apq) < tolerance) continue;
+                        
+                        const app = D[p][p];
+                        const aqq = D[q][q];
+                        const tau = (aqq - app) / (2.0 * apq);
+                        
+                        let t = tau >= 0 ? 
+                            1.0 / (tau + Math.sqrt(1.0 + tau * tau)) : 
+                           -1.0 / (-tau + Math.sqrt(1.0 + tau * tau));
+                           
+                        const c = 1.0 / Math.sqrt(1.0 + t * t);
+                        const s = t * c;
+
+                        D[p][q] = 0.0;
+                        D[q][p] = 0.0;
+                        D[p][p] = app - t * apq;
+                        D[q][q] = aqq + t * apq;
+
+                        for (let i = 0; i < n; i++) {
+                            if (i !== p && i !== q) {
+                                const aip = D[i][p];
+                                const aiq = D[i][q];
+                                D[i][p] = c * aip - s * aiq;
+                                D[p][i] = D[i][p];
+                                D[i][q] = s * aip + c * aiq;
+                                D[q][i] = D[i][q];
+                            }
+                        }
+
+                        for (let i = 0; i < n; i++) {
+                            const vip = V[i][p];
+                            const viq = V[i][q];
+                            V[i][p] = c * vip - s * viq;
+                            V[i][q] = s * vip + c * viq;
+                        }
+                    }
+                }
+                
+                if (maxOffDiag < tolerance) {
+                    break;
+                }
+            }
+
+            const eigenvalues = D.map((row, i) => row[i]);
+            return { eigenvalues, eigenvectors: V };
+        }
+
+        function computeMDS(distMatrix, nComponents = 4) {
+            const N = distMatrix.length;
+            if (N <= nComponents) {
+                return Array.from({ length: N }, () => Array(nComponents).fill(0.0));
+            }
+
+            const D2 = distMatrix.map(row => row.map(val => val * val));
+            const rowMeans = Array(N).fill(0.0);
+            let grandTotal = 0.0;
+            
+            for (let i = 0; i < N; i++) {
+                let rowSum = 0.0;
+                for (let j = 0; j < N; j++) {
+                    rowSum += D2[i][j];
+                }
+                rowMeans[i] = rowSum / N;
+                grandTotal += rowSum;
+            }
+            const grandMean = grandTotal / (N * N);
+
+            const B = Array.from({ length: N }, () => Array(N).fill(0.0));
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    B[i][j] = -0.5 * (D2[i][j] - rowMeans[i] - rowMeans[j] + grandMean);
+                }
+            }
+
+            const { eigenvalues, eigenvectors } = jacobiEigenvalue(B);
+
+            // Enforce sign convention: largest absolute value element in each eigenvector is positive
+            const n = eigenvectors.length;
+            for (let j = 0; j < n; j++) {
+                let maxVal = 0;
+                let maxAbsVal = -1;
+                for (let i = 0; i < n; i++) {
+                    let val = eigenvectors[i][j];
+                    let absVal = Math.abs(val);
+                    if (absVal > maxAbsVal) {
+                        maxAbsVal = absVal;
+                        maxVal = val;
+                    }
+                }
+                if (maxVal < 0) {
+                    for (let i = 0; i < n; i++) {
+                        eigenvectors[i][j] = -eigenvectors[i][j];
+                    }
+                }
+            }
+
+            const indexedEvals = eigenvalues.map((val, idx) => ({ val, idx }));
+            indexedEvals.sort((a, b) => b.val - a.val);
+
+            const coords = Array.from({ length: N }, () => Array(nComponents).fill(0.0));
+            for (let c = 0; c < nComponents; c++) {
+                const val = indexedEvals[c].val;
+                const idx = indexedEvals[c].idx;
+                if (val > 0) {
+                    const sqrtVal = Math.sqrt(val);
+                    for (let i = 0; i < N; i++) {
+                        coords[i][c] = eigenvectors[i][idx] * sqrtVal;
+                    }
+                }
+            }
+            return coords;
+        }
+
+        // Translation logic
+        function translateCodon(codon) {
+            codon = codon.toUpperCase();
+            if (codon.length !== 3 || codon.includes('-') || codon.includes('N') || codon.includes('?')) {
+                return '?';
+            }
+            return GENETIC_CODE[codon] || '?';
+        }
+
+        function getCodonToken(codon) {
+            codon = codon.toUpperCase();
+            if (codon.includes('-')) {
+                return 64;
+            }
+            if (codon.length !== 3 || codon.includes('N') || codon.includes('?')) {
+                return 65;
+            }
+            return CODON_TO_IDX[codon] !== undefined ? CODON_TO_IDX[codon] : 65;
+        }
+
+        function getAaToken(codon) {
+            codon = codon.toUpperCase();
+            if (codon.includes('-')) {
+                return 21;
+            }
+            if (codon.length !== 3 || codon.includes('N') || codon.includes('?')) {
+                return 22;
+            }
+            const aa = GENETIC_CODE[codon] || '?';
+            return AA_TO_IDX[aa] !== undefined ? AA_TO_IDX[aa] : 22;
+        }
+
+        function isSiteVariable(siteCodons, siteAas) {
+            if (!siteCodons || !siteAas || siteCodons.length === 0 || siteAas.length === 0) {
+                return false;
+            }
+            const uniqueAas = new Set(siteAas);
+            if (uniqueAas.size > 1) {
+                return true;
+            }
+            if (uniqueAas.size === 1 && uniqueAas.has('S')) {
+                const hasTcn = siteCodons.some(c => ['TCA', 'TCC', 'TCG', 'TCT'].includes(c));
+                const hasAgy = siteCodons.some(c => ['AGC', 'AGT'].includes(c));
+                if (hasTcn && hasAgy) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // =====================================================================
+        // 5. PIPELINE EXECUTION
+        // =====================================================================
+        async function runPipeline() {
+            const maxSpecies = parseInt(document.getElementById('max-species-input').value) || 256;
+            const refKey = document.getElementById('ref-seq-select').value;
+            
+            const progressCard = document.getElementById('progress-card');
+            const runBtn = document.getElementById('run-inference-btn');
+            const resultsContainer = document.getElementById('results-container');
+            
+            runBtn.setAttribute('disabled', 'true');
+            progressCard.style.display = "block";
+            resultsContainer.style.display = "none";
+            
+            updateProgressBar(5);
+            resetSteps();
+            
+            try {
+                // Step 1: Decompress & Parse Alignment
+                markStep('step-decompression', 'active');
+                await sleep(100);
+                const { seqDict, taxlabels, embeddedTreeStr, alignmentLen } = parsedAlignment;
+                const refSeq = seqDict[refKey];
+                
+                if (refSeq.length % 3 !== 0) {
+                    showToast("Warning: Reference sequence length is not a multiple of 3. Truncating tail.", "info");
+                }
+                const totalCodons = Math.floor(refSeq.length / 3);
+                markStep('step-decompression', 'completed');
+                updateProgressBar(15);
+
+                // Step 2: Parse & Prune tree
+                markStep('step-tree', 'active');
+                await sleep(100);
+                let finalTreeStr = null;
+                
+                if (treeRawContent) {
+                    finalTreeStr = parseNexusTreeFile(treeRawContent);
+                } else if (embeddedTreeStr) {
+                    finalTreeStr = embeddedTreeStr;
+                    showToast("Using embedded tree topology.", "info");
+                }
+                
+                let matchingSpecies = [];
+                let treeRootObj = null;
+                
+                if (finalTreeStr) {
+                    treeRootObj = parseNewick(finalTreeStr);
+                    const treeLeafNames = getLeaves(treeRootObj).map(l => l.name);
+                    
+                    // Match taxonomy labels between tree and alignment
+                    const nameMap = {};
+                    taxlabels.forEach(name => {
+                        nameMap[name.replace(/['"]/g, '').trim()] = name;
+                    });
+                    
+                    treeLeafNames.forEach(treeName => {
+                        const norm = treeName.replace(/['"]/g, '').trim();
+                        if (nameMap[norm]) {
+                            matchingSpecies.push(nameMap[norm]);
+                        }
+                    });
+                }
+                
+                if (matchingSpecies.length === 0) {
+                    showToast("No matching species or tree found. Falling back to alignment order.", "info");
+                    matchingSpecies = [...taxlabels];
+                }
+                
+                // Move reference key to the front of matched list
+                const refIdx = matchingSpecies.indexOf(refKey);
+                if (refIdx > -1) {
+                    matchingSpecies.splice(refIdx, 1);
+                }
+                matchingSpecies.unshift(refKey);
+                
+                // Cap to maxSpecies
+                const selectedSpecies = matchingSpecies.slice(0, maxSpecies);
+                const numSelected = selectedSpecies.length;
+                
+                // Prune tree to only selectedSpecies
+                let prunedTreeNewick = null;
+                let hasBranchLengths = false;
+                
+                if (treeRootObj) {
+                    const selectedSet = new Set(selectedSpecies);
+                    pruneTree(treeRootObj, selectedSet);
+                    prunedTreeNewick = nodeToNewick(treeRootObj);
+                    
+                    // Check if tree has valid branch lengths
+                    const leaves = getLeaves(treeRootObj);
+                    hasBranchLengths = leaves.some(l => l.branchLength > 0.0);
+                }
+                
+                markStep('step-tree', 'completed');
+                updateProgressBar(30);
+
+                // Step 3: Run HyPhy branch length optimization (if needed)
+                markStep('step-hyphy', 'active');
+                let finalTreeTopology = prunedTreeNewick;
+                
+                if (treeRootObj && !hasBranchLengths) {
+                    showToast("Tree lacks branch lengths. Running HyPhy WASM...", "info");
+                    
+                    // Create fasta alignment block
+                    let fastaContent = "";
+                    selectedSpecies.forEach(spec => {
+                        fastaContent += `>${spec}\n${seqDict[spec]}\n`;
+                    });
+                    
+                    try {
+                        const optimizedTree = await runHyphyBranchEstimation(fastaContent, prunedTreeNewick);
+                        estimatedTreeStr = optimizedTree;
+                        treeRootObj = parseNewick(optimizedTree);
+                        finalTreeTopology = optimizedTree;
+                        hasBranchLengths = true;
+                        
+                        document.getElementById('download-tree-btn').style.display = "block";
+                        showToast("Branch length optimization complete!", "success");
+                    } catch (err) {
+                        console.error("HyPhy WASM failed:", err);
+                        showToast("HyPhy failed. Falling back to flat distance topology.", "error");
+                    }
+                } else if (treeRootObj) {
+                    estimatedTreeStr = finalTreeTopology + ";";
+                }
+                
+                markStep('step-hyphy', 'completed');
+                updateProgressBar(50);
+
+                // Step 4: Calculate Patristic Distances & MDS coordinates
+                markStep('step-distances', 'active');
+                await sleep(100);
+                
+                let distMatrix = Array.from({ length: maxSpecies }, () => Array(maxSpecies).fill(0.0));
+                let mdsCoords = Array.from({ length: maxSpecies }, () => Array(4).fill(0.0));
+                
+                if (treeRootObj && hasBranchLengths) {
+                    const patristic = getPatristicDistances(treeRootObj);
+                    const leafNameMap = {};
+                    patristic.names.forEach((name, idx) => {
+                        leafNameMap[name] = idx;
+                    });
+                    
+                    // Populate distance matrix for selected species
+                    for (let i = 0; i < numSelected; i++) {
+                        const pI = leafNameMap[selectedSpecies[i]];
+                        for (let j = 0; j < numSelected; j++) {
+                            const pJ = leafNameMap[selectedSpecies[j]];
+                            if (pI !== undefined && pJ !== undefined) {
+                                const dist = patristic.distMatrix[pI][pJ];
+                                distMatrix[i][j] = dist;
+                            }
+                        }
+                    }
+                    
+                    // Run MDS coordinates projection on full 256x256 distance matrix (matching Python CLI)
+                    mdsCoords = computeMDS(distMatrix, 4);
+                }
+                
+                markStep('step-distances', 'completed');
+                updateProgressBar(65);
+
+                // Step 5: ONNX Model Inference (chunk-by-chunk)
+                markStep('step-onnx', 'active');
+                await sleep(100);
+                
+                const variableSitesFlags = [];
+                const predLogLrts = new Float32Array(totalCodons);
+                
+                // Pre-calculate variable sites flags for all sites
+                for (let siteIdx = 1; siteIdx <= totalCodons; siteIdx++) {
+                    const siteCodons = [];
+                    const siteAas = [];
+                    for (let sIdx = 0; sIdx < numSelected; sIdx++) {
+                        const spec = selectedSpecies[sIdx];
+                        const seq = seqDict[spec];
+                        const seqLenCodons = Math.floor(seq.length / 3);
+                        if (siteIdx <= seqLenCodons) {
+                            const nucIdx = (siteIdx - 1) * 3;
+                            const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                            if (!codon.includes('-') && !codon.includes('N') && !codon.includes('?') && codon.length === 3) {
+                                siteCodons.push(codon);
+                                const aa = GENETIC_CODE[codon] || '?';
+                                if (aa !== '?') {
+                                    siteAas.push(aa);
+                                }
+                            }
+                        }
+                    }
+                    variableSitesFlags.push(isSiteVariable(siteCodons, siteAas));
+                }
+
+                // Batching parameters
+                const inferenceBatchSize = 32;
+                const numBatches = Math.ceil(totalCodons / inferenceBatchSize);
+                
+                const batches = [];
+                for (let b = 0; b < numBatches; b++) {
+                    const startSite = b * inferenceBatchSize + 1;
+                    const endSite = Math.min(startSite + inferenceBatchSize - 1, totalCodons);
+                    batches.push({ startSite, endSite, b });
+                }
+                
+                const numWorkers = workerPool.length || 1;
+                const workerJobs = Array.from({ length: numWorkers }, () => []);
+                batches.forEach((batch, idx) => {
+                    workerJobs[idx % numWorkers].push(batch);
+                });
+                
+                let completedBatches = 0;
+                const onBatchComplete = () => {
+                    completedBatches++;
+                    updateProgressBar(65 + Math.floor(completedBatches / numBatches * 20));
+                    document.getElementById('step-onnx').querySelector('span').textContent = `Running Parallel Inference (Batches ${completedBatches}/${numBatches})...`;
+                };
+                
+                const workerBatchPromises = [];
+                
+                workerPool.forEach((worker, workerIdx) => {
+                    const jobs = workerJobs[workerIdx];
+                    if (jobs.length === 0) return;
+                    
+                    const workerPromise = (async () => {
+                        for (let job of jobs) {
+                            const { startSite, endSite } = job;
+                            const currentBatchSize = endSite - startSite + 1;
+                            
+                            const msaCodonsData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                            const msaAasData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                            const distMatrixData = new Float32Array(currentBatchSize * maxSpecies * maxSpecies);
+                            const mdsCoordsData = new Float32Array(currentBatchSize * maxSpecies * 4);
+                            const paddingMaskData = new Uint8Array(currentBatchSize * maxSpecies);
+                            
+                            for (let i = 0; i < currentBatchSize; i++) {
+                                const siteIdx = startSite + i;
+                                
+                                for (let sIdx = 0; sIdx < maxSpecies; sIdx++) {
+                                    const cellIdx = i * maxSpecies + sIdx;
+                                    
+                                    if (sIdx < numSelected) {
+                                        paddingMaskData[cellIdx] = 0; // False
+                                        const spec = selectedSpecies[sIdx];
+                                        const seq = seqDict[spec];
+                                        const seqLenCodons = Math.floor(seq.length / 3);
+                                        
+                                        if (siteIdx <= seqLenCodons) {
+                                            const nucIdx = (siteIdx - 1) * 3;
+                                            const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                                            msaCodonsData[cellIdx] = BigInt(getCodonToken(codon));
+                                            msaAasData[cellIdx] = BigInt(getAaToken(codon));
+                                        } else {
+                                            msaCodonsData[cellIdx] = 65n;
+                                            msaAasData[cellIdx] = 22n;
+                                        }
+                                    } else {
+                                        paddingMaskData[cellIdx] = 1; // True (padded)
+                                        msaCodonsData[cellIdx] = 65n;
+                                        msaAasData[cellIdx] = 22n;
+                                    }
+                                }
+                                
+                                // Copy distances
+                                const distOffset = i * maxSpecies * maxSpecies;
+                                for (let k = 0; k < maxSpecies; k++) {
+                                    for (let j = 0; j < maxSpecies; j++) {
+                                        distMatrixData[distOffset + k * maxSpecies + j] = distMatrix[k][j];
+                                    }
+                                }
+                                
+                                // Copy MDS coords
+                                const mdsOffset = i * maxSpecies * 4;
+                                for (let k = 0; k < maxSpecies; k++) {
+                                    for (let c = 0; c < 4; c++) {
+                                        mdsCoordsData[mdsOffset + k * 4 + c] = mdsCoords[k][c];
+                                    }
+                                }
+                            }
+                            
+                            const results = await runWorkerInference(worker, {
+                                msaCodonsData,
+                                msaCodonsShape: [currentBatchSize, maxSpecies, 1],
+                                msaAasData,
+                                msaAasShape: [currentBatchSize, maxSpecies, 1],
+                                distMatrixData,
+                                distMatrixShape: [currentBatchSize, maxSpecies, maxSpecies],
+                                mdsCoordsData,
+                                mdsCoordsShape: [currentBatchSize, maxSpecies, 4],
+                                paddingMaskData,
+                                paddingMaskShape: [currentBatchSize, maxSpecies],
+                                startIndex: startSite,
+                                endIndex: endSite
+                            });
+                            
+                            for (let i = 0; i < currentBatchSize; i++) {
+                                predLogLrts[startSite - 1 + i] = results.logits[i];
+                            }
+                            
+                            onBatchComplete();
+                        }
+                    })();
+                    workerBatchPromises.push(workerPromise);
+                });
+                
+                await Promise.all(workerBatchPromises);
+                
+                document.getElementById('step-onnx').querySelector('span').textContent = "Running Neural Network Inference...";
+                markStep('step-onnx', 'completed');
+                updateProgressBar(85);
+
+                // Step 6: Post-processing and stats
+                markStep('step-stats', 'active');
+                await sleep(100);
+                
+                finalResults = [];
+                
+                function calculateEntropy(states) {
+                    if (states.length === 0) return 0.0;
+                    const counts = {};
+                    states.forEach(s => {
+                        counts[s] = (counts[s] || 0) + 1;
+                    });
+                    let entropy = 0.0;
+                    const total = states.length;
+                    Object.values(counts).forEach(c => {
+                        const p = c / total;
+                        entropy -= p * Math.log2(p);
+                    });
+                    return entropy;
+                }
+                
+                for (let siteIdx = 1; siteIdx <= totalCodons; siteIdx++) {
+                    const refNucIdx = (siteIdx - 1) * 3;
+                    const refCodon = refSeq.substring(refNucIdx, refNucIdx + 3).toUpperCase();
+                    const refAa = translateCodon(refCodon);
+                    
+                    const isVar = variableSitesFlags[siteIdx - 1];
+                    let predLogLrt = 0.0;
+                    let predLrt = 0.0;
+                    
+                    if (isVar) {
+                        predLogLrt = predLogLrts[siteIdx - 1];
+                        predLrt = Math.max(0.0, Math.exp(predLogLrt) - 1.0);
+                    }
+                    
+                    // Extract non-gap codons/amino acids across selected species to calculate entropy
+                    const siteCodons = [];
+                    const siteAas = [];
+                    for (let sIdx = 0; sIdx < numSelected; sIdx++) {
+                        const spec = selectedSpecies[sIdx];
+                        const seq = seqDict[spec];
+                        const seqLenCodons = Math.floor(seq.length / 3);
+                        if (siteIdx <= seqLenCodons) {
+                            const nucIdx = (siteIdx - 1) * 3;
+                            const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                            if (!codon.includes('-') && !codon.includes('N') && !codon.includes('?') && codon.length === 3) {
+                                siteCodons.push(codon);
+                                const aa = GENETIC_CODE[codon] || '?';
+                                if (aa !== '?') {
+                                    siteAas.push(aa);
+                                }
+                            }
+                        }
+                    }
+                    
+                    const codonEntropy = calculateEntropy(siteCodons);
+                    const aaEntropy = calculateEntropy(siteAas);
+                    
+                    finalResults.push({
+                        codon_site: siteIdx,
+                        ref_codon: refCodon,
+                        ref_aa: refAa,
+                        is_variable: isVar ? 1 : 0,
+                        predicted_log_lrt: predLogLrt,
+                        predicted_lrt: predLrt,
+                        local_z_score: 0.0,
+                        local_percentile: 0.0,
+                        selection_call: "Neutral",
+                        codon_entropy: codonEntropy,
+                        aa_entropy: aaEntropy
+                    });
+                }
+                
+                // Stats for variable sites
+                const varSites = finalResults.filter(r => r.is_variable === 1);
+                if (varSites.length > 0) {
+                    const lrts = varSites.map(r => r.predicted_lrt);
+                    const meanLrt = lrts.reduce((sum, val) => sum + val, 0.0) / lrts.length;
+                    const variance = lrts.reduce((sum, val) => sum + Math.pow(val - meanLrt, 2), 0.0) / lrts.length;
+                    const stdLrt = Math.sqrt(variance);
+                    
+                    // Z-scores
+                    varSites.forEach(r => {
+                        if (stdLrt > 0) {
+                            r.local_z_score = (r.predicted_lrt - meanLrt) / stdLrt;
+                        }
+                    });
+                    
+                    // Percentiles
+                    const sortedLrts = [...lrts].sort((a, b) => a - b);
+                    varSites.forEach(r => {
+                        // Rank position
+                        const rank = sortedLrts.indexOf(r.predicted_lrt) + 1;
+                        r.local_percentile = (rank / sortedLrts.length) * 100.0;
+                        
+                        // Tier calling decision tree (Percentile thresholds OR absolute LRT gates)
+                        const t1Cond = r.local_percentile >= 98.0 || r.predicted_lrt >= 5.0;
+                        const t2Cond = r.local_percentile >= 97.0 || r.predicted_lrt >= 3.0;
+                        
+                        if (t1Cond) {
+                            r.selection_call = "Tier 1 (High)";
+                        } else if (t2Cond) {
+                            r.selection_call = "Tier 2 (Medium)";
+                        }
+                    });
+                }
+                
+                // Update Summary Cards
+                document.getElementById('sum-sites').textContent = totalCodons;
+                document.getElementById('sum-species').textContent = numSelected;
+                document.getElementById('sum-t1').textContent = finalResults.filter(r => r.selection_call === "Tier 1 (High)").length;
+                document.getElementById('sum-t2').textContent = finalResults.filter(r => r.selection_call === "Tier 2 (Medium)").length;
+                
+                // Show results container first so canvas elements have non-zero dimensions
+                resultsContainer.style.display = "flex";
+                progressCard.style.display = "none";
+                
+                // Show visualization card and reset tabs to display Sites (Manhattan plot) first
+                document.getElementById('visualization-card').style.display = "block";
+                // Render Manhattan plot and table
+                renderManhattanPlot();
+                renderTable();
+                
+                const downloadTreeBtn = document.getElementById('download-tree-btn');
+                if (estimatedTreeStr && downloadTreeBtn) {
+                    downloadTreeBtn.style.display = 'inline-flex';
+                } else if (downloadTreeBtn) {
+                    downloadTreeBtn.style.display = 'none';
+                }
+                
+                markStep('step-stats', 'completed');
+                updateProgressBar(100);
+                
+                // Scroll down to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                showToast("Inference pipeline completed successfully!", "success");
+            } catch (err) {
+                console.error("Pipeline run failed:", err);
+                showToast("Pipeline crashed: " + err.message, "error");
+                progressCard.style.display = "none";
+            } finally {
+                runBtn.removeAttribute('disabled');
+            }
+        }
+
+        async function runHyphyBranchEstimation(fastaContent, inputNewickStr) {
+            // Locates hyphy.js in the same directory (which is local relative path)
+            let hyphyFactory = window.createHyphyModule || window.Module;
+            if (!hyphyFactory) {
+                // Load script dynamically
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = getAbsoluteUrl('hyphy.js');
+                    script.onload = () => {
+                        hyphyFactory = window.createHyphyModule || window.Module;
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error("Failed to load local hyphy.js glue script"));
+                    document.head.appendChild(script);
+                });
+            }
+            
+            // Clean tree string
+            const cleanTreeStr = inputNewickStr.trim().replace(/;$/, "");
+            
+            const ModuleInstance = await hyphyFactory({
+                locateFile: (path) => getAbsoluteUrl(path), // Looks in normalized app directory
+                print: (text) => console.log(`[HyPhy WASM Stdout] ${text}`),
+                printErr: (text) => console.error(`[HyPhy WASM Stderr] ${text}`)
+            });
+            
+            const hblScript = `
+DataSet ds = ReadDataFile("/temp_align.fa");
+DataSetFilter df = CreateFilter(ds, 1);
+HarvestFrequencies(freqs, df, 1, 1, 1);
+global kappa = 1.0;
+HKY85RateMatrix = [
+    [*, kappa*t, t, kappa*t]
+    [kappa*t, *, kappa*t, t]
+    [t, kappa*t, *, kappa*t]
+    [kappa*t, t, kappa*t, *]
+];
+Model HKY85Model = (HKY85RateMatrix, freqs);
+UseModel(HKY85Model);
+Tree T = "${cleanTreeStr}";
+LikelihoodFunction lf = (df, T);
+Optimize(res, lf);
+fprintf("/output.nwk", Format(T, 1, 1));
+`;
+
+            ModuleInstance.FS.writeFile('/temp_align.fa', fastaContent);
+            ModuleInstance.FS.writeFile('/script.bf', hblScript);
+            
+            // Invoke Main
+            ModuleInstance.callMain(['/script.bf']);
+            
+            const optimizedTree = ModuleInstance.FS.readFile('/output.nwk', { encoding: 'utf8' });
+            
+            // Clean up files in virtual FS
+            ModuleInstance.FS.unlink('/temp_align.fa');
+            ModuleInstance.FS.unlink('/script.bf');
+            ModuleInstance.FS.unlink('/output.nwk');
+            
+            return optimizedTree;
+        }
+
+        function updateProgressBar(percentage) {
+            document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
+        }
+
+        function resetSteps() {
+            const steps = ['step-decompression', 'step-tree', 'step-hyphy', 'step-distances', 'step-onnx', 'step-stats'];
+            steps.forEach(id => {
+                const el = document.getElementById(id);
+                el.className = "progress-step";
+                el.querySelector('i').className = "fa-regular fa-circle";
+            });
+        }
+
+        function markStep(id, status) {
+            const el = document.getElementById(id);
+            el.className = `progress-step ${status}`;
+            const icon = el.querySelector('i');
+            if (status === 'active') {
+                icon.className = "fa-solid fa-circle-notch fa-spin";
+            } else if (status === 'completed') {
+                icon.className = "fa-solid fa-circle-check";
+            } else {
+                icon.className = "fa-regular fa-circle";
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // =====================================================================
+        // 6. MANHATTAN PLOT RENDER (PURE HTML5 CANVAS)
+        // =====================================================================
+        let plotPoints = []; // Holds canvas coords for interactive tooltips
+        
+        function renderManhattanPlot() {
+            const canvas = document.getElementById('manhattan-canvas');
+            const container = document.getElementById('canvas-container');
+            const tooltip = document.getElementById('chart-tooltip');
+            
+            // Make responsive
+            const dpr = window.devicePixelRatio || 1;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            // Drawing bounds
+            const paddingLeft = 70;
+            const paddingRight = 65;
+            const paddingTop = 30;
+            const paddingBottom = 40;
+            
+            const graphWidth = width - paddingLeft - paddingRight;
+            const graphHeight = height - paddingTop - paddingBottom;
+            
+            // Clear canvas
+            ctx.fillStyle = "#fafafa";
+            ctx.fillRect(0, 0, width, height);
+            
+            // Compute scale factors
+            const maxSite = finalResults.length;
+            const maxLrt = Math.max(0.2, ...finalResults.map(r => r.predicted_lrt)) * 1.15;
+            
+            // Draw grid lines and axes
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.lineWidth = 1;
+            
+            // Horizontal grid & Y axis ticks
+            const yTicks = 5;
+            ctx.fillStyle = "#475569";
+            ctx.font = "10px 'Share Tech Mono', monospace";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+            
+            for (let i = 0; i <= yTicks; i++) {
+                const lrtVal = (maxLrt / yTicks) * i;
+                const y = paddingTop + graphHeight - (graphHeight / yTicks) * i;
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, y);
+                ctx.lineTo(paddingLeft + graphWidth, y);
+                ctx.stroke();
+                
+                ctx.fillText(lrtVal.toFixed(3), paddingLeft - 8, y);
+            }
+            
+            // Vertical grid & X axis ticks
+            const xTicks = Math.min(10, maxSite);
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            
+            for (let i = 0; i < xTicks; i++) {
+                const siteVal = Math.floor((maxSite / (xTicks - 1)) * i) || 1;
+                const x = paddingLeft + (graphWidth / (maxSite - 1)) * (siteVal - 1);
+                
+                ctx.beginPath();
+                ctx.moveTo(x, paddingTop);
+                ctx.lineTo(x, paddingTop + graphHeight);
+                ctx.stroke();
+                
+                ctx.fillText(siteVal, x, paddingTop + graphHeight + 6);
+            }
+            
+            // Label Axes
+            ctx.save();
+            ctx.translate(18, paddingTop + graphHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#475569";
+            ctx.font = "11px 'Share Tech Mono', monospace";
+            ctx.fillText("Predicted Selection Strength (LRT)", 0, 0);
+            ctx.restore();
+            
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#475569";
+            ctx.fillText("Codon Site Position", paddingLeft + graphWidth / 2, paddingTop + graphHeight + 22);
+
+            // Draw Right Axis (Entropy in bits)
+            const paddingRightAxis = paddingLeft + graphWidth;
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillStyle = "#64748b";
+            ctx.font = "9px 'Share Tech Mono', monospace";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            
+            const maxEntropy = 6.0;
+            const entropyTicks = 6;
+            for (let i = 0; i <= entropyTicks; i++) {
+                const entVal = i;
+                const y = paddingTop + graphHeight - (graphHeight / maxEntropy) * i;
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingRightAxis, y);
+                ctx.lineTo(paddingRightAxis + 5, y);
+                ctx.stroke();
+                
+                ctx.fillText(entVal.toFixed(1), paddingRightAxis + 8, y);
+            }
+            
+            ctx.save();
+            ctx.translate(width - 18, paddingTop + graphHeight / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#64748b";
+            ctx.font = "11px 'Share Tech Mono', monospace";
+            ctx.fillText("Entropy (bits)", 0, 0);
+            ctx.restore();
+
+            // Draw Codon-level Entropy Area & Line (Semi-transparent purple)
+            if (finalResults.length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, paddingTop + graphHeight);
+                finalResults.forEach(r => {
+                    const x = paddingLeft + (graphWidth / (maxSite - 1)) * (r.codon_site - 1);
+                    const y = paddingTop + graphHeight - (r.codon_entropy / maxEntropy) * graphHeight;
+                    ctx.lineTo(x, y);
+                });
+                ctx.lineTo(paddingLeft + graphWidth, paddingTop + graphHeight);
+                ctx.closePath();
+                ctx.fillStyle = "rgba(139, 92, 246, 0.06)";
+                ctx.fill();
+                
+                ctx.beginPath();
+                finalResults.forEach((r, idx) => {
+                    const x = paddingLeft + (graphWidth / (maxSite - 1)) * (r.codon_site - 1);
+                    const y = paddingTop + graphHeight - (r.codon_entropy / maxEntropy) * graphHeight;
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = "rgba(139, 92, 246, 0.35)";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Draw AA-level Entropy Area & Line (Semi-transparent green)
+            if (finalResults.length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, paddingTop + graphHeight);
+                finalResults.forEach(r => {
+                    const x = paddingLeft + (graphWidth / (maxSite - 1)) * (r.codon_site - 1);
+                    const y = paddingTop + graphHeight - (r.aa_entropy / maxEntropy) * graphHeight;
+                    ctx.lineTo(x, y);
+                });
+                ctx.lineTo(paddingLeft + graphWidth, paddingTop + graphHeight);
+                ctx.closePath();
+                ctx.fillStyle = "rgba(16, 185, 129, 0.06)";
+                ctx.fill();
+                
+                ctx.beginPath();
+                finalResults.forEach((r, idx) => {
+                    const x = paddingLeft + (graphWidth / (maxSite - 1)) * (r.codon_site - 1);
+                    const y = paddingTop + graphHeight - (r.aa_entropy / maxEntropy) * graphHeight;
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = "rgba(16, 185, 129, 0.35)";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Draw Threshold Lines (Tier 1 & Tier 2)
+            const varLrts = finalResults.filter(r => r.is_variable === 1).map(r => r.predicted_lrt).sort((a, b) => a - b);
+            
+            let t1Threshold = null;
+            let t2Threshold = null;
+            
+            if (varLrts.length > 0) {
+                const t1Idx = Math.floor(varLrts.length * 0.98);
+                const t2Idx = Math.floor(varLrts.length * 0.97);
+                if (t1Idx < varLrts.length) {
+                    t1Threshold = Math.min(varLrts[t1Idx], 5.0);
+                } else {
+                    t1Threshold = 5.0;
+                }
+                if (t2Idx < varLrts.length) {
+                    t2Threshold = Math.min(varLrts[t2Idx], 3.0);
+                } else {
+                    t2Threshold = 3.0;
+                }
+            }
+            
+            let yT1 = null;
+            if (t1Threshold !== null) {
+                yT1 = paddingTop + graphHeight - (t1Threshold / maxLrt) * graphHeight;
+                ctx.strokeStyle = "rgba(236, 72, 153, 0.5)";
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yT1);
+                ctx.lineTo(paddingLeft + graphWidth, yT1);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = "rgba(236, 72, 153, 0.9)";
+                ctx.font = "9px 'Share Tech Mono', monospace";
+                ctx.textAlign = "left";
+                ctx.textBaseline = "bottom";
+                ctx.fillText("Tier 1 (98% or LRT ≥ 5.0)", paddingLeft + 5, yT1 - 2);
+            }
+
+            if (t2Threshold !== null) {
+                const yT2 = paddingTop + graphHeight - (t2Threshold / maxLrt) * graphHeight;
+                ctx.strokeStyle = "rgba(249, 115, 22, 0.5)";
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yT2);
+                ctx.lineTo(paddingLeft + graphWidth, yT2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = "rgba(249, 115, 22, 0.9)";
+                ctx.font = "9px 'Share Tech Mono', monospace";
+                ctx.textAlign = "left";
+                
+                // Adjust label position dynamically to prevent overlaps
+                if (yT1 !== null && Math.abs(yT2 - yT1) < 14) {
+                    ctx.textBaseline = "top";
+                    ctx.fillText("Tier 2 (97% or LRT ≥ 3.0)", paddingLeft + 5, yT2 + 2); // Shift below the line
+                } else {
+                    ctx.textBaseline = "bottom";
+                    ctx.fillText("Tier 2 (97% or LRT ≥ 3.0)", paddingLeft + 5, yT2 - 2); // Standard position above the line
+                }
+            }
+            
+            // Plot site points
+            plotPoints = [];
+            finalResults.forEach(r => {
+                const x = paddingLeft + (graphWidth / (maxSite - 1)) * (r.codon_site - 1);
+                const y = paddingTop + graphHeight - (r.predicted_lrt / maxLrt) * graphHeight;
+                
+                let color = "rgba(37, 99, 235, 0.15)"; // Neutral invariable default (royal blue theme with high contrast)
+                let radius = 2.5;
+                
+                if (r.selection_call === "Tier 1 (High)") {
+                    color = "#db2777";
+                    radius = r.codon_site.toString().length > 2 ? 9.5 : 7.5;
+                } else if (r.selection_call === "Tier 2 (Medium)") {
+                    color = "#ea580c";
+                    radius = 4.5;
+                } else if (r.is_variable === 1) {
+                    color = "rgba(37, 99, 235, 0.75)"; // Neutral variable (royal blue with high visibility)
+                    radius = 3;
+                }
+                
+                // Draw shadow/glow for Tier 1
+                if (r.selection_call === "Tier 1 (High)") {
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius + 3, 0, 2 * Math.PI);
+                    ctx.fillStyle = "rgba(219, 39, 119, 0.25)";
+                    ctx.fill();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                
+                // Draw site label inside the solid Tier 1 point for legibility
+                if (r.selection_call === "Tier 1 (High)") {
+                    ctx.save();
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 8px 'Share Tech Mono', monospace";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(r.codon_site, x, y);
+                    ctx.restore();
+                }
+                
+                // Save coordinates for hover interactions
+                plotPoints.push({ x, y, data: r });
+            });
+            
+            // Setup hover tooltip and click handlers
+            canvas.onmousemove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // Find closest point within threshold (12px range)
+                let closest = null;
+                let minDist = 12;
+                
+                plotPoints.forEach(p => {
+                    const dist = Math.hypot(p.x - mouseX, p.y - mouseY);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = p;
+                    }
+                });
+                
+                if (closest) {
+                    canvas.style.cursor = 'pointer';
+                    const d = closest.data;
+                    tooltip.innerHTML = `
+                        <div class="custom-tooltip-row">
+                            <span class="custom-tooltip-label">Codon Site:</span>
+                            <span class="custom-tooltip-value" style="color: var(--accent-cyan); font-weight:700;">${d.codon_site}</span>
+                        </div>
+                        <div class="custom-tooltip-row">
+                            <span class="custom-tooltip-label">Ref Translation:</span>
+                            <span class="custom-tooltip-value">${d.ref_codon} (${d.ref_aa})</span>
+                        </div>
+                        <div class="custom-tooltip-row">
+                            <span class="custom-tooltip-label">Predicted LRT:</span>
+                            <span class="custom-tooltip-value">${d.predicted_lrt.toFixed(5)}</span>
+                        </div>
+                        <div class="custom-tooltip-row">
+                            <span class="custom-tooltip-label">Z-Score / Percentile:</span>
+                            <span class="custom-tooltip-value">${d.local_z_score.toFixed(2)} / ${d.local_percentile.toFixed(1)}%</span>
+                        </div>
+                        <div class="custom-tooltip-row">
+                            <span class="custom-tooltip-label">Codon / AA Entropy:</span>
+                            <span class="custom-tooltip-value">${d.codon_entropy.toFixed(3)} / ${d.aa_entropy.toFixed(3)} bits</span>
+                        </div>
+                        <div class="custom-tooltip-row" style="margin-top:0.4rem; border-top:1px solid rgba(0,0,0,0.06); padding-top:0.3rem;">
+                            <span class="custom-tooltip-label">Call:</span>
+                            <span class="custom-tooltip-value badge ${d.selection_call.startsWith('Tier 1') ? 'badge-t1' : (d.selection_call.startsWith('Tier 2') ? 'badge-t2' : 'badge-neutral')}">${d.selection_call}</span>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-slate); text-align: center; margin-top: 0.3rem; font-style: italic; border-top: 1px dotted rgba(0,0,0,0.1); padding-top: 0.2rem; opacity: 0.85;">
+                            Click to view site tree
+                        </div>
+                    `;
+                    
+                    // Display it first to measure dimensions correctly
+                    tooltip.style.display = "block";
+                    
+                    const tooltipWidth = tooltip.offsetWidth;
+                    const tooltipHeight = tooltip.offsetHeight;
+                    const containerWidth = container.clientWidth;
+                    const containerHeight = container.clientHeight;
+                    
+                    let leftPos = closest.x + 15;
+                    // If running off the right side of the container, shift it to the left of the point
+                    if (leftPos + tooltipWidth > containerWidth - 10) {
+                        leftPos = closest.x - tooltipWidth - 15;
+                    }
+                    // Prevent running off the left edge
+                    if (leftPos < 10) {
+                        leftPos = 10;
+                    }
+                    
+                    let topPos = closest.y - 10;
+                    // Prevent running off the bottom edge
+                    if (topPos + tooltipHeight > containerHeight - 10) {
+                        topPos = containerHeight - tooltipHeight - 10;
+                    }
+                    // Prevent running off the top edge
+                    if (topPos < 10) {
+                        topPos = 10;
+                    }
+                    
+                    tooltip.style.left = `${leftPos}px`;
+                    tooltip.style.top = `${topPos}px`;
+                } else {
+                    canvas.style.cursor = 'default';
+                    tooltip.style.display = "none";
+                }
+            };
+            
+            canvas.onclick = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                let closest = null;
+                let minDist = 12;
+                
+                plotPoints.forEach(p => {
+                    const dist = Math.hypot(p.x - mouseX, p.y - mouseY);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = p;
+                    }
+                });
+                
+                if (closest) {
+                    openTreePopup(closest.data.codon_site);
+                }
+            };
+            
+            canvas.onmouseleave = () => {
+                canvas.style.cursor = 'default';
+                tooltip.style.display = "none";
+            };
+        }
+
+        // =====================================================================
+        // 7. INTERACTIVE TABLE COMPONENT
+        // =====================================================================
+        function setupTableListeners() {
+            const headers = ['th-site', 'th-codon', 'th-aa', 'th-variable', 'th-log-lrt', 'th-lrt', 'th-zscore', 'th-percentile', 'th-call'];
+            headers.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('click', () => {
+                    const col = el.getAttribute('data-column');
+                    if (resultsSortColumn === col) {
+                        resultsSortAscending = !resultsSortAscending;
+                    } else {
+                        resultsSortColumn = col;
+                        resultsSortAscending = true;
+                    }
+                    
+                    // Update arrows
+                    headers.forEach(hId => {
+                        const hEl = document.getElementById(hId);
+                        const hCol = hEl.getAttribute('data-column');
+                        const icon = hEl.querySelector('i');
+                        if (hCol === resultsSortColumn) {
+                            hEl.classList.add('sort-active');
+                            icon.className = resultsSortAscending ? "fa-solid fa-sort-up" : "fa-solid fa-sort-down";
+                        } else {
+                            hEl.classList.remove('sort-active');
+                            icon.className = "fa-solid fa-sort";
+                        }
+                    });
+                    
+                    renderTable();
+                });
+            });
+
+            // Pagination Buttons
+            document.getElementById('page-prev-btn').addEventListener('click', () => {
+                if (resultsCurrentPage > 1) {
+                    resultsCurrentPage--;
+                    renderTable();
+                }
+            });
+            document.getElementById('page-next-btn').addEventListener('click', () => {
+                const totalPages = Math.ceil(getFilteredData().length / resultsPageSize);
+                if (resultsCurrentPage < totalPages) {
+                    resultsCurrentPage++;
+                    renderTable();
+                }
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                resultsSearchQuery = e.target.value.toLowerCase().trim();
+                resultsCurrentPage = 1;
+                renderTable();
+            });
+        }
+
+        function setupHelpBadges() {
+            document.querySelectorAll('.help-badge').forEach(badge => {
+                badge.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const targetId = badge.getAttribute('data-help-target');
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.classList.toggle('show');
+                    }
+                });
+            });
+        }
+
+        function setupMethodologyModal() {
+            const modal = document.getElementById('methodology-modal');
+            const link = document.getElementById('methodology-link');
+            const closeBtn = document.getElementById('modal-close-btn');
+            
+            const tabArchBtn = document.getElementById('tab-arch-btn');
+            const tabTrainBtn = document.getElementById('tab-train-btn');
+            const tabArchContent = document.getElementById('tab-arch-content');
+            const tabTrainContent = document.getElementById('tab-train-content');
+            
+            if (link && modal) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.classList.add('show'), 10);
+                });
+            }
+            
+            function closeModal() {
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.style.display = 'none', 200);
+                }
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+            
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+            
+            // Tab switching
+            if (tabArchBtn && tabTrainBtn) {
+                tabArchBtn.addEventListener('click', () => {
+                    tabArchBtn.classList.add('active');
+                    tabTrainBtn.classList.remove('active');
+                    tabArchContent.classList.add('active');
+                    tabTrainContent.classList.remove('active');
+                });
+                
+                tabTrainBtn.addEventListener('click', () => {
+                    tabTrainBtn.classList.add('active');
+                    tabArchBtn.classList.remove('active');
+                    tabTrainContent.classList.add('active');
+                    tabArchContent.classList.remove('active');
+                });
+            }
+        }
+
+        // =====================================================================
+        // 7. SITE-SPECIFIC TREE POPUP & PARSIMONY
+        // =====================================================================
+        function openTreePopup(siteIdx) {
+            if (!estimatedTreeStr) {
+                showToast("No phylogenetic tree available for this dataset.", "warning");
+                return;
+            }
+            
+            currentPopupSiteIdx = siteIdx;
+            
+            // 1. Set display to flex first so layout calculations have non-zero dimensions
+            updatePopupTogglesUI();
+            
+            // 2. Render the tree
+            updatePopupTree();
+            
+            // 3. Trigger transition by adding show class
+            const modal = document.getElementById('tree-popup-modal');
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function updatePopupTree() {
+            const container = document.getElementById('popup-tree-svg-container');
+            container.innerHTML = '';
+            
+            const width = container.clientWidth || 800;
+            const height = 550;
+            
+            try {
+                // Instantiate a new phylotree from the estimated tree Newick string
+                const treeInstance = new (phylotree.phylotree || phylotree)(estimatedTreeStr);
+                popupPhylotreeInstance = treeInstance;
+                
+                // Run parsimony reconstruction on the tree instance
+                let substCount = 0;
+                
+                // Bottom-up pass
+                treeInstance.nodes.eachAfter(d => {
+                    const isLeaf = !d.children || d.children.length === 0;
+                    if (isLeaf) {
+                        const specName = d.data.name;
+                        const seq = parsedAlignment.seqDict[specName];
+                        let state = '?';
+                        if (seq) {
+                            const seqLenCodons = Math.floor(seq.length / 3);
+                            if (currentPopupSiteIdx <= seqLenCodons) {
+                                const nucIdx = (currentPopupSiteIdx - 1) * 3;
+                                const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                                if (currentPopupLabelType === 'codon') {
+                                    state = codon;
+                                } else {
+                                    state = GENETIC_CODE[codon] || '?';
+                                }
+                            }
+                        }
+                        d.stateSet = new Set([state]);
+                        d.leafState = state;
+                    } else {
+                        let intersection = new Set(d.children[0].stateSet);
+                        for (let i = 1; i < d.children.length; i++) {
+                            let nextSet = d.children[i].stateSet;
+                            let newIntersection = new Set();
+                            for (let item of intersection) {
+                                if (nextSet.has(item)) {
+                                    newIntersection.add(item);
+                                }
+                            }
+                            intersection = newIntersection;
+                        }
+                        
+                        if (intersection.size > 0) {
+                            d.stateSet = intersection;
+                        } else {
+                            let union = new Set();
+                            d.children.forEach(child => {
+                                child.stateSet.forEach(item => union.add(item));
+                            });
+                            d.stateSet = union;
+                        }
+                    }
+                });
+                
+                // Top-down pass
+                treeInstance.nodes.eachBefore(d => {
+                    if (!d.parent) {
+                        let rootStates = Array.from(d.stateSet);
+                        let nonGapStates = rootStates.filter(s => s !== '?');
+                        d.state = nonGapStates.length > 0 ? nonGapStates[0] : rootStates[0];
+                    } else {
+                        const parentState = d.parent.state;
+                        if (d.stateSet.has(parentState)) {
+                            d.state = parentState;
+                        } else {
+                            let states = Array.from(d.stateSet);
+                            let nonGapStates = states.filter(s => s !== '?');
+                            d.state = nonGapStates.length > 0 ? nonGapStates[0] : states[0];
+                        }
+                        
+                        // If parsimony state changes along branch, count as a substitution
+                        if (d.state !== parentState && d.state !== '?' && parentState !== '?') {
+                            substCount++;
+                        }
+                    }
+                });
+                
+                // Update header details
+                document.getElementById('tree-popup-site-idx').textContent = currentPopupSiteIdx;
+                
+                // Show the reference codon and AA
+                const refResult = finalResults.find(r => r.codon_site === currentPopupSiteIdx);
+                if (refResult) {
+                    document.getElementById('tree-popup-ref-state').textContent = `${refResult.ref_codon} (${refResult.ref_aa})`;
+                } else {
+                    document.getElementById('tree-popup-ref-state').textContent = '-';
+                }
+                
+                document.getElementById('tree-popup-subst-count').textContent = substCount;
+                
+                // Calculate AA composition dynamically at the leaves of the tree
+                const aaCounts = {};
+                let totalCount = 0;
+                treeInstance.nodes.eachAfter(node => {
+                    const isLeaf = !node.children || node.children.length === 0;
+                    if (isLeaf) {
+                        const specName = node.data.name;
+                        const seq = parsedAlignment.seqDict[specName];
+                        if (seq) {
+                            const seqLenCodons = Math.floor(seq.length / 3);
+                            if (currentPopupSiteIdx <= seqLenCodons) {
+                                const nucIdx = (currentPopupSiteIdx - 1) * 3;
+                                const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                                const aa = GENETIC_CODE[codon] || '?';
+                                aaCounts[aa] = (aaCounts[aa] || 0) + 1;
+                                totalCount++;
+                            }
+                        }
+                    }
+                });
+
+                // Sort AA by count (descending)
+                const sortedAas = Object.entries(aaCounts).sort((a, b) => b[1] - a[1]);
+
+                // Colors map for different AAs
+                const aaColors = {
+                    'A': '#10b981', 'R': '#3b82f6', 'N': '#8b5cf6', 'D': '#ec4899', 'C': '#f59e0b',
+                    'E': '#ef4444', 'Q': '#14b8a6', 'G': '#64748b', 'H': '#a855f7', 'I': '#06b6d4',
+                    'L': '#3b82f6', 'K': '#d946ef', 'M': '#06b6d4', 'F': '#6366f1', 'P': '#f43f5e',
+                    'S': '#f59e0b', 'T': '#10b981', 'W': '#8b5cf6', 'Y': '#6366f1', 'V': '#14b8a6',
+                    '*': '#ef4444', '?': '#94a3b8'
+                };
+
+                // Build the composition bar HTML
+                let barHtml = `<div style="display: flex; height: 8px; width: 100%; max-width: 400px; border-radius: 9999px; overflow: hidden; background: #e2e8f0; margin-top: 0.2rem; margin-bottom: 0.35rem;">`;
+                let legendHtml = `<div style="display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; font-size: 0.75rem; color: var(--text-slate); margin-top: 0.1rem;">`;
+
+                sortedAas.forEach(([aa, count]) => {
+                    const pct = totalCount > 0 ? (count / totalCount) * 100 : 0;
+                    const color = aaColors[aa] || '#64748b';
+                    barHtml += `<div style="width: ${pct}%; background-color: ${color};" title="${aa}: ${count} (${pct.toFixed(1)}%)"></div>`;
+                    legendHtml += `
+                        <div style="display: flex; align-items: center; gap: 0.2rem;">
+                            <div style="width: 7px; height: 7px; border-radius: 50%; background-color: ${color};"></div>
+                            <strong style="color: var(--text-rich); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${aa}</strong> <span style="opacity: 0.85;">(${pct.toFixed(0)}%)</span>
+                        </div>
+                    `;
+                });
+
+                barHtml += `</div>`;
+                legendHtml += `</div>`;
+
+                const compositionContainer = document.getElementById('tree-popup-aa-composition');
+                if (compositionContainer) {
+                    compositionContainer.innerHTML = `
+                        <div style="display: flex; flex-direction: column; width: 100%; gap: 0.1rem; margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px dotted var(--border-color);">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.05em;">Amino Acid Composition at Site</span>
+                            ${barHtml}
+                            ${legendHtml}
+                        </div>
+                    `;
+                }
+                
+                // Render the tree display
+                const display = treeInstance.render({
+                    container: "#popup-tree-svg-container",
+                    width: width,
+                    height: height,
+                    "is-radial": currentPopupLayout === "radial",
+                    "align-tips": currentPopupAlignTips,
+                    zoom: true,
+                    "show-scale": true,
+                    "draw-size-to-node": false,
+                    transitions: false
+                });
+                
+                // Apply custom label formatter showing Species (State)
+                display.nodeLabel(node => {
+                    const isLeaf = !node.children || node.children.length === 0;
+                    if (isLeaf) {
+                        return `${node.data.name} (${node.leafState || '?'})`;
+                    }
+                    return "";
+                });
+                
+                // Highlight branches with substitutions
+                display.style_edges((element, edge) => {
+                    const parentNode = edge.source;
+                    const childNode = edge.target;
+                    if (parentNode.state && childNode.state && parentNode.state !== childNode.state && parentNode.state !== '?' && childNode.state !== '?') {
+                        element.style("stroke", "var(--accent-pink)")
+                               .style("stroke-width", "3px");
+                    } else {
+                        element.style("stroke", "var(--text-slate)")
+                               .style("stroke-width", "1.5px");
+                    }
+                });
+                
+                // Style node circles: color them by state
+                display.style_nodes((element, node) => {
+                    const isLeaf = !node.children || node.children.length === 0;
+                    if (isLeaf) {
+                        element.select("circle")
+                               .style("fill", "var(--brand-royal)")
+                               .style("r", "4px");
+                    } else {
+                        // Internal nodes: if a substitution happened, show a small circle
+                        if (node.parent && node.state !== node.parent.state && node.state !== '?' && node.parent.state !== '?') {
+                            element.select("circle")
+                                   .style("display", "inline")
+                                   .style("fill", "var(--accent-pink)")
+                                   .style("r", "5px");
+                        } else {
+                            element.select("circle")
+                                   .style("display", "none");
+                        }
+                    }
+                });
+                
+                if (display && typeof display.show === "function") {
+                    container.appendChild(display.show());
+                }
+                
+                // Directly style SVG elements in the DOM to bypass phylotree.js v2 render-update bugs
+                d3.selectAll("#popup-tree-svg-container path.branch").each(function(d) {
+                    const edge = d;
+                    if (!edge || !edge.source || !edge.target) return;
+                    const parentNode = edge.source;
+                    const childNode = edge.target;
+                    const element = d3.select(this);
+                    
+                    if (parentNode.state && childNode.state && parentNode.state !== childNode.state && parentNode.state !== '?' && childNode.state !== '?') {
+                        element.style("stroke", "var(--accent-pink)")
+                               .style("stroke-width", "3.5px");
+                    } else {
+                        element.style("stroke", "var(--text-slate)")
+                               .style("stroke-width", "1.5px");
+                    }
+                });
+                
+                d3.selectAll("#popup-tree-svg-container g.node").each(function(d) {
+                    const node = d;
+                    if (!node) return;
+                    const isLeaf = !node.children || node.children.length === 0;
+                    const element = d3.select(this);
+                    
+                    if (isLeaf) {
+                        element.select("circle")
+                               .style("fill", "var(--brand-royal)")
+                               .style("stroke", "#ffffff")
+                               .style("stroke-width", "1px")
+                               .style("r", "4px");
+                    } else {
+                        // Internal nodes: if a substitution happened, show a small circle
+                        if (node.parent && node.state !== node.parent.state && node.state !== '?' && node.parent.state !== '?') {
+                            element.select("circle")
+                                   .style("display", "inline")
+                                   .style("fill", "var(--accent-pink)")
+                                   .style("stroke", "#ffffff")
+                                   .style("stroke-width", "1px")
+                                   .style("r", "5px");
+                        } else {
+                            element.select("circle")
+                                   .style("display", "none");
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Popup tree render failed:", err);
+                container.innerHTML = `<div style="color: var(--accent-pink); padding: 2rem; text-align: center;">Error rendering tree: ${err.message}</div>`;
+            }
+        }
+
+        function setupPopupTreeModal() {
+            const modal = document.getElementById('tree-popup-modal');
+            const closeBtn = document.getElementById('tree-popup-close-btn');
+            
+            if (closeBtn && modal) {
+                closeBtn.addEventListener('click', () => {
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.style.display = 'none', 200);
+                });
+                
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        setTimeout(() => modal.style.display = 'none', 200);
+                    }
+                });
+            }
+            
+            // Toggle for Label Types
+            const labelCodonBtn = document.getElementById('popup-label-codon-btn');
+            const labelAaBtn = document.getElementById('popup-label-aa-btn');
+            
+            if (labelCodonBtn && labelAaBtn) {
+                labelCodonBtn.addEventListener('click', () => {
+                    if (currentPopupLabelType === 'codon') return;
+                    currentPopupLabelType = 'codon';
+                    labelCodonBtn.classList.add('active');
+                    labelAaBtn.classList.remove('active');
+                    updatePopupTree();
+                });
+                
+                labelAaBtn.addEventListener('click', () => {
+                    if (currentPopupLabelType === 'aa') return;
+                    currentPopupLabelType = 'aa';
+                    labelAaBtn.classList.add('active');
+                    labelCodonBtn.classList.remove('active');
+                    updatePopupTree();
+                });
+            }
+            
+            // Layout toggles
+            const layoutLinearBtn = document.getElementById('popup-layout-linear-btn');
+            const layoutRadialBtn = document.getElementById('popup-layout-radial-btn');
+            const alignTipsBtn = document.getElementById('popup-align-tips-btn');
+            
+            if (layoutLinearBtn) {
+                layoutLinearBtn.addEventListener('click', () => {
+                    if (currentPopupLayout === 'linear') return;
+                    currentPopupLayout = 'linear';
+                    layoutLinearBtn.classList.add('active');
+                    layoutRadialBtn.classList.remove('active');
+                    updatePopupTree();
+                });
+            }
+            
+            if (layoutRadialBtn) {
+                layoutRadialBtn.addEventListener('click', () => {
+                    if (currentPopupLayout === 'radial') return;
+                    currentPopupLayout = 'radial';
+                    layoutRadialBtn.classList.add('active');
+                    layoutLinearBtn.classList.remove('active');
+                    updatePopupTree();
+                });
+            }
+            
+            if (alignTipsBtn) {
+                alignTipsBtn.addEventListener('click', () => {
+                    currentPopupAlignTips = !currentPopupAlignTips;
+                    if (currentPopupAlignTips) {
+                        alignTipsBtn.classList.add('active');
+                    } else {
+                        alignTipsBtn.classList.remove('active');
+                    }
+                    updatePopupTree();
+                });
+            }
+        }
+        
+        function updatePopupTogglesUI() {
+            const labelCodonBtn = document.getElementById('popup-label-codon-btn');
+            const labelAaBtn = document.getElementById('popup-label-aa-btn');
+            const layoutLinearBtn = document.getElementById('popup-layout-linear-btn');
+            const layoutRadialBtn = document.getElementById('popup-layout-radial-btn');
+            const alignTipsBtn = document.getElementById('popup-align-tips-btn');
+            
+            if (labelCodonBtn && labelAaBtn) {
+                if (currentPopupLabelType === 'codon') {
+                    labelCodonBtn.classList.add('active');
+                    labelAaBtn.classList.remove('active');
+                } else {
+                    labelAaBtn.classList.add('active');
+                    labelCodonBtn.classList.remove('active');
+                }
+            }
+            
+            if (layoutLinearBtn && layoutRadialBtn) {
+                if (currentPopupLayout === 'linear') {
+                    layoutLinearBtn.classList.add('active');
+                    layoutRadialBtn.classList.remove('active');
+                } else {
+                    layoutRadialBtn.classList.add('active');
+                    layoutLinearBtn.classList.remove('active');
+                }
+            }
+            
+            if (alignTipsBtn) {
+                if (currentPopupAlignTips) {
+                    alignTipsBtn.classList.add('active');
+                } else {
+                    alignTipsBtn.classList.remove('active');
+                }
+            }
+            
+            const modal = document.getElementById('tree-popup-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function getFilteredData() {
+            let data = [...finalResults];
+            
+            // Apply Search
+            if (resultsSearchQuery) {
+                data = data.filter(r => {
+                    return r.codon_site.toString().includes(resultsSearchQuery) || 
+                           r.ref_codon.toLowerCase().includes(resultsSearchQuery) || 
+                           r.ref_aa.toLowerCase().includes(resultsSearchQuery) ||
+                           r.selection_call.toLowerCase().includes(resultsSearchQuery);
+                });
+            }
+            
+            // Apply Sort
+            data.sort((a, b) => {
+                let valA = a[resultsSortColumn];
+                let valB = b[resultsSortColumn];
+                
+                // Handle String sort case insensitivity
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                
+                if (valA < valB) return resultsSortAscending ? -1 : 1;
+                if (valA > valB) return resultsSortAscending ? 1 : -1;
+                return 0;
+            });
+            
+            return data;
+        }
+
+        function renderTable() {
+            const filtered = getFilteredData();
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / resultsPageSize) || 1;
+            
+            if (resultsCurrentPage > totalPages) resultsCurrentPage = totalPages;
+            
+            const startIdx = (resultsCurrentPage - 1) * resultsPageSize;
+            const endIdx = Math.min(startIdx + resultsPageSize, totalItems);
+            
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "";
+            
+            if (totalItems === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching entries found</td></tr>`;
+                document.getElementById('pagination-info').textContent = "Showing 0 to 0 of 0 entries";
+                document.getElementById('page-prev-btn').setAttribute('disabled', 'true');
+                document.getElementById('page-next-btn').setAttribute('disabled', 'true');
+                return;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            pageData.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = "pointer";
+                tr.title = `Click to view site-specific phylogenetic tree for site ${r.codon_site}`;
+                tr.addEventListener('click', () => {
+                    openTreePopup(r.codon_site);
+                });
+                
+                let callBadge = "badge-neutral";
+                if (r.selection_call === "Tier 1 (High)") callBadge = "badge-t1";
+                if (r.selection_call === "Tier 2 (Medium)") callBadge = "badge-t2";
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">${r.codon_site}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace;">${r.ref_codon}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 500;">${r.ref_aa}</td>
+                    <td>${r.is_variable ? '<span style="color: var(--accent-green);"><i class="fa-solid fa-check"></i></span>' : '<span style="color: var(--text-muted); opacity: 0.3;">-</span>'}</td>
+                    <td>${r.predicted_log_lrt.toFixed(4)}</td>
+                    <td style="font-weight: 500;">${r.predicted_lrt.toFixed(4)}</td>
+                    <td>${r.local_z_score.toFixed(3)}</td>
+                    <td>${r.local_percentile.toFixed(2)}%</td>
+                    <td><span class="badge ${callBadge}">${r.selection_call}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Pagination info
+            document.getElementById('pagination-info').textContent = `Showing ${startIdx + 1} to ${endIdx} of ${totalItems} entries`;
+            
+            // Buttons state
+            const prevBtn = document.getElementById('page-prev-btn');
+            const nextBtn = document.getElementById('page-next-btn');
+            
+            if (resultsCurrentPage === 1) {
+                prevBtn.setAttribute('disabled', 'true');
+            } else {
+                prevBtn.removeAttribute('disabled');
+            }
+            
+            if (resultsCurrentPage === totalPages) {
+                nextBtn.setAttribute('disabled', 'true');
+            } else {
+                nextBtn.removeAttribute('disabled');
+            }
+        }
+
+        // =====================================================================
+        // 8. DATA EXPORTS
+        // =====================================================================
+        function setupDownloadCSV() {
+            document.getElementById('download-csv-btn').addEventListener('click', () => {
+                if (finalResults.length === 0) return;
+                
+                const headers = ["codon_site", "ref_codon", "ref_aa", "is_variable", "predicted_log_lrt", "predicted_lrt", "local_z_score", "local_percentile", "selection_call"];
+                let csvContent = headers.join(",") + "\n";
+                
+                finalResults.forEach(r => {
+                    const row = headers.map(h => r[h]);
+                    csvContent += row.join(",") + "\n";
+                });
+                
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                
+                const prefix = alignmentFilename ? alignmentFilename.replace(/(\.nex|\.nexus)(\.gz)?$/, '') : 'selection';
+                a.href = url;
+                a.setAttribute("download", `${prefix}_predictions.csv`);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast("CSV predictions downloaded successfully.", "success");
+            });
+        }
+
+        function setupDownloadTree() {
+            document.getElementById('download-tree-btn').addEventListener('click', () => {
+                if (!estimatedTreeStr) return;
+                
+                const blob = new Blob([estimatedTreeStr], { type: "text/plain;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                
+                const prefix = alignmentFilename ? alignmentFilename.replace(/(\.nex|\.nexus)(\.gz)?$/, '') : 'selection';
+                a.href = url;
+                a.setAttribute("download", `${prefix}_estimated_tree.nwk`);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast("Estimated Newick tree downloaded successfully.", "success");
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+hyphy.js
+hyphy.wasm
+hyphy.data
+*.bak
+.DS_Store
