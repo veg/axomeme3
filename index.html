@@ -1248,8 +1248,8 @@
                         <thead>
                             <tr>
                                 <th id="th-site" data-column="codon_site">Codon Site <i class="fa-solid fa-sort"></i></th>
-                                <th id="th-codon" data-column="ref_codon">Reference Codon <i class="fa-solid fa-sort"></i></th>
-                                <th id="th-aa" data-column="ref_aa">Reference AA <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-ref-state" data-column="ref_aa">Reference State <i class="fa-solid fa-sort"></i></th>
+                                <th id="th-composition" style="width: 140px;">AA Composition</th>
                                 <th id="th-variable" data-column="is_variable">Variable <i class="fa-solid fa-sort"></i></th>
                                 <th id="th-log-lrt" data-column="predicted_log_lrt">Log(LRT) <i class="fa-solid fa-sort"></i></th>
                                 <th id="th-lrt" class="sort-active" data-column="predicted_lrt">Predicted LRT <i class="fa-solid fa-sort-down"></i></th>
@@ -1474,6 +1474,14 @@
         let modelLoadedCount = 0;
         let isSingleThreaded = false;
         let mainThreadSession = null;
+        
+        const AA_COLORS = {
+            'A': '#10b981', 'R': '#3b82f6', 'N': '#8b5cf6', 'D': '#ec4899', 'C': '#f59e0b',
+            'E': '#ef4444', 'Q': '#14b8a6', 'G': '#64748b', 'H': '#a855f7', 'I': '#06b6d4',
+            'L': '#3b82f6', 'K': '#d946ef', 'M': '#06b6d4', 'F': '#6366f1', 'P': '#f43f5e',
+            'S': '#f59e0b', 'T': '#10b981', 'W': '#8b5cf6', 'Y': '#6366f1', 'V': '#14b8a6',
+            '*': '#ef4444', '?': '#94a3b8'
+        };
         
         const workerCode = `
             importScripts('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js');
@@ -2930,6 +2938,11 @@
                     const codonEntropy = calculateEntropy(siteCodons);
                     const aaEntropy = calculateEntropy(siteAas);
                     
+                    const aaCounts = {};
+                    siteAas.forEach(aa => {
+                        aaCounts[aa] = (aaCounts[aa] || 0) + 1;
+                    });
+
                     finalResults.push({
                         codon_site: siteIdx,
                         ref_codon: refCodon,
@@ -2941,7 +2954,9 @@
                         local_percentile: 0.0,
                         selection_call: "Neutral",
                         codon_entropy: codonEntropy,
-                        aa_entropy: aaEntropy
+                        aa_entropy: aaEntropy,
+                        aa_counts: aaCounts,
+                        total_count: siteAas.length
                     });
                 }
                 
@@ -3516,7 +3531,7 @@ fprintf("/output.nwk", Format(T, 1, 1));
         // 7. INTERACTIVE TABLE COMPONENT
         // =====================================================================
         function setupTableListeners() {
-            const headers = ['th-site', 'th-codon', 'th-aa', 'th-variable', 'th-log-lrt', 'th-lrt', 'th-zscore', 'th-percentile', 'th-call'];
+            const headers = ['th-site', 'th-ref-state', 'th-variable', 'th-log-lrt', 'th-lrt', 'th-zscore', 'th-percentile', 'th-call'];
             headers.forEach(id => {
                 const el = document.getElementById(id);
                 el.addEventListener('click', () => {
@@ -3811,22 +3826,13 @@ fprintf("/output.nwk", Format(T, 1, 1));
                 // Sort AA by count (descending)
                 const sortedAas = Object.entries(aaCounts).sort((a, b) => b[1] - a[1]);
 
-                // Colors map for different AAs
-                const aaColors = {
-                    'A': '#10b981', 'R': '#3b82f6', 'N': '#8b5cf6', 'D': '#ec4899', 'C': '#f59e0b',
-                    'E': '#ef4444', 'Q': '#14b8a6', 'G': '#64748b', 'H': '#a855f7', 'I': '#06b6d4',
-                    'L': '#3b82f6', 'K': '#d946ef', 'M': '#06b6d4', 'F': '#6366f1', 'P': '#f43f5e',
-                    'S': '#f59e0b', 'T': '#10b981', 'W': '#8b5cf6', 'Y': '#6366f1', 'V': '#14b8a6',
-                    '*': '#ef4444', '?': '#94a3b8'
-                };
-
                 // Build the composition bar HTML
                 let barHtml = `<div style="display: flex; height: 8px; width: 100%; max-width: 400px; border-radius: 9999px; overflow: hidden; background: #e2e8f0; margin-top: 0.2rem; margin-bottom: 0.35rem;">`;
                 let legendHtml = `<div style="display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; font-size: 0.75rem; color: var(--text-slate); margin-top: 0.1rem;">`;
 
                 sortedAas.forEach(([aa, count]) => {
                     const pct = totalCount > 0 ? (count / totalCount) * 100 : 0;
-                    const color = aaColors[aa] || '#64748b';
+                    const color = AA_COLORS[aa] || '#64748b';
                     barHtml += `<div style="width: ${pct}%; background-color: ${color};" title="${aa}: ${count} (${pct.toFixed(1)}%)"></div>`;
                     legendHtml += `
                         <div style="display: flex; align-items: center; gap: 0.2rem;">
@@ -4143,10 +4149,37 @@ fprintf("/output.nwk", Format(T, 1, 1));
                 if (r.selection_call === "Tier 1 (High)") callBadge = "badge-t1";
                 if (r.selection_call === "Tier 2 (Medium)") callBadge = "badge-t2";
                 
+                // Build inline AA composition spark bar
+                let sparkBarHtml = '';
+                if (r.aa_counts && r.total_count > 0) {
+                    const sortedAas = Object.entries(r.aa_counts).sort((a, b) => b[1] - a[1]);
+                    const tooltipText = sortedAas.map(([aa, count]) => {
+                        const pct = (count / r.total_count) * 100;
+                        return `${aa}: ${count} (${pct.toFixed(0)}%)`;
+                    }).join(', ');
+                    
+                    sparkBarHtml = `<div style="display: flex; align-items: center; gap: 0.35rem; width: 100%; max-width: 130px;" title="${tooltipText}">
+                        <div style="display: flex; height: 10px; width: 60px; border-radius: 4px; overflow: hidden; background: #e2e8f0; border: 1px solid rgba(0,0,0,0.06); flex-shrink: 0;">`;
+                    
+                    sortedAas.forEach(([aa, count]) => {
+                        const pct = (count / r.total_count) * 100;
+                        const color = AA_COLORS[aa] || '#64748b';
+                        sparkBarHtml += `<div style="width: ${pct}%; background-color: ${color}; height: 100%;"></div>`;
+                    });
+                    
+                    const topAa = sortedAas[0][0];
+                    const topAaPct = (sortedAas[0][1] / r.total_count) * 100;
+                    sparkBarHtml += `</div>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; color: var(--text-rich);">${topAa} <span style="font-size: 0.65rem; font-weight: 400; color: var(--text-muted);">${topAaPct.toFixed(0)}%</span></span>
+                    </div>`;
+                } else {
+                    sparkBarHtml = `<span style="color: var(--text-muted);">-</span>`;
+                }
+                
                 tr.innerHTML = `
                     <td style="font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">${r.codon_site}</td>
-                    <td style="font-family: 'JetBrains Mono', monospace;">${r.ref_codon}</td>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 500;">${r.ref_aa}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 500;">${r.ref_aa} [${r.ref_codon}]</td>
+                    <td>${sparkBarHtml}</td>
                     <td>${r.is_variable ? '<span style="color: var(--accent-green);"><i class="fa-solid fa-check"></i></span>' : '<span style="color: var(--text-muted); opacity: 0.3;">-</span>'}</td>
                     <td>${r.predicted_log_lrt.toFixed(4)}</td>
                     <td style="font-weight: 500;">${r.predicted_lrt.toFixed(4)}</td>
