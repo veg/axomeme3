@@ -1112,7 +1112,7 @@
                         <p style="margin-bottom: 0.5rem;">If your alignment contains more species than this cap, the pipeline preserves the selected reference sequence and prunes the tree/alignment down to this threshold based on the taxa order.</p>
                         <p style="margin-bottom: 0.25rem;"><strong>Key Impacts:</strong></p>
                         <ul style="margin-top: 0.25rem; margin-bottom: 0.5rem; padding-left: 1.2rem; list-style-type: disc;">
-                            <li style="margin-bottom: 0.25rem;"><strong>Selection Mechanism:</strong> The user-selected reference sequence is moved to the absolute front of the list to guarantee its inclusion. To maximize phylogenetic diversity and preserve the overall tree length, the remaining sequences are selected using systematic even-spacing traversal across the tree's leaves (or alignment order if no tree is provided). This spans all main clades rather than clustering closely-related species on one side.</li>
+                            <li style="margin-bottom: 0.25rem;"><strong>Selection Mechanism:</strong> The user-selected reference sequence is moved to the absolute front of the list to guarantee its inclusion. To maximize the phylogenetic diversity and preserve the overall tree span/length, the remaining sequences are selected using an exact greedy Phylogenetic Diversity (Faith's PD) maximization algorithm. This deterministically selects species that add the maximum evolutionary branch distance to the existing subtree, capturing the deepest splits and broadest taxonomic span. If no tree is provided, it falls back to systematic even-spacing sampling along the alignment.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Computational Complexity:</strong> Reduces the time needed for client-side calculations, such as the O(N^3) Classical MDS coordinate extraction and HyPhy branch estimation. A hard upper limit of 512 is enforced to prevent the web browser from running Out of Memory (OOM) or crashing.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Phylogenetic Resolution:</strong> Dropping species can prune away key intermediate nodes or sister lineages, potentially reducing the model's statistical sensitivity to detect episodic diversifying selection at certain sites.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Inference Fidelity:</strong> The surrogate model's learned phylogenetic bias is optimized for balanced input taxonomic density. A default cap of 256 offers a robust trade-off between client-side latency and evolutionary signal depth.</li>
@@ -2264,6 +2264,92 @@
             return leaves;
         }
 
+        function selectSpeciesMaximizePD(treeRoot, matchingSpecies, refKey, maxSpecies) {
+            const leaves = getLeaves(treeRoot);
+            
+            // Map leaf name (normalized) to CladeNode
+            const nameToNode = {};
+            leaves.forEach(leaf => {
+                if (leaf.name) {
+                    nameToNode[leaf.name.replace(/['"]/g, '').trim()] = leaf;
+                }
+            });
+
+            // Check if tree has valid non-zero branch lengths
+            const hasBranchLengths = leaves.some(l => l.branchLength > 0.0);
+
+            // Helper to get weight of a node
+            function getWeight(node) {
+                if (!hasBranchLengths) return 1.0;
+                return (node.branchLength !== undefined && !isNaN(node.branchLength)) ? node.branchLength : 0.0;
+            }
+
+            const selectedNodes = new Set();
+            const selectedSpecies = [refKey];
+            
+            const normRefKey = refKey.replace(/['"]/g, '').trim();
+            const refNode = nameToNode[normRefKey];
+            
+            if (refNode) {
+                let curr = refNode;
+                while (curr) {
+                    selectedNodes.add(curr);
+                    curr = curr.parent;
+                }
+            } else {
+                selectedNodes.add(treeRoot);
+            }
+
+            // Create list of remaining candidates (preserving original order for tie-breaking)
+            const candidates = matchingSpecies.filter(name => name.replace(/['"]/g, '').trim() !== normRefKey);
+            const targetCount = Math.min(maxSpecies, matchingSpecies.length);
+            
+            while (selectedSpecies.length < targetCount && candidates.length > 0) {
+                let maxDist = -1;
+                let bestIdx = -1;
+                
+                for (let idx = 0; idx < candidates.length; idx++) {
+                    const name = candidates[idx];
+                    const normName = name.replace(/['"]/g, '').trim();
+                    const node = nameToNode[normName];
+                    
+                    let dist = 0;
+                    if (node) {
+                        let curr = node;
+                        while (curr && !selectedNodes.has(curr)) {
+                            dist += getWeight(curr);
+                            curr = curr.parent;
+                        }
+                    }
+                    
+                    if (dist > maxDist) {
+                        maxDist = dist;
+                        bestIdx = idx;
+                    }
+                }
+                
+                if (bestIdx > -1) {
+                    const bestName = candidates[bestIdx];
+                    selectedSpecies.push(bestName);
+                    candidates.splice(bestIdx, 1);
+                    
+                    const normBest = bestName.replace(/['"]/g, '').trim();
+                    const bestNode = nameToNode[normBest];
+                    if (bestNode) {
+                        let curr = bestNode;
+                        while (curr && !selectedNodes.has(curr)) {
+                            selectedNodes.add(curr);
+                            curr = curr.parent;
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+            
+            return selectedSpecies;
+        }
+
         function pruneTree(node, matchedSpeciesSet) {
             if (node.children.length === 0) {
                 return matchedSpeciesSet.has(node.name);
@@ -2558,6 +2644,7 @@
                 
                 let matchingSpecies = [];
                 let treeRootObj = null;
+                let hasMatchingTree = false;
                 
                 if (finalTreeStr) {
                     treeRootObj = parseNewick(finalTreeStr);
@@ -2575,6 +2662,10 @@
                             matchingSpecies.push(nameMap[norm]);
                         }
                     });
+                    
+                    if (matchingSpecies.length > 0) {
+                        hasMatchingTree = true;
+                    }
                 }
                 
                 if (matchingSpecies.length === 0) {
@@ -2582,26 +2673,30 @@
                     matchingSpecies = [...taxlabels];
                 }
                 
-                // Move reference key to the front of matched list
-                const refIdx = matchingSpecies.indexOf(refKey);
-                if (refIdx > -1) {
-                    matchingSpecies.splice(refIdx, 1);
-                }
-                
                 let selectedSpecies = [];
-                const targetCount = maxSpecies - 1; // we need to select maxSpecies - 1 remaining species
-                
-                if (matchingSpecies.length <= targetCount) {
-                    selectedSpecies = [...matchingSpecies];
-                } else if (targetCount > 0) {
-                    for (let i = 0; i < targetCount; i++) {
-                        const idx = Math.floor(i * (matchingSpecies.length - 1) / (targetCount - 1));
-                        selectedSpecies.push(matchingSpecies[idx]);
+                if (hasMatchingTree) {
+                    // Use exact Phylogenetic Diversity (Faith's PD) greedy maximization
+                    selectedSpecies = selectSpeciesMaximizePD(treeRootObj, matchingSpecies, refKey, maxSpecies);
+                } else {
+                    // Move reference key to the front of matched list
+                    const refIdx = matchingSpecies.indexOf(refKey);
+                    if (refIdx > -1) {
+                        matchingSpecies.splice(refIdx, 1);
                     }
+                    
+                    const targetCount = maxSpecies - 1; // we need to select maxSpecies - 1 remaining species
+                    if (matchingSpecies.length <= targetCount) {
+                        selectedSpecies = [...matchingSpecies];
+                    } else if (targetCount > 0) {
+                        for (let i = 0; i < targetCount; i++) {
+                            const idx = Math.floor(i * (matchingSpecies.length - 1) / (targetCount - 1));
+                            selectedSpecies.push(matchingSpecies[idx]);
+                        }
+                    }
+                    
+                    // Add reference key to the front
+                    selectedSpecies.unshift(refKey);
                 }
-                
-                // Add reference key to the front
-                selectedSpecies.unshift(refKey);
                 const numSelected = selectedSpecies.length;
                 
                 // Prune tree to only selectedSpecies
