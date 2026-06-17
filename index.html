@@ -1868,7 +1868,7 @@
                     showToast("Alignment format not directly recognized; attempting HyPhy auto-conversion...", "warning");
                     
                     try {
-                        const convertedFasta = await convertAlignmentToFastaUsingHyphy(text);
+                        const convertedFasta = await convertAlignmentToFastaUsingHyphy(text, file.name);
                         if (!convertedFasta || !convertedFasta.trim()) {
                             throw new Error("HyPhy produced empty output.");
                         }
@@ -3119,7 +3119,7 @@ fprintf("/output.nwk", Format(T, 1, 1));
             return optimizedTree;
         }
 
-        async function convertAlignmentToFastaUsingHyphy(rawText) {
+        async function convertAlignmentToFastaUsingHyphy(rawText, fileName) {
             let hyphyFactory = window.createHyphyModule || window.Module;
             if (!hyphyFactory) {
                 // Load script dynamically
@@ -3141,13 +3141,24 @@ fprintf("/output.nwk", Format(T, 1, 1));
                 printErr: (text) => console.error(`[HyPhy WASM Parser Stderr] ${text}`)
             });
             
+            let extension = "phy";
+            if (fileName) {
+                const parts = fileName.split('.');
+                if (parts.length > 1) {
+                    extension = parts[parts.length - 1].toLowerCase();
+                }
+            }
+            
+            const inputPath = `/input_align.${extension}`;
             const hblScript = `
 NORMALIZE_SEQUENCE_NAMES = 0;
-DataSet ds = ReadDataFile("/input_align.txt");
-fprintf("/output_align.fa", CLEAR_FILE, ds);
+DATA_FILE_PRINT_FORMAT = 9;
+DataSet ds = ReadDataFile("${inputPath}");
+DataSetFilter dsf = CreateFilter(ds, 1);
+fprintf("/output_align.fa", CLEAR_FILE, dsf);
 `;
             
-            ModuleInstance.FS.writeFile('/input_align.txt', rawText);
+            ModuleInstance.FS.writeFile(inputPath, rawText);
             ModuleInstance.FS.writeFile('/convert.bf', hblScript);
             
             try {
@@ -3155,7 +3166,7 @@ fprintf("/output_align.fa", CLEAR_FILE, ds);
                 const convertedFasta = ModuleInstance.FS.readFile('/output_align.fa', { encoding: 'utf8' });
                 return convertedFasta;
             } finally {
-                try { ModuleInstance.FS.unlink('/input_align.txt'); } catch(_) {}
+                try { ModuleInstance.FS.unlink(inputPath); } catch(_) {}
                 try { ModuleInstance.FS.unlink('/convert.bf'); } catch(_) {}
                 try { ModuleInstance.FS.unlink('/output_align.fa'); } catch(_) {}
             }
