@@ -3107,7 +3107,7 @@ fprintf("/output.nwk", Format(T, 1, 1));
             ModuleInstance.FS.writeFile('/script.bf', hblScript);
             
             // Invoke Main
-            ModuleInstance.callMain(['/script.bf']);
+            ModuleInstance.callMain(['ENV=NORMALIZE_SEQUENCE_NAMES=0;', '/script.bf']);
             
             const optimizedTree = ModuleInstance.FS.readFile('/output.nwk', { encoding: 'utf8' });
             
@@ -3151,7 +3151,6 @@ fprintf("/output.nwk", Format(T, 1, 1));
             
             const inputPath = `/input_align.${extension}`;
             const hblScript = `
-NORMALIZE_SEQUENCE_NAMES = 0;
 DATA_FILE_PRINT_FORMAT = 9;
 DataSet ds = ReadDataFile("${inputPath}");
 DataSetFilter dsf = CreateFilter(ds, 1);
@@ -3162,7 +3161,7 @@ fprintf("/output_align.fa", CLEAR_FILE, dsf);
             ModuleInstance.FS.writeFile('/convert.bf', hblScript);
             
             try {
-                ModuleInstance.callMain(['/convert.bf']);
+                ModuleInstance.callMain(['ENV=NORMALIZE_SEQUENCE_NAMES=0;', '/convert.bf']);
                 const convertedFasta = ModuleInstance.FS.readFile('/output_align.fa', { encoding: 'utf8' });
                 return convertedFasta;
             } finally {
