@@ -26,10 +26,14 @@ The primary goal of the pre-trained **Phylogenetic Axial Transformer** model is 
 
 ```
 axomeme3/
-├── index.html               # Single-page web application (HTML, CSS, JS)
-├── MEME_transformer.onnx    # Pre-trained ONNX model for client-side execution
-├── README.md                # Project documentation
-└── .gitignore               # Excludes large compiled HyPhy WASM files
+├── index.html                  # Single-page web application (HTML, CSS, JS)
+├── MEME_transformer.onnx       # Pre-trained ONNX model for client-side execution
+├── README.md                   # Project documentation
+├── .gitignore                  # Excludes large compiled HyPhy WASM files
+└── pytorch/                    # PyTorch implementation for model training and inference
+    ├── MEME_transformer_joint.pt    # Pre-trained PyTorch model checkpoint (10MB)
+    ├── predict_regression_nexus.py  # Python command-line inference script
+    └── train_transformer_selection.py # PyTorch training pipeline and dataset loaders
 ```
 
 ---
@@ -74,22 +78,22 @@ Ensure the directory permissions allow the web server to serve the `.wasm` and `
 
 ## 🐍 Python Command-Line Inference & Training
 
-You can also run inference (selection scans) and train models directly from the command line using Python.
+You can also run inference (selection scans) and train models directly from the command line using Python, located inside the `pytorch/` directory.
 
 ### Prerequisites
 Install the required Python packages:
 ```bash
-pip install torch pandas numpy biopython
+pip install torch pandas numpy biopython scikit-learn
 ```
 
 ### Running Inference
-The repository contains the pre-trained PyTorch model checkpoint `MEME_transformer_joint.pt` and the inference driver script `predict_regression_nexus.py`.
+The repository contains the pre-trained PyTorch model checkpoint `pytorch/MEME_transformer_joint.pt` and the inference driver script `pytorch/predict_regression_nexus.py`.
 
 To run inference on an alignment (and an optional tree):
 ```bash
-python3 predict_regression_nexus.py \
+python3 pytorch/predict_regression_nexus.py \
     --alignment path/to/alignment.phy \
-    --model MEME_transformer_joint.pt \
+    --model pytorch/MEME_transformer_joint.pt \
     --max_species 256 \
     --output predictions.csv
 ```
@@ -102,4 +106,15 @@ python3 predict_regression_nexus.py \
 * `--output`: Path to write the output site predictions as a CSV file containing predicted selection probabilities for each codon position.
 
 ### Training the Model
-The repository also includes `train_transformer_selection.py` which contains the PyTorch dataset loaders, the model architecture `PhyloAxialTransformer`, and the training loop code.
+The training pipeline is located in `pytorch/train_transformer_selection.py`. It reads MSA sequence data and MEME selection targets from a SQLite database to train the `PhyloAxialTransformer`.
+
+To start training:
+```bash
+python3 pytorch/train_transformer_selection.py
+```
+
+By default, the script expects:
+- A SQLite database named `meme_results.db` containing MEME results.
+- A directory named `msa/` containing Multiple Sequence Alignment files.
+
+You can customize epochs, batch size, learning rate, and subsampling limits by modifying the `train_full_model` call inside the `if __name__ == "__main__":` block of the script.
