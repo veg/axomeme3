@@ -1108,7 +1108,14 @@
                         <span class="help-badge" data-help-target="help-max-species" title="Click for help"><i class="fa-regular fa-circle-question"></i></span>
                     </label>
                     <div id="help-max-species" class="help-text-block">
-                        Controls the maximum number of sequences included in the analysis. If your alignment has more species than this cap, the pipeline will prune the tree down to this threshold using diversity-maximizing selection to speed up computation.
+                        <p style="margin-bottom: 0.5rem;"><strong>Controls the maximum number of sequences included in the analysis.</strong></p>
+                        <p style="margin-bottom: 0.5rem;">If your alignment contains more species than this cap, the pipeline preserves the selected reference sequence and prunes the tree/alignment down to this threshold based on the taxa order.</p>
+                        <p style="margin-bottom: 0.25rem;"><strong>Key Impacts:</strong></p>
+                        <ul style="margin-top: 0.25rem; margin-bottom: 0.5rem; padding-left: 1.2rem; list-style-type: disc;">
+                            <li style="margin-bottom: 0.25rem;"><strong>Computational Complexity:</strong> Reduces the time needed for in-browser client-side calculations, such as the $O(N^3)$ Classical Multidimensional Scaling (MDS) coordinate extraction and HyPhy branch length estimation. Caps above 512 may lead to noticeable delays or memory exhaustion on low-power devices.</li>
+                            <li style="margin-bottom: 0.25rem;"><strong>Phylogenetic Resolution:</strong> Dropping species can prune away key intermediate nodes or sister lineages, potentially reducing the model's statistical sensitivity to detect episodic diversifying selection at certain sites.</li>
+                            <li style="margin-bottom: 0.25rem;"><strong>Inference Fidelity:</strong> The surrogate model's learned phylogenetic bias is optimized for balanced input taxonomic density. A default cap of 256 offers a robust trade-off between client-side latency and evolutionary signal depth.</li>
+                        </ul>
                     </div>
                     <input type="number" id="max-species-input" class="text-input" value="256" min="4" max="1024">
                 </div>
