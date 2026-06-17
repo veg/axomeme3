@@ -1472,6 +1472,8 @@
         // =====================================================================
         let workerPool = [];
         let modelLoadedCount = 0;
+        let isSingleThreaded = false;
+        let mainThreadSession = null;
         
         const workerCode = `
             importScripts('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js');
@@ -1693,10 +1695,37 @@
                 document.getElementById('model-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${numWorkers} Workers ready`;
                 showToast("Parallel selection inference engine ready.", "success");
             } catch (e) {
-                console.error("Worker pool load failed:", e);
-                document.getElementById('model-status').className = "badge badge-t1";
-                document.getElementById('model-status').innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Load Error';
-                showToast("Failed to initialize parallel workers: " + e.message, "error");
+                console.warn("Worker pool load failed, falling back to main-thread execution:", e);
+                showToast("Falling back to single-threaded mode (main thread)...", "warning");
+                
+                try {
+                    // Clean up any partially initialized workers
+                    workerPool.forEach(w => {
+                        try { w.terminate(); } catch (_) {}
+                    });
+                    workerPool = [];
+                    modelLoadedCount = 0;
+                    
+                    isSingleThreaded = true;
+                    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+                    const modelUrl = getAbsoluteUrl('MEME_transformer.onnx');
+                    
+                    document.getElementById('model-status').className = "badge badge-neutral";
+                    document.getElementById('model-status').innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading model...`;
+                    
+                    mainThreadSession = await ort.InferenceSession.create(modelUrl);
+                    modelLoadedCount = 1;
+                    validateInputs();
+                    
+                    document.getElementById('model-status').className = "badge badge-t2";
+                    document.getElementById('model-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> Main-thread active`;
+                    showToast("Selection inference engine ready (single-threaded).", "success");
+                } catch (err) {
+                    console.error("Main-thread model load failed:", err);
+                    document.getElementById('model-status').className = "badge badge-t1";
+                    document.getElementById('model-status').innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Load Error';
+                    showToast("Failed to initialize model: " + err.message, "error");
+                }
             }
         });
 
@@ -2646,107 +2675,198 @@
                     batches.push({ startSite, endSite, b });
                 }
                 
-                const numWorkers = workerPool.length || 1;
-                const workerJobs = Array.from({ length: numWorkers }, () => []);
-                batches.forEach((batch, idx) => {
-                    workerJobs[idx % numWorkers].push(batch);
-                });
-                
                 let completedBatches = 0;
-                const onBatchComplete = () => {
-                    completedBatches++;
-                    updateProgressBar(65 + Math.floor(completedBatches / numBatches * 20));
-                    document.getElementById('step-onnx').querySelector('span').textContent = `Running Parallel Inference (Batches ${completedBatches}/${numBatches})...`;
-                };
                 
-                const workerBatchPromises = [];
-                
-                workerPool.forEach((worker, workerIdx) => {
-                    const jobs = workerJobs[workerIdx];
-                    if (jobs.length === 0) return;
+                if (isSingleThreaded) {
+                    const onBatchComplete = () => {
+                        completedBatches++;
+                        updateProgressBar(65 + Math.floor(completedBatches / numBatches * 20));
+                        document.getElementById('step-onnx').querySelector('span').textContent = `Running Single-Threaded Inference (Batches ${completedBatches}/${numBatches})...`;
+                    };
                     
-                    const workerPromise = (async () => {
-                        for (let job of jobs) {
-                            const { startSite, endSite } = job;
-                            const currentBatchSize = endSite - startSite + 1;
+                    for (let job of batches) {
+                        const { startSite, endSite } = job;
+                        const currentBatchSize = endSite - startSite + 1;
+                        
+                        const msaCodonsData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                        const msaAasData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                        const distMatrixData = new Float32Array(currentBatchSize * maxSpecies * maxSpecies);
+                        const mdsCoordsData = new Float32Array(currentBatchSize * maxSpecies * 4);
+                        const paddingMaskData = new Uint8Array(currentBatchSize * maxSpecies);
+                        
+                        for (let i = 0; i < currentBatchSize; i++) {
+                            const siteIdx = startSite + i;
                             
-                            const msaCodonsData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
-                            const msaAasData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
-                            const distMatrixData = new Float32Array(currentBatchSize * maxSpecies * maxSpecies);
-                            const mdsCoordsData = new Float32Array(currentBatchSize * maxSpecies * 4);
-                            const paddingMaskData = new Uint8Array(currentBatchSize * maxSpecies);
-                            
-                            for (let i = 0; i < currentBatchSize; i++) {
-                                const siteIdx = startSite + i;
+                            for (let sIdx = 0; sIdx < maxSpecies; sIdx++) {
+                                const cellIdx = i * maxSpecies + sIdx;
                                 
-                                for (let sIdx = 0; sIdx < maxSpecies; sIdx++) {
-                                    const cellIdx = i * maxSpecies + sIdx;
+                                if (sIdx < numSelected) {
+                                    paddingMaskData[cellIdx] = 0; // False
+                                    const spec = selectedSpecies[sIdx];
+                                    const seq = seqDict[spec];
+                                    const seqLenCodons = Math.floor(seq.length / 3);
                                     
-                                    if (sIdx < numSelected) {
-                                        paddingMaskData[cellIdx] = 0; // False
-                                        const spec = selectedSpecies[sIdx];
-                                        const seq = seqDict[spec];
-                                        const seqLenCodons = Math.floor(seq.length / 3);
-                                        
-                                        if (siteIdx <= seqLenCodons) {
-                                            const nucIdx = (siteIdx - 1) * 3;
-                                            const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
-                                            msaCodonsData[cellIdx] = BigInt(getCodonToken(codon));
-                                            msaAasData[cellIdx] = BigInt(getAaToken(codon));
-                                        } else {
-                                            msaCodonsData[cellIdx] = 65n;
-                                            msaAasData[cellIdx] = 22n;
-                                        }
+                                    if (siteIdx <= seqLenCodons) {
+                                        const nucIdx = (siteIdx - 1) * 3;
+                                        const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                                        msaCodonsData[cellIdx] = BigInt(getCodonToken(codon));
+                                        msaAasData[cellIdx] = BigInt(getAaToken(codon));
                                     } else {
-                                        paddingMaskData[cellIdx] = 1; // True (padded)
                                         msaCodonsData[cellIdx] = 65n;
                                         msaAasData[cellIdx] = 22n;
                                     }
-                                }
-                                
-                                // Copy distances
-                                const distOffset = i * maxSpecies * maxSpecies;
-                                for (let k = 0; k < maxSpecies; k++) {
-                                    for (let j = 0; j < maxSpecies; j++) {
-                                        distMatrixData[distOffset + k * maxSpecies + j] = distMatrix[k][j];
-                                    }
-                                }
-                                
-                                // Copy MDS coords
-                                const mdsOffset = i * maxSpecies * 4;
-                                for (let k = 0; k < maxSpecies; k++) {
-                                    for (let c = 0; c < 4; c++) {
-                                        mdsCoordsData[mdsOffset + k * 4 + c] = mdsCoords[k][c];
-                                    }
+                                } else {
+                                    paddingMaskData[cellIdx] = 1; // True (padded)
+                                    msaCodonsData[cellIdx] = 65n;
+                                    msaAasData[cellIdx] = 22n;
                                 }
                             }
                             
-                            const results = await runWorkerInference(worker, {
-                                msaCodonsData,
-                                msaCodonsShape: [currentBatchSize, maxSpecies, 1],
-                                msaAasData,
-                                msaAasShape: [currentBatchSize, maxSpecies, 1],
-                                distMatrixData,
-                                distMatrixShape: [currentBatchSize, maxSpecies, maxSpecies],
-                                mdsCoordsData,
-                                mdsCoordsShape: [currentBatchSize, maxSpecies, 4],
-                                paddingMaskData,
-                                paddingMaskShape: [currentBatchSize, maxSpecies],
-                                startIndex: startSite,
-                                endIndex: endSite
-                            });
-                            
-                            for (let i = 0; i < currentBatchSize; i++) {
-                                predLogLrts[startSite - 1 + i] = results.logits[i];
+                            // Copy distances
+                            const distOffset = i * maxSpecies * maxSpecies;
+                            for (let k = 0; k < maxSpecies; k++) {
+                                for (let j = 0; j < maxSpecies; j++) {
+                                    distMatrixData[distOffset + k * maxSpecies + j] = distMatrix[k][j];
+                                }
                             }
                             
-                            onBatchComplete();
+                            // Copy MDS coords
+                            const mdsOffset = i * maxSpecies * 4;
+                            for (let k = 0; k < maxSpecies; k++) {
+                                for (let c = 0; c < 4; c++) {
+                                    mdsCoordsData[mdsOffset + k * 4 + c] = mdsCoords[k][c];
+                                }
+                            }
                         }
-                    })();
-                    workerBatchPromises.push(workerPromise);
-                });
-                
-                await Promise.all(workerBatchPromises);
+                        
+                        // Run inference directly on the main thread session
+                        const msa_codons = new ort.Tensor('int64', msaCodonsData, [currentBatchSize, maxSpecies, 1]);
+                        const msa_aas = new ort.Tensor('int64', msaAasData, [currentBatchSize, maxSpecies, 1]);
+                        const dist_matrix = new ort.Tensor('float32', distMatrixData, [currentBatchSize, maxSpecies, maxSpecies]);
+                        const mds_coords = new ort.Tensor('float32', mdsCoordsData, [currentBatchSize, maxSpecies, 4]);
+                        const padding_mask = new ort.Tensor('bool', new Uint8Array(paddingMaskData), [currentBatchSize, maxSpecies]);
+                        
+                        const ortInputs = {
+                            'msa_codons': msa_codons,
+                            'msa_aas': msa_aas,
+                            'dist_matrix': dist_matrix,
+                            'mds_coords': mds_coords,
+                            'padding_mask': padding_mask
+                        };
+                        
+                        const results = await mainThreadSession.run(ortInputs);
+                        const logits = new Float32Array(results.logits.data);
+                        
+                        for (let i = 0; i < currentBatchSize; i++) {
+                            predLogLrts[startSite - 1 + i] = logits[i];
+                        }
+                        
+                        onBatchComplete();
+                        // Yield to main thread to keep UI responsive
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                } else {
+                    const numWorkers = workerPool.length || 1;
+                    const workerJobs = Array.from({ length: numWorkers }, () => []);
+                    batches.forEach((batch, idx) => {
+                        workerJobs[idx % numWorkers].push(batch);
+                    });
+                    
+                    const onBatchComplete = () => {
+                        completedBatches++;
+                        updateProgressBar(65 + Math.floor(completedBatches / numBatches * 20));
+                        document.getElementById('step-onnx').querySelector('span').textContent = `Running Parallel Inference (Batches ${completedBatches}/${numBatches})...`;
+                    };
+                    
+                    const workerBatchPromises = [];
+                    
+                    workerPool.forEach((worker, workerIdx) => {
+                        const jobs = workerJobs[workerIdx];
+                        if (jobs.length === 0) return;
+                        
+                        const workerPromise = (async () => {
+                            for (let job of jobs) {
+                                const { startSite, endSite } = job;
+                                const currentBatchSize = endSite - startSite + 1;
+                                
+                                const msaCodonsData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                                const msaAasData = new BigInt64Array(currentBatchSize * maxSpecies * 1);
+                                const distMatrixData = new Float32Array(currentBatchSize * maxSpecies * maxSpecies);
+                                const mdsCoordsData = new Float32Array(currentBatchSize * maxSpecies * 4);
+                                const paddingMaskData = new Uint8Array(currentBatchSize * maxSpecies);
+                                
+                                for (let i = 0; i < currentBatchSize; i++) {
+                                    const siteIdx = startSite + i;
+                                    
+                                    for (let sIdx = 0; sIdx < maxSpecies; sIdx++) {
+                                        const cellIdx = i * maxSpecies + sIdx;
+                                        
+                                        if (sIdx < numSelected) {
+                                            paddingMaskData[cellIdx] = 0; // False
+                                            const spec = selectedSpecies[sIdx];
+                                            const seq = seqDict[spec];
+                                            const seqLenCodons = Math.floor(seq.length / 3);
+                                            
+                                            if (siteIdx <= seqLenCodons) {
+                                                const nucIdx = (siteIdx - 1) * 3;
+                                                const codon = seq.substring(nucIdx, nucIdx + 3).toUpperCase();
+                                                msaCodonsData[cellIdx] = BigInt(getCodonToken(codon));
+                                                msaAasData[cellIdx] = BigInt(getAaToken(codon));
+                                            } else {
+                                                msaCodonsData[cellIdx] = 65n;
+                                                msaAasData[cellIdx] = 22n;
+                                            }
+                                        } else {
+                                            paddingMaskData[cellIdx] = 1; // True (padded)
+                                            msaCodonsData[cellIdx] = 65n;
+                                            msaAasData[cellIdx] = 22n;
+                                        }
+                                    }
+                                    
+                                    // Copy distances
+                                    const distOffset = i * maxSpecies * maxSpecies;
+                                    for (let k = 0; k < maxSpecies; k++) {
+                                        for (let j = 0; j < maxSpecies; j++) {
+                                            distMatrixData[distOffset + k * maxSpecies + j] = distMatrix[k][j];
+                                        }
+                                    }
+                                    
+                                    // Copy MDS coords
+                                    const mdsOffset = i * maxSpecies * 4;
+                                    for (let k = 0; k < maxSpecies; k++) {
+                                        for (let c = 0; c < 4; c++) {
+                                            mdsCoordsData[mdsOffset + k * 4 + c] = mdsCoords[k][c];
+                                        }
+                                    }
+                                }
+                                
+                                const results = await runWorkerInference(worker, {
+                                    msaCodonsData,
+                                    msaCodonsShape: [currentBatchSize, maxSpecies, 1],
+                                    msaAasData,
+                                    msaAasShape: [currentBatchSize, maxSpecies, 1],
+                                    distMatrixData,
+                                    distMatrixShape: [currentBatchSize, maxSpecies, maxSpecies],
+                                    mdsCoordsData,
+                                    mdsCoordsShape: [currentBatchSize, maxSpecies, 4],
+                                    paddingMaskData,
+                                    paddingMaskShape: [currentBatchSize, maxSpecies],
+                                    startIndex: startSite,
+                                    endIndex: endSite
+                                });
+                                
+                                for (let i = 0; i < currentBatchSize; i++) {
+                                    predLogLrts[startSite - 1 + i] = results.logits[i];
+                                }
+                                
+                                onBatchComplete();
+                            }
+                        })();
+                        workerBatchPromises.push(workerPromise);
+                    });
+                    
+                    await Promise.all(workerBatchPromises);
+                }
                 
                 document.getElementById('step-onnx').querySelector('span').textContent = "Running Neural Network Inference...";
                 markStep('step-onnx', 'completed');
