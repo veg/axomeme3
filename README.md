@@ -69,3 +69,37 @@ Sync the static files (excluding git configuration and backups) to your web root
 rsync -avz --exclude=".git" --exclude="*.bak" ./ silverback:/archive/sb-data/shares/web/web/axomeme3/
 ```
 Ensure the directory permissions allow the web server to serve the `.wasm` and `.onnx` files with the correct MIME types.
+
+---
+
+## 🐍 Python Command-Line Inference & Training
+
+You can also run inference (selection scans) and train models directly from the command line using Python.
+
+### Prerequisites
+Install the required Python packages:
+```bash
+pip install torch pandas numpy biopython
+```
+
+### Running Inference
+The repository contains the pre-trained PyTorch model checkpoint `MEME_transformer_joint.pt` and the inference driver script `predict_regression_nexus.py`.
+
+To run inference on an alignment (and an optional tree):
+```bash
+python3 predict_regression_nexus.py \
+    --alignment path/to/alignment.phy \
+    --model MEME_transformer_joint.pt \
+    --max_species 256 \
+    --output predictions.csv
+```
+
+**Options:**
+* `--alignment`: Path to the Multiple Sequence Alignment file (supports Gzipped, NEXUS, PHYLIP, or FASTA formats; autodetected).
+* `--tree`: (Optional) Path to a separate Newick tree file. If omitted, the script will automatically check for an embedded NEXUS tree in the alignment file, or estimate branch lengths using HyPhy if none are present.
+* `--reference_seq`: (Optional) The name of the sequence to use as reference. If omitted, the script automatically picks a standard reference (e.g. human/hg38) or defaults to the first sequence.
+* `--max_species`: (Default: `256`) The maximum number of species to include. If the alignment has more species, the exact greedy Phylogenetic Diversity (Faith's PD) maximization algorithm will prune the tree down to this threshold to capture the deepest splits and broadest taxonomic span.
+* `--output`: Path to write the output site predictions as a CSV file containing predicted selection probabilities for each codon position.
+
+### Training the Model
+The repository also includes `train_transformer_selection.py` which contains the PyTorch dataset loaders, the model architecture `PhyloAxialTransformer`, and the training loop code.
