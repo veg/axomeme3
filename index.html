@@ -1112,7 +1112,7 @@
                         <p style="margin-bottom: 0.5rem;">If your alignment contains more species than this cap, the pipeline preserves the selected reference sequence and prunes the tree/alignment down to this threshold based on the taxa order.</p>
                         <p style="margin-bottom: 0.25rem;"><strong>Key Impacts:</strong></p>
                         <ul style="margin-top: 0.25rem; margin-bottom: 0.5rem; padding-left: 1.2rem; list-style-type: disc;">
-                            <li style="margin-bottom: 0.25rem;"><strong>Selection Mechanism:</strong> The user-selected reference sequence is moved to the absolute front of the list to guarantee its inclusion. The remaining sequences are selected based on their order in the input tree's leaf list (left-to-right tree traversal) or their original order in the alignment file if no tree is provided.</li>
+                            <li style="margin-bottom: 0.25rem;"><strong>Selection Mechanism:</strong> The user-selected reference sequence is moved to the absolute front of the list to guarantee its inclusion. To maximize phylogenetic diversity and preserve the overall tree length, the remaining sequences are selected using systematic even-spacing traversal across the tree's leaves (or alignment order if no tree is provided). This spans all main clades rather than clustering closely-related species on one side.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Computational Complexity:</strong> Reduces the time needed for client-side calculations, such as the O(N^3) Classical MDS coordinate extraction and HyPhy branch estimation. A hard upper limit of 512 is enforced to prevent the web browser from running Out of Memory (OOM) or crashing.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Phylogenetic Resolution:</strong> Dropping species can prune away key intermediate nodes or sister lineages, potentially reducing the model's statistical sensitivity to detect episodic diversifying selection at certain sites.</li>
                             <li style="margin-bottom: 0.25rem;"><strong>Inference Fidelity:</strong> The surrogate model's learned phylogenetic bias is optimized for balanced input taxonomic density. A default cap of 256 offers a robust trade-off between client-side latency and evolutionary signal depth.</li>
@@ -2587,10 +2587,21 @@
                 if (refIdx > -1) {
                     matchingSpecies.splice(refIdx, 1);
                 }
-                matchingSpecies.unshift(refKey);
                 
-                // Cap to maxSpecies
-                const selectedSpecies = matchingSpecies.slice(0, maxSpecies);
+                let selectedSpecies = [];
+                const targetCount = maxSpecies - 1; // we need to select maxSpecies - 1 remaining species
+                
+                if (matchingSpecies.length <= targetCount) {
+                    selectedSpecies = [...matchingSpecies];
+                } else if (targetCount > 0) {
+                    for (let i = 0; i < targetCount; i++) {
+                        const idx = Math.floor(i * (matchingSpecies.length - 1) / (targetCount - 1));
+                        selectedSpecies.push(matchingSpecies[idx]);
+                    }
+                }
+                
+                // Add reference key to the front
+                selectedSpecies.unshift(refKey);
                 const numSelected = selectedSpecies.length;
                 
                 // Prune tree to only selectedSpecies
