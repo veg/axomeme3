@@ -3784,7 +3784,7 @@ fprintf("/output.nwk", Format(T, 1, 1));
                     const isLeaf = !d.children || d.children.length === 0;
                     if (!isLeaf && d.parent) {
                         if (!d.hasSubtreeSubstitutions) {
-                            treeInstance.collapse_node(d);
+                            d.collapsed = true;
                         }
                     }
                 });
