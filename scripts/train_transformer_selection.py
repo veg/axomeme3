@@ -1669,18 +1669,8 @@ class PhyloAxialTransformer(nn.Module):
         attn_weights = F.softmax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, (Diff), (TopK)] representations
-        if getattr(self, 'num_streams', 4) == 5:
-            diff_pooled = F.relu(max_pooled - mean_pooled)
-            # Top-K Deviant Species Pooling (preserves single-branch ultra-episodic mutational bursts)
-            species_diff = torch.norm(site_repr - mean_pooled.unsqueeze(1), p=2, dim=-1)
-            species_diff = species_diff.masked_fill(padding_mask, -1e4)
-            K = min(8, site_repr.shape[1])
-            topk_indices = torch.topk(species_diff, k=K, dim=-1)[1]
-            topk_repr = torch.gather(site_repr, 1, topk_indices.unsqueeze(-1).expand(-1, -1, self.embed_dim))
-            topk_pooled = topk_repr.mean(dim=1)
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled, topk_pooled], dim=-1))
-        elif getattr(self, 'num_streams', 4) == 4:
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff] representations
+        if getattr(self, 'num_streams', 4) == 4:
             diff_pooled = F.relu(max_pooled - mean_pooled)
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled], dim=-1))
         else:
