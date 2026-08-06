@@ -1513,8 +1513,8 @@ class RankConsistentCoralHead(nn.Module):
             self.b0 = nn.Parameter(torch.tensor(3.0))
             self.theta_steps = nn.Parameter(torch.ones(8) * 0.5)
         else:
-            # Empirical prior initialization for b0 and theta_steps (12 heads):
-            self.b0 = nn.Parameter(torch.tensor(0.8117))
+            # Empirical 90:10 natural prior initialization for b0 (logit(0.10) = -2.1972) and theta_steps (12 heads):
+            self.b0 = nn.Parameter(torch.tensor(-2.1972))
             init_thetas = torch.tensor([-0.0679, -0.6850, -0.9210, -1.0795, -1.1709, -0.5861, -0.7915, -0.6470, 0.2742, -0.0837, -0.3517])
             self.theta_steps = nn.Parameter(init_thetas)
 
