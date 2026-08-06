@@ -1343,6 +1343,7 @@ fprintf(stdout, Format(T, 1, 1));
     pred_p_negs_list = []
     has_5_heads = False
 
+    model.eval()
     with torch.no_grad():
         for site_i in range(total_codons):
             msa_win = msa_tokens[site_i:site_i+1] # [1, max_species, 1]
@@ -1351,29 +1352,32 @@ fprintf(stdout, Format(T, 1, 1));
             mds_win = mds_coords_tensor[site_i:site_i+1] # [1, max_species, 4]
             pad_win = padding_mask_tensor[site_i:site_i+1] # [1, max_species]
             
-            # Switch to train() temporarily to extract raw ordinal logits
-            model.train()
-            out_raw = model(msa_win, aa_win, dist_win, mds_win, pad_win)
-            model.eval()
+            out_eval = model(msa_win, aa_win, dist_win, mds_win, pad_win)
             
-            if isinstance(out_raw, tuple) and len(out_raw) == 5:
-                head0, y_alpha, y_beta_neg, y_beta_pos, y_p_neg = out_raw
-                logits_12 = head0[0] if isinstance(head0, tuple) else head0
+            if isinstance(out_eval, tuple) and len(out_eval) == 5:
+                y_lrt_val, y_alpha, y_beta_neg, y_beta_pos, y_p_neg = out_eval
                 
-                # Apply optional Bayesian prior shift to calibrate training loader sampling bias
+                # Apply optional Bayesian prior shift if specified
                 if args.prior_shift != 0.0:
-                    logits_12 = logits_12 - args.prior_shift
+                    # Re-extract raw logits to apply prior shift
+                    model.train()
+                    raw_out = model(msa_win, aa_win, dist_win, mds_win, pad_win)
+                    model.eval()
+                    head0 = raw_out[0][0] if isinstance(raw_out[0], tuple) else raw_out[0]
+                    logits_calibrated = head0 - args.prior_shift
+                    y_lrt_soft, _ = decode_soft_ordinal_lrt(logits_calibrated)
+                    lrt_final = y_lrt_soft.item()
+                else:
+                    lrt_final = y_lrt_val.item() if hasattr(y_lrt_val, 'item') else float(y_lrt_val)
                     
-                y_lrt_soft, _ = decode_soft_ordinal_lrt(logits_12)
-                pred_raw_lrts_list.append(y_lrt_soft.item())
+                pred_raw_lrts_list.append(lrt_final)
                 pred_alphas_list.append(np.expm1(y_alpha.item()))
                 pred_beta_poses_list.append(np.expm1(y_beta_pos.item()))
                 pred_p_negs_list.append(y_p_neg.item())
                 has_5_heads = True
             else:
-                out = model(msa_win, aa_win, dist_win, mds_win, pad_win)
-                y_lrt_val = out[0].item() if isinstance(out, tuple) else out.item()
-                pred_raw_lrts_list.append(y_lrt_val)
+                lrt_final = out_eval[0].item() if hasattr(out_eval[0], 'item') else float(out_eval[0])
+                pred_raw_lrts_list.append(lrt_final)
                 has_5_heads = False
 
     pred_raw_lrts = np.array(pred_raw_lrts_list)
