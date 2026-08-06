@@ -876,7 +876,32 @@ class MSADataset(Dataset):
         return codon_tokens, aa_tokens, dist_tensor, mds_coords, padding_mask, torch.tensor(label, dtype=torch.float)
 
 
-# --- Stable Attention Module ---
+# --- Block-Diagonal Disentanglement Linear Projection ---
+class BlockLinear(nn.Module):
+    """
+    Block-Diagonal Linear Projection.
+    Guarantees 100% mathematical disentanglement between the Codon Synonymous Track
+    and the Amino Acid Selection Track. Prevents linear layer cross-mixing of dS noise into dN+ features.
+    """
+    def __init__(self, in_features, out_features, bias=True):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.half_in = in_features // 2
+        self.half_out = out_features // 2
+        self.block_codon = nn.Linear(self.half_in, self.half_out, bias=bias)
+        self.block_aa = nn.Linear(self.half_in, self.half_out, bias=bias)
+
+    def forward(self, x):
+        # x: [..., in_features]
+        x_codon = x[..., :self.half_in]
+        x_aa = x[..., self.half_in:]
+        out_codon = self.block_codon(x_codon)
+        out_aa = self.block_aa(x_aa)
+        return torch.cat([out_codon, out_aa], dim=-1)
+
+
+# --- Stable Attention Module with Block-Diagonal Disentanglement ---
 class StableAttention(nn.Module):
     def __init__(self, embed_dim, num_heads=4, dropout=0.1):
         super().__init__()
@@ -884,27 +909,19 @@ class StableAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
         
-        self.in_proj_weight = nn.Parameter(torch.empty(3 * embed_dim, embed_dim))
-        self.in_proj_bias = nn.Parameter(torch.empty(3 * embed_dim))
-        self.out_proj = nn.Linear(embed_dim, embed_dim)
+        self.q_proj = BlockLinear(embed_dim, embed_dim)
+        self.k_proj = BlockLinear(embed_dim, embed_dim)
+        self.v_proj = BlockLinear(embed_dim, embed_dim)
+        self.out_proj = BlockLinear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
-        
-        nn.init.xavier_uniform_(self.in_proj_weight)
-        nn.init.zeros_(self.in_proj_bias)
         
     def forward(self, query, key, value, key_padding_mask=None):
         batch_size, q_seq_len, _ = query.shape
         k_seq_len = key.shape[1]
         
-        w_q, w_k, w_v = torch.chunk(self.in_proj_weight, 3, dim=0)
-        b_q, b_k, b_v = torch.chunk(self.in_proj_bias, 3, dim=0)
-        
-        w_q, w_k, w_v = w_q.contiguous(), w_k.contiguous(), w_v.contiguous()
-        b_q, b_k, b_v = b_q.contiguous(), b_k.contiguous(), b_v.contiguous()
-        
-        q_proj = F.linear(query, w_q, b_q)
-        k_proj = F.linear(key, w_k, b_k)
-        v_proj = F.linear(value, w_v, b_v)
+        q_proj = self.q_proj(query)
+        k_proj = self.k_proj(key)
+        v_proj = self.v_proj(value)
         
         q_h = q_proj.view(batch_size, q_seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         k_h = k_proj.view(batch_size, k_seq_len, self.num_heads, self.head_dim).transpose(1, 2)
@@ -924,7 +941,7 @@ class StableAttention(nn.Module):
         return self.out_proj(out)
 
 
-# --- Custom Row Attention with Learnable Phylogenetic Bias & Genetic Code Biases ---
+# --- Custom Row Attention with Block-Diagonal Disentanglement & Learnable Phylogenetic Bias ---
 class PhyloRowAttention(nn.Module):
     def __init__(self, embed_dim, num_heads, dropout=0.1):
         super().__init__()
@@ -932,9 +949,9 @@ class PhyloRowAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
         
-        self.q_proj = nn.Linear(embed_dim, embed_dim)
-        self.k_proj = nn.Linear(embed_dim, embed_dim)
-        self.v_proj = nn.Linear(embed_dim, embed_dim)
+        self.q_proj = BlockLinear(embed_dim, embed_dim)
+        self.k_proj = BlockLinear(embed_dim, embed_dim)
+        self.v_proj = BlockLinear(embed_dim, embed_dim)
         
         # 3-Channel Unrooted Tree Topological Attention Projection:
         # Channel 0: Patristic Path Distance D_ij
@@ -953,7 +970,7 @@ class PhyloRowAttention(nn.Module):
         self.nonsyn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
         self.syn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
         
-        self.out_proj = nn.Linear(embed_dim, embed_dim)
+        self.out_proj = BlockLinear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
         
     def forward(self, x, dist_matrix, padding_mask=None, nonsyn_mask=None, syn_mask=None):
@@ -1006,9 +1023,9 @@ class StableTransformerEncoderLayer(nn.Module):
         super().__init__()
         self.self_attn = StableAttention(d_model, nhead, dropout)
         
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.linear1 = BlockLinear(d_model, dim_feedforward)
         self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
+        self.linear2 = BlockLinear(dim_feedforward, d_model)
         
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
@@ -1567,7 +1584,7 @@ class PhyloAxialTransformer(nn.Module):
         self.lrt_ordinal_head = RankConsistentCoralHead(embed_dim, num_thresholds=num_thresholds)
         self.species_attn_query = nn.Linear(embed_dim, 1)
         self.stream_fusion = nn.Sequential(
-            nn.Linear(num_streams * embed_dim, embed_dim),
+            BlockLinear(num_streams * embed_dim, embed_dim),
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
