@@ -1882,23 +1882,7 @@ class FocalCoralOrdinalLoss(nn.Module):
         lrt_reg_weight = 0.0 if getattr(self, 'pure_coral', False) else 0.5
         loss_multitask = torch.sum(all_losses * inv_vars + 0.5 * log_vars_cast) + lrt_reg_weight * loss_lrt_reg
         
-        # 5. Biological Physical Inequality Penalties (Active on Soft Ordinal Predictions)
-        # Decode soft continuous LRT prediction from CORAL logits
-        y_lrt_soft, _ = decode_soft_ordinal_lrt(logits_lrt_ordinal)
-        
-        neutral_mask = (y_lrt_true <= 0.1).to(logits_lrt_ordinal.dtype)
-        neutral_overpred_penalty = neutral_mask * (y_lrt_soft ** 2)
-        
-        # Enforce fundamental evolutionary physical law using ground-truth dataset targets:
-        # Sites where ground-truth dN+ <= dS (beta_pos <= alpha) MUST yield LRT = 0
-        alpha_true = y_rates_true[:, 0]
-        beta_pos_true = y_rates_true[:, 2]
-        dn_le_ds_ground_truth_mask = (beta_pos_true <= alpha_true).to(logits_lrt_ordinal.dtype)
-        
-        dn_le_ds_penalty = dn_le_ds_ground_truth_mask * (y_lrt_soft ** 2)
-        
-        loss_physical = torch.mean(neutral_overpred_penalty + dn_le_ds_penalty)
-        total_loss = loss_multitask + (self.phys_weight * loss_physical)
+        total_loss = loss_multitask
         return total_loss
 
 
