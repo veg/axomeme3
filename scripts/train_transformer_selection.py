@@ -949,9 +949,9 @@ class PhyloRowAttention(nn.Module):
         self.phylo_b1 = nn.Parameter(torch.zeros(num_heads, 1, 1))
         self.phylo_w2 = nn.Parameter(torch.randn(num_heads, 1, 1) * 0.02)
         
-        # Explicit Genetic Code Pairwise Attention Biases
-        self.nonsyn_head_bias = nn.Parameter(torch.tensor(2.0))
-        self.syn_head_bias = nn.Parameter(torch.tensor(-1.0))
+        # Learnable Per-Head Pairwise Mask Attention Biases (Initialized to 0.0)
+        self.nonsyn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
+        self.syn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
         
         self.out_proj = nn.Linear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
