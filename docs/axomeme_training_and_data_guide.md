@@ -9,19 +9,19 @@ This document provides step-by-step instructions for reproducing the dataset, po
 If you prefer to train immediately without re-processing 18,000+ raw alignment files and HyPhy MEME JSON outputs, download the pre-built datasets:
 
 ### 1.1 SQLite Ground-Truth Database (`meme_results.db.gz`)
-* **Dropbox Link**: [`https://www.dropbox.com/scl/fi/meme_results.db.gz?rlkey=axomeme_key&dl=1`](https://www.dropbox.com/scl/fi/meme_results.db.gz?rlkey=axomeme_key&dl=1)
+* **Dropbox Link**: [`https://dl.dropbox.com/scl/fi/ebm3zbbicgakyw8u37ih6/meme_results.db.gz?rlkey=cz7ah7u2ao8e22xdof1qfqlud&st=e00386jq&dl=1`](https://dl.dropbox.com/scl/fi/ebm3zbbicgakyw8u37ih6/meme_results.db.gz?rlkey=cz7ah7u2ao8e22xdof1qfqlud&st=e00386jq&dl=1)
 * **Description**: Contains gene-level metadata, sequence quality stats, tree lengths, and 10.4M site-level HyPhy MEME targets ($\text{LRT}, \alpha, \beta^+, p^+$).
 
 ### 1.2 NPZ Precomputed MSA Cache (`msa_cache_npz.tar.gz`)
-* **Dropbox Link**: [`https://www.dropbox.com/scl/fi/msa_cache_npz.tar.gz?rlkey=axomeme_key&dl=1`](https://www.dropbox.com/scl/fi/msa_cache_npz.tar.gz?rlkey=axomeme_key&dl=1)
+* **Dropbox Link**: [`https://dl.dropbox.com/scl/fi/120cw6vhvvtoony9a992l/msa_cache_npz.tar.gz?rlkey=1zooteeqikoyyu9ll201mcgiy&st=zc5zmrpe&dl=1`](https://dl.dropbox.com/scl/fi/120cw6vhvvtoony9a992l/msa_cache_npz.tar.gz?rlkey=1zooteeqikoyyu9ll201mcgiy&st=zc5zmrpe&dl=1)
 * **Description**: Archive of individual `.npz` files containing pre-tokenized codon matrices, amino acid matrices, patristic distance matrices, 4D MDS coordinates, and variable site masks.
 
 ### 1.3 Automated Download & Extraction Command
 
 ```bash
 # Download pre-built database and NPZ tensor cache
-aria2c -x 16 -s 16 -k 1M "https://www.dropbox.com/scl/fi/meme_results.db.gz?rlkey=axomeme_key&dl=1" -o meme_results.db.gz
-aria2c -x 16 -s 16 -k 1M "https://www.dropbox.com/scl/fi/msa_cache_npz.tar.gz?rlkey=axomeme_key&dl=1" -o msa_cache_npz.tar.gz
+aria2c -x 16 -s 16 -k 1M "https://dl.dropbox.com/scl/fi/ebm3zbbicgakyw8u37ih6/meme_results.db.gz?rlkey=cz7ah7u2ao8e22xdof1qfqlud&st=e00386jq&dl=1" -o meme_results.db.gz
+aria2c -x 16 -s 16 -k 1M "https://dl.dropbox.com/scl/fi/120cw6vhvvtoony9a992l/msa_cache_npz.tar.gz?rlkey=1zooteeqikoyyu9ll201mcgiy&st=zc5zmrpe&dl=1" -o msa_cache_npz.tar.gz
 
 # Extract archives
 gunzip -k meme_results.db.gz
