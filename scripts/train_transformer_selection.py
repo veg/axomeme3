@@ -1889,10 +1889,13 @@ class FocalCoralOrdinalLoss(nn.Module):
         neutral_mask = (y_lrt_true <= 0.1).to(logits_lrt_ordinal.dtype)
         neutral_overpred_penalty = neutral_mask * (y_lrt_soft ** 2)
         
-        # Enforce fundamental evolutionary physical law: dN <= dS (beta_pos <= alpha) MUST yield LRT = 0
-        alpha_val = y_alpha_pred.squeeze(-1)
-        beta_pos_val = y_beta_pos_pred.squeeze(-1)
-        dn_le_ds_penalty = F.relu(y_lrt_soft) * F.relu(alpha_val - beta_pos_val)
+        # Enforce fundamental evolutionary physical law using ground-truth dataset targets:
+        # Sites where ground-truth dN+ <= dS (beta_pos <= alpha) MUST yield LRT = 0
+        alpha_true = y_rates_true[:, 0]
+        beta_pos_true = y_rates_true[:, 2]
+        dn_le_ds_ground_truth_mask = (beta_pos_true <= alpha_true).to(logits_lrt_ordinal.dtype)
+        
+        dn_le_ds_penalty = dn_le_ds_ground_truth_mask * (y_lrt_soft ** 2)
         
         loss_physical = torch.mean(neutral_overpred_penalty + dn_le_ds_penalty)
         total_loss = loss_multitask + (self.phys_weight * loss_physical)
