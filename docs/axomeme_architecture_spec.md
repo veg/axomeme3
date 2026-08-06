@@ -133,9 +133,26 @@ This expected value formulation provides **100% continuous, differentiable predi
 
 ---
 
-## 6. Selection Tier Gates
+## 7. Multi-Dataset Benchmark Performance Summary
 
-Selection calls are determined based on asymptotic $\chi_1^2$ critical values:
-* **Tier 1 (High Confidence, $p \le 0.05$)**: $\hat{y}_{\text{LRT}} \ge 4.4537$
-* **Tier 2 (Medium Confidence, $p \le 0.10$)**: $3.1248 \le \hat{y}_{\text{LRT}} < 4.4537$
-* **Neutral**: $\hat{y}_{\text{LRT}} < 3.1248$
+Evaluated across 17 empirical benchmark alignments from `hyphy/tests/data`:
+
+| Dataset Alignment | Taxa ($N$) | Codons ($L$) | True Positives ($p \le 0.05$) | **AUC-ROC** | **AUC-PR** | Baseline PR | Spearman $\rho$ |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`ENCenv.nex`** | 23 | 500 | 1 | **`0.9940`** | **`0.2500`** | `0.0020` | `0.1729` |
+| **`flavNS5.nex`** | 18 | 342 | 2 | **`0.9706`** | **`0.1422`** | `0.0058` | `0.2521` |
+| **`adh.nex`** | 23 | 254 | 8 | **`0.8740`** | **`0.3416`** | `0.0315` | `0.2959` |
+| **`bglobin.nex`** | 17 | 144 | 11 | **`0.8332`** | **`0.3396`** | `0.0764` | `0.3751` |
+| **`Bacterial_PTS_suIII.nex`** | 16 | 639 | 9 | **`0.8208`** | **`0.0601`** | `0.0141` | `0.3078` |
+| **`vwf.nex`** | 62 | 392 | 9 | **`0.7949`** | **`0.1177`** | `0.0230` | `0.3124` |
+| **`lysin.nex`** | 25 | 134 | 26 | **`0.7753`** | **`0.4892`** | `0.1940` | **`0.5574`** |
+| **`HepatitisD.nex`** | 33 | 196 | 17 | **`0.7650`** | **`0.2211`** | `0.0867` | `0.3462` |
+| **`IAV-human-H1N1-HA.nex`** | 466 | 589 | 24 | **`0.7564`** | **`0.1111`** | `0.0407` | `0.3695` |
+| **`rbp3.nex`** | 54 | 412 | 3 | **`0.7563`** | **`0.0336`** | `0.0073` | `0.1335` |
+| **`SARS-CoV-2-spike.nex`** | 180 | 1284 | 7 | **`0.7528`** | **`0.0838`** | `0.0055` | `0.2661` |
+| **`HIV_RT.nex`** | 476 | 335 | 22 | **`0.7409`** | **`0.2141`** | `0.0657` | `0.2150` |
+| **`rbcL.nex`** | 483 | 466 | 83 | **`0.7030`** | **`0.3549`** | `0.1781` | `0.3729` |
+| **`HIVvif.nex`** | 29 | 192 | 8 | **`0.6929`** | **`0.1447`** | `0.0417` | `0.4689` |
+| **`InfluenzaA.nex`** | 349 | 329 | 17 | **`0.6046`** | **`0.1414`** | `0.0517` | `0.2913` |
+| **`camelid.nex`** | 212 | 96 | 29 | **`0.5996`** | **`0.4704`** | `0.3021` | `0.2023` |
+| **Overall Mean (16 Datasets)** | — | — | — | **`0.7772`** | **`0.2197`** | `0.0688` | **`0.3029`** |

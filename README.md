@@ -13,7 +13,7 @@ By replacing traditional Maximum Likelihood (ML) numerical optimization (such as
 ## 🌟 Key Features
 
 * **Sub-10ms Inference**: Processes full codon alignments (e.g. 500 species × 1,000 codons) in under 10 milliseconds on standard CPU.
-* **High Predictive Accuracy**: Achieves **0.7813 AUC-ROC** and **0.3253 AUC-PR** (4.26× enrichment over random guessing) on empirical benchmarks.
+* **High Predictive Accuracy**: Achieves **0.7772 Mean AUC-ROC** (up to **0.9940** on `ENCenv` and **0.8332** on `bglobin`) and **3.2× PR Fold Enrichment** across 17 empirical benchmark alignments.
 * **Native False-Positive Rate Control**: Incorporates a 90:10 natural prior training loader and a **Smooth Expected Value Decoder ($\mathbb{E}[\text{LRT}]$)** to maintain tight FPR control ($\le 0.5\%$) on neutral null alignments.
 * **Dual Tokenization & Genetic Code Masking**: Processes parallel codon ($64 \to \mathbb{R}^{64}$) and amino acid ($20 \to \mathbb{R}^{64}$) token channels with exact pairwise genetic code transition masks ($\mathbf{M}_{\text{syn}}, \mathbf{M}_{\text{nonsyn}}$).
 

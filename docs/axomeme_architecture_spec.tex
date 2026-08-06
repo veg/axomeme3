@@ -106,14 +106,14 @@ P(\text{Bin } 0) = 1.0 - p_0, \quad P(\text{Bin } m) = p_{m-1} - p_m, \quad P(\t
 \centering
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Model / Benchmark} & \textbf{AUC-ROC} & \textbf{AUC-PR} & \textbf{False Positive Rate} & \textbf{Inference Speed} \\
+\textbf{Model / Benchmark} & \textbf{Mean AUC-ROC} & \textbf{Mean AUC-PR} & \textbf{False Positive Rate} & \textbf{Inference Speed} \\
 \midrule
-HyPhy MEME (Likelihood) & 0.81 & 0.35 & 5.0\% & ~45 seconds / gene \\
-PAML CODEML (Likelihood) & 0.78 & 0.30 & 6.2\% & ~180 seconds / gene \\
-\textbf{Axomeme 2.0 (Rebalanced)} & \textbf{0.7813} & \textbf{0.3253} & \textbf{0.46\%} & \textbf{< 10 milliseconds} \\
+HyPhy MEME (Likelihood) & 0.8100 & 0.3500 & 5.0\% & ~45 seconds / gene \\
+PAML CODEML (Likelihood) & 0.7800 & 0.3000 & 6.2\% & ~180 seconds / gene \\
+\textbf{Axomeme 2.0 (Epoch 8 Rebalanced)} & \textbf{0.7772} & \textbf{0.2197} & \textbf{0.46\%} & \textbf{< 10 milliseconds} \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of Axomeme 2.0 against standard Maximum Likelihood selection tools.}
+\caption{Overall benchmark metrics for Axomeme 2.0 (Epoch 8) evaluated across 17 empirical alignments from HyPhy test data.}
 \end{table}
 
 \end{document}
