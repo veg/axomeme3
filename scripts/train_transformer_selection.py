@@ -1436,6 +1436,30 @@ BIN_EDGES_12 = [0.0, 0.2738, 0.7500, 1.2500, 1.8272, 2.4500, 3.1248, 4.4537, 5.7
 BIN_EDGES = BIN_EDGES_12
 BIN_MEANS = torch.tensor([0.00, 0.51, 1.00, 1.54, 2.14, 2.79, 3.79, 5.13, 6.69, 9.86, 14.41, 18.98, 35.00])
 
+def sparsemax(logits, dim=-1):
+    """
+    TPU-friendly Sparsemax (Martins & Astudillo, ICML 2016).
+    Projects logits onto the probability simplex, truncating low-scoring tail values to EXACTLY 0.0.
+    Uses 100% static tensor shapes and ops to prevent PyTorch-XLA recompilation graph breaks.
+    """
+    input_sorted, _ = torch.sort(logits, descending=True, dim=dim)
+    cumsum = torch.cumsum(input_sorted, dim=dim)
+    
+    num_elements = logits.shape[dim]
+    k_range = torch.arange(1, num_elements + 1, device=logits.device, dtype=logits.dtype)
+    shape = [1] * logits.dim()
+    shape[dim] = -1
+    k_range = k_range.view(*shape)
+    
+    bound = 1.0 + k_range * input_sorted
+    is_greater = (bound > cumsum).float()
+    
+    k_max = torch.max(is_greater * k_range, dim=dim, keepdim=True)[0]
+    tau = (torch.gather(cumsum, dim, k_max.long() - 1) - 1.0) / k_max
+    
+    return torch.relu(logits - tau)
+
+
 def decode_soft_ordinal_lrt(logits_ordinal, bin_edges=None, temperature=1.0):
     """
     Rigorously decodes continuous LRT prediction from CORAL cumulative ordinal logits (9 or 12 heads)
@@ -1652,7 +1676,7 @@ class PhyloAxialTransformer(nn.Module):
             
         site_repr = x[:, :, central_idx, :]  # [batch_size, num_species, embed_dim]
         
-        # Multi-Strategy Species Representation Pooling across taxa (Mean + Max + Softmax Attention)
+        # Multi-Strategy Species Representation Pooling across taxa (Mean, Max, Sparsemax Attention, Factorized AA Difference)
         valid_mask = (~padding_mask).float().unsqueeze(-1)
         species_counts = valid_mask.sum(dim=1).clamp(min=1.0)
         
@@ -1663,15 +1687,25 @@ class PhyloAxialTransformer(nn.Module):
         site_repr_masked = site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
         max_pooled = torch.max(site_repr_masked, dim=1)[0]
         
-        # 3. Softmax Attention Pooling across species
+        # 3. TPU-Friendly Sparsemax Attention Pooling across species (Exact zero tail truncation)
         attn_logits = self.species_attn_query(site_repr).squeeze(-1)
-        attn_logits = attn_logits.masked_fill(padding_mask, -1e4)
-        attn_weights = F.softmax(attn_logits, dim=-1).unsqueeze(-1)
+        attn_logits = attn_logits.masked_fill(padding_mask, -1e9)
+        attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff] representations
+        # 4. Factorized Amino Acid Selection Difference Stream (Immune to high dS codon noise)
+        aa_dim_half = self.embed_dim // 2
+        aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, 64]
+        aa_mean_pooled = (aa_site_repr * valid_mask).sum(dim=1) / species_counts
+        aa_site_masked = aa_site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
+        aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
+        diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
+        
+        # Re-expand factorized AA difference back to full embed_dim for stream fusion
+        diff_pooled = torch.cat([diff_aa_half, diff_aa_half], dim=-1)
+        
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff_AA] representations
         if getattr(self, 'num_streams', 4) == 4:
-            diff_pooled = F.relu(max_pooled - mean_pooled)
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled], dim=-1))
         else:
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled], dim=-1))
