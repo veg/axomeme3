@@ -2487,7 +2487,15 @@ def train_full_model(db_path="meme_results.db", msa_dir="msa", epochs=5, batch_s
         print(f"  - Average Training Loss: {avg_train_loss:.4f}")
         print(f"  - Validation LRT MSE: {mse:.4f}")
         print(f"  - Validation Pearson r (LRT):  {val_pearson:.4f}")
-        print(f"  - Validation Spearman rho (LRT): {val_spearman:.4f}")
+        if device.type == 'xla':
+            try:
+                import torch_xla.core.xla_model as xm
+                mem_info = xm.get_memory_info(device)
+                u_mb = mem_info['bytes_used'] / (1024 * 1024)
+                t_mb = mem_info['total_bytes'] / (1024 * 1024)
+                print(f"  - TPU VRAM Memory Used:      {u_mb:.1f} MB / {t_mb:.1f} MB ({u_mb/t_mb*100:.1f}%)")
+            except Exception:
+                pass
         
         is_best = (val_spearman > best_spearman) or (epoch == epochs) or (best_spearman == -1.0)
         if is_best:
