@@ -1506,11 +1506,9 @@ class RankConsistentCoralHead(nn.Module):
     def __init__(self, embed_dim, num_thresholds=12):
         super().__init__()
         self.num_thresholds = num_thresholds
-        self.feature_proj = nn.Sequential(
-            nn.Linear(embed_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1, bias=False)  # Shared projection scalar w^T h
-        )
+        self.feature_proj = nn.Linear(embed_dim, 1, bias=False)  # Shared projection scalar w^T h
+        nn.init.normal_(self.feature_proj.weight, mean=0.1, std=0.02)
+        
         if num_thresholds == 9:
             self.b0 = nn.Parameter(torch.tensor(3.0))
             self.theta_steps = nn.Parameter(torch.ones(8) * 0.5)
