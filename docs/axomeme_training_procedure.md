@@ -53,10 +53,12 @@ $$\mathcal{L}_{\text{CORAL}} = -\frac{1}{B} \sum_{i=1}^B \sum_{k=0}^{11} \left[ 
 
 where $\gamma = 2.0$ is the Focal modulating factor that focuses gradients on hard, misclassified threshold boundaries.
 
-### 3.2 Auxiliary Rate Huber Losses
-Auxiliary heads predict log-transformed parameters $\log(1 + dS)$, $\log(1 + dN^+)$, and $p^+$ using Smooth L1 (Huber) loss with $\delta = 1.0$:
+### 3.2 Biological Physical Inequality Loss ($\mathcal{L}_{\text{physics}}$)
+Enforces the fundamental evolutionary physical law that non-selection ($dN \le dS \implies \beta^+ \le \alpha$) must yield $\text{LRT} = 0$:
 
-$$\mathcal{L}_{\alpha} = \text{Huber}\left(\hat{y}_{\alpha}, \log(1 + \alpha_i)\right)$$
+$$\mathcal{L}_{\text{physics}} = \frac{1}{B} \sum_{i=1}^B \left[ m_i \cdot (\hat{y}_{\text{LRT}, i})^2 + \text{ReLU}\left(\hat{y}_{\text{LRT}, i}\right) \cdot \text{ReLU}\left(\hat{\alpha}_i - \hat{\beta}^+_i\right) \right]$$
+
+where $m_i = \mathbb{I}(y_{\text{LRT}, i} \le 0.1)$ masks neutral background sites, preventing false positive LRT predictions on high synonymous rate ($\alpha = dS$) alignments.
 
 ---
 
