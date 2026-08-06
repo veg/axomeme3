@@ -92,6 +92,7 @@ Full architecture specifications and training protocols are available in the [`d
 * [`docs/axomeme_architecture_spec.pdf`](docs/axomeme_architecture_spec.pdf) - Human-readable PDF specification with mathematical formulations and network architecture diagrams.
 * [`docs/axomeme_architecture_spec.md`](docs/axomeme_architecture_spec.md) - Agent-readable Markdown architecture document.
 * [`docs/axomeme_training_procedure.md`](docs/axomeme_training_procedure.md) - Agent-readable Markdown training & optimization procedure.
+* [`docs/axomeme_training_and_data_guide.md`](docs/axomeme_training_and_data_guide.md) - **Complete Data Pipeline & Training Guide** (includes Dropbox links for SQLite DB & NPZ tensor caches, and generation scripts).
 
 ---
 
