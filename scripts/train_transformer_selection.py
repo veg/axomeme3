@@ -2217,7 +2217,7 @@ def train_full_model(db_path="meme_results.db", msa_dir="msa", epochs=5, batch_s
         print(f" -> Warning: weights_path '{weights_path}' specified but file not found. Starting from scratch.")
         
     if loss_type == "coral":
-        print(f" -> Utilizing 6-Bin CORAL Cumulative Ordinal Multi-Task Loss with Calibrated BCE (gamma_focal=0.0, phys_weight=0.50, pure_coral={pure_coral})")
+        print(f" -> Utilizing 12-Threshold CORAL Cumulative Ordinal Multi-Task Loss with Calibrated BCE (gamma_focal=0.0, phys_weight=0.50, pure_coral={pure_coral})")
         criterion = FocalCoralOrdinalLoss(gamma_focal=0.0, phys_weight=0.50, pure_coral=pure_coral).to(device)
     elif loss_type == "rate_weighted":
         print(f" -> Utilizing Rate-Weighted MSE Loss (gamma=1.5, underpredict_penalty=2.0) with rank_weight={rank_weight}")
