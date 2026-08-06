@@ -92,7 +92,8 @@ Full architecture specifications and training protocols are available in the [`d
 * [`docs/axomeme_architecture_spec.pdf`](docs/axomeme_architecture_spec.pdf) - Human-readable PDF specification with mathematical formulations and network architecture diagrams.
 * [`docs/axomeme_architecture_spec.md`](docs/axomeme_architecture_spec.md) - Agent-readable Markdown architecture document.
 * [`docs/axomeme_training_procedure.md`](docs/axomeme_training_procedure.md) - Agent-readable Markdown training & optimization procedure.
-* [`docs/axomeme_training_and_data_guide.md`](docs/axomeme_training_and_data_guide.md) - **Complete Data Pipeline & Training Guide** (includes Dropbox links for SQLite DB & NPZ tensor caches, and generation scripts).
+* [`docs/axomeme_training_and_data_guide.md`](docs/axomeme_training_and_data_guide.md) - **Complete Data Pipeline & Training Guide** (includes Dropbox links for SQLite DB & NPZ tensor caches).
+* [`docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf`](docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf) - **Technical Analysis PDF** on Range Collapse Mechanics, Vector Projection Overlap ($\mathbf{w}^\top \mathbf{h}_j > 0$), and Ultra-Episodic Selection ($p^+ \le 2\%$). ([Markdown version](docs/axomeme_range_collapse_and_vector_overlap_analysis.md))
 
 ---
 
