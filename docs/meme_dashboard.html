@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOGA MEME Selection Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #f5f4ef; /* Bauhaus warm off-white / light cream */
+            --bg-card: #ffffff; /* Crisp pure white panels */
+            --bg-hover: #eae8df; /* Muted hover gray-cream */
+            --text-main: #111111; /* Strong pure charcoal black for text */
+            --text-muted: #555555; /* Neutral charcoal gray */
+            --color-gold: #ffc107; /* Bauhaus Yellow */
+            --color-silver: #2563eb; /* Bauhaus Blue */
+            --color-likely-error: #dc2626; /* Bauhaus Red */
+            --color-gray: #78716c;
+            --color-success: #16a34a;
+            --accent: #111111; /* Clean black accent */
+            --border: #111111; /* Crisp dark border width */
+            --hard-shadow: 4px 4px 0px 0px #111111; /* Hard offset shadow */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-success);
+            border-radius: 50%;
+            border: 1px solid var(--border);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            box-shadow: var(--hard-shadow);
+            transition: all 0.15s ease;
+        }
+
+        .stat-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px #111111;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Split Workspace Layout */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        /* Gene Browser Panel (Left) */
+        .gene-browser {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--hard-shadow);
+        }
+
+        .search-box {
+            padding: 1rem;
+            border-bottom: 2px solid var(--border);
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            transition: background-color 0.15s;
+        }
+
+        .search-input:focus {
+            background-color: #ffffff;
+        }
+
+        .gene-list-container {
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ffffff;
+        }
+
+        .gene-item {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gene-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .gene-item.active {
+            background-color: var(--bg-hover);
+            border-left: 6px solid var(--border);
+        }
+
+        .gene-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .gene-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        .badge-sig {
+            background-color: #eaeaea;
+            color: var(--text-main);
+        }
+
+        /* Detail Panel (Right) */
+        .detail-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .detail-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: var(--hard-shadow);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .gene-title h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .gene-title p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .gene-stats-grid {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .gene-substat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .gene-substat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .gene-substat-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        /* Plot Area */
+        .plot-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            margin-bottom: 1.5rem;
+            border: 1px dashed #cccccc;
+            background-color: #ffffff;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Table of Sites */
+        .sites-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            background-color: #ffffff;
+        }
+
+        th {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #fcfbf8;
+        }
+
+        tr.active-site td {
+            background-color: var(--bg-hover);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1.5px solid var(--border);
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .badge-gold { background-color: var(--color-gold); color: #000000; }
+        .badge-silver { background-color: var(--color-silver); color: #ffffff; }
+        .badge-likely-error { background-color: var(--color-likely-error); color: #ffffff; }
+
+        .subst-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1.5px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: help;
+            margin: 0.15rem;
+            transition: all 0.15s ease;
+        }
+
+        .subst-chip:hover {
+            background-color: var(--bg-hover);
+            transform: scale(1.02);
+        }
+
+        .subst-count {
+            background-color: var(--border);
+            color: #ffffff;
+            padding: 0.05rem 0.3rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        /* Modal Popup styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 1420px;
+            max-width: 98%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            position: relative;
+            transform: scale(0.96);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr 310px;
+            gap: 1.5rem;
+            max-height: calc(90vh - 70px);
+        }
+
+        .alignment-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alignment-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .alignment-code-block {
+            font-size: 0.85rem;
+            white-space: pre;
+            line-height: 1.5;
+            color: #cbd5e1;
+        }
+
+        .highlight-codon {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 3px;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .gap-codon {
+            color: #475569;
+        }
+
+        .n-codon {
+            color: #64748b;
+            text-decoration: underline dotted;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 350px;
+            color: var(--text-muted);
+            gap: 1rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--color-gray);
+        }
+
+        #network-canvas {
+            width: 260px;
+            height: 220px;
+            display: block;
+        }
+
+        /* Tab Navigation */
+        .tab-bar {
+            display: flex;
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            padding: 0 1rem;
+            gap: 1rem;
+            box-shadow: 3px 3px 0px 0px #111111;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.75rem 1.25rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            border-bottom-color: var(--border);
+        }
+    </style>
+    <!-- D3.js v3, Underscore, and phylotree.js for phylogenetic tree rendering -->
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://veg.github.io/phylotree.js/phylotree.js"></script>
+    <link rel="stylesheet" href="https://veg.github.io/phylotree.js/phylotree.css">
+    <style>
+        /* Phylotree SVG style overrides */
+        .node text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            fill: #e2e8f0;
+        }
+        .node circle {
+            fill: #475569;
+            stroke: #0f172a;
+        }
+        .branch {
+            stroke: #475569;
+            stroke-width: 1.5px;
+        }
+        .branch-active {
+            stroke: #f59e0b;
+            stroke-width: 3.5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>TOGA MEME Selection Dashboard</h1>
+            <p>Interactive selection curation and alignment visualization (filtered at FDR q-value &le; 0.10)</p>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                <span>MEME Database Connected</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Top Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Genes Evaluated</span>
+                <span class="stat-val" id="stat-total-genes">-</span>
+                <span class="stat-desc">Completed MEME pipeline</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Selected Sites</span>
+                <span class="stat-val" id="stat-total-sites">-</span>
+                <span class="stat-desc">q-value ≤ 0.10 threshold</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--color-gold);">
+                <span class="stat-label">GOLD Sites (Single)</span>
+                <span class="stat-val" id="stat-gold-count" style="color: var(--color-gold);">-</span>
+                <span class="stat-desc" id="stat-gold-pct">Robust single nuc changes</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--color-silver);">
+                <span class="stat-label">SILVER Sites (MNS)</span>
+                <span class="stat-val" id="stat-silver-count" style="color: var(--color-silver);">-</span>
+                <span class="stat-desc" id="stat-silver-pct">Validated multi-nuc changes</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--color-likely-error);">
+                <span class="stat-label">LIKELY ERROR Sites (Flagged)</span>
+                <span class="stat-val" id="stat-likely-error-count" style="color: var(--color-likely-error);">-</span>
+                <span class="stat-desc" id="stat-likely-error-pct">Assembly/alignment artifacts</span>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tab-btn-gene" onclick="switchTab('gene')">Gene Curation</button>
+            <button class="tab-btn" id="tab-btn-species" onclick="switchTab('species')">Species Selection</button>
+        </div>
+
+        <!-- Split Layout Workspace -->
+        <div class="workspace" id="gene-workspace">
+            <!-- Left Gene Browser -->
+            <div class="gene-browser">
+                <div class="search-box">
+                    <input type="text" id="gene-search" class="search-input" placeholder="Search gene (e.g. ACSM6)...">
+                </div>
+                <div class="gene-list-container" id="gene-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Right Detail Panel -->
+            <div class="detail-panel" id="detail-panel">
+                <div class="empty-state" id="empty-state">
+                    <span class="empty-icon">📊</span>
+                    <h3>Select a gene to inspect selection results</h3>
+                    <p>Use the browser panel on the left to select any of the evaluated genes.</p>
+                </div>
+                
+                <!-- Detailed view loaded dynamically -->
+                <div id="gene-detail-content" style="display: none;">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <div class="gene-title">
+                                <h2 id="detail-gene-name">ACSM6</h2>
+                                <p id="detail-gene-desc">Gene Selection Landscape</p>
+                            </div>
+                            <div class="gene-stats-grid">
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Codons</span>
+                                    <span class="gene-substat-val" id="detail-gene-sites">-</span>
+                                </div>
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Sequences</span>
+                                    <span class="gene-substat-val" id="detail-gene-seqs">-</span>
+                                </div>
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Significant Sites (FDR q &le; 0.10)</span>
+                                    <span class="gene-substat-val" id="detail-gene-sig-sites" style="color: var(--color-gold);">-</span>
+                                    <div id="detail-gene-sig-breakdown" style="display: flex; gap: 0.35rem; margin-top: 0.2rem;"></div>
+                                </div>
+                                <div class="gene-substat" id="stat-dnds-container" style="display: none;">
+                                    <span class="gene-substat-label">Global dN/dS</span>
+                                    <span class="gene-substat-val" id="detail-gene-dnds">-</span>
+                                </div>
+                                <div class="gene-substat" id="stat-outliers-container" style="display: none;">
+                                    <span class="gene-substat-label">Branch Outliers</span>
+                                    <span class="gene-substat-val" id="detail-gene-outliers" style="color: var(--color-bronze);">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selection Landscape Canvas -->
+                        <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Codon-level Selection Profile (-log10 p-value, significance threshold FDR q &le; 0.10)</h4>
+                        <div class="plot-container">
+                            <canvas id="landscape-chart"></canvas>
+                        </div>
+
+                        <!-- Branch Length Outliers Distribution Canvas -->
+                        <div id="branch-outliers-plot-container" style="display: none; margin-top: 1.5rem; border-top: 1.5px solid var(--border-color); padding-top: 1.2rem;">
+                            <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Phylogenetic Tree Branch Lengths & Outliers Distribution</h4>
+                            <div class="plot-container" style="height: 140px; position: relative;">
+                                <canvas id="outliers-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Sites Table -->
+                    <div class="detail-card">
+                        <h3 style="margin-bottom: 0.25rem;">Significant Sites Curation</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Showing sites with Benjamini-Hochberg corrected false discovery rate (FDR) q-value &le; 0.10.</p>
+                        <div class="sites-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Codon</th>
+                                        <th>p-value</th>
+                                        <th>q-value</th>
+                                        <th>Inferred Mutations</th>
+                                        <th>Curation Status</th>
+                                        <th>Selection Type</th>
+                                        <th>Curation Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sites-table-body">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Split Layout Workspace for Species -->
+        <div class="workspace" id="species-workspace" style="display: none;">
+            <!-- Left Species Browser -->
+            <div class="gene-browser">
+                <div class="search-box">
+                    <input type="text" id="species-search" class="search-input" placeholder="Search species or node (e.g. Mustela)...">
+                </div>
+                <div class="gene-list-container" id="species-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Right Detail Panel -->
+            <div class="detail-panel" id="species-detail-panel">
+                <div class="empty-state" id="species-empty-state">
+                    <span class="empty-icon">🌳</span>
+                    <h3>Select a species or ancestral node to inspect selection results</h3>
+                    <p>Use the browser panel on the left to select from leaves or recent ancestors.</p>
+                </div>
+                
+                <!-- Detailed view loaded dynamically -->
+                <div id="species-detail-content" style="display: none;">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <div class="gene-title">
+                                <h2 id="species-detail-name">-</h2>
+                                <p id="species-detail-desc">Species / Node Selection Profile</p>
+                            </div>
+                            <div class="gene-stats-grid">
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Genes under selection</span>
+                                    <span class="gene-substat-val" id="species-stat-genes">-</span>
+                                </div>
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Sites under selection (FDR q &le; 0.10)</span>
+                                    <span class="gene-substat-val" id="species-stat-sites" style="color: var(--color-silver);">-</span>
+                                </div>
+                                <div class="gene-substat">
+                                    <span class="gene-substat-label">Total selection events</span>
+                                    <span class="gene-substat-val" id="species-stat-signals" style="color: var(--color-gold);">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description of ancestors / descendants -->
+                        <div id="species-descendants-container" style="font-size: 0.85rem; line-height: 1.4; color: var(--text-muted); margin-bottom: 1.25rem; background-color: var(--bg-hover); padding: 0.75rem; border: 2px solid var(--border); border-radius: 4px; box-shadow: 2px 2px 0px 0px #111111;">
+                            <strong>Descendant Leaves:</strong> <span id="species-descendants-list"></span>
+                        </div>
+
+                        <!-- Top Genes chart -->
+                        <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Top Genes by Selection Site Count</h4>
+                        <div class="plot-container" style="height: 250px;">
+                            <canvas id="species-genes-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Selected Sites Table -->
+                    <div class="detail-card">
+                        <h3 style="margin-bottom: 0.25rem;">Selection Events Table</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Showing selection events with Benjamini-Hochberg corrected false discovery rate (FDR) q-value &le; 0.10.</p>
+                        <div class="sites-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th id="th-gene_name" onclick="sortSpeciesSignals('gene_name')" style="cursor: pointer; user-select: none;">Gene Name</th>
+                                        <th id="th-site_index" onclick="sortSpeciesSignals('site_index')" style="cursor: pointer; user-select: none;">Codon Position</th>
+                                        <th id="th-mutation" onclick="sortSpeciesSignals('mutation')" style="cursor: pointer; user-select: none;">Inferred Mutation</th>
+                                        <th id="th-classification" onclick="sortSpeciesSignals('classification')" style="cursor: pointer; user-select: none;">Curation Status</th>
+                                        <th id="th-selection_type" onclick="sortSpeciesSignals('selection_type')" style="cursor: pointer; user-select: none;">Selection Type</th>
+                                        <th id="th-p_value" onclick="sortSpeciesSignals('p_value')" style="cursor: pointer; user-select: none;">p-value</th>
+                                        <th id="th-q_value" onclick="sortSpeciesSignals('q_value')" style="cursor: pointer; user-select: none;">q-value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="species-signals-table-body">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Alignment Modal Overlay -->
+    <div class="modal-overlay" id="alignment-modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-alignment-title" style="font-weight: 600; font-size: 1.1rem; color: var(--text-main);">Local Codon Alignment</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alignment-left" style="overflow-x: auto; background-color: #0b0f19; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Mutated codon marked in [ ]</div>
+                    <div class="alignment-code-block" id="modal-alignment-code">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                <div class="alignment-tree" style="display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; background-color: #0b0f19; padding: 1.25rem; overflow: hidden; min-height: 400px; position: relative;">
+                    <div class="alignment-title" style="margin-bottom: 0.5rem; align-self: flex-start; font-size: 0.95rem; font-weight: 600;">Site Substitution Tree</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem; align-self: flex-start;">
+                        Selected site substitutions mapped to branches (orange).
+                    </div>
+                    <div style="flex-grow: 1; overflow: auto; border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; background-color: #0d1220; max-height: 500px; width: 100%;">
+                        <svg id="site-tree-svg" style="min-height: 400px; display: block;"></svg>
+                    </div>
+                </div>
+                <div class="alignment-right" style="display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border); border-radius: 8px; background-color: #0b0f19; padding: 1.25rem;">
+                    <div class="alignment-title" style="margin-bottom: 0.5rem; align-self: flex-start; font-size: 0.95rem; font-weight: 600;">Substitution Network</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem; align-self: flex-start;">
+                        <span style="display: inline-block; width: 12px; height: 3px; background-color: #10b981; margin-right: 4px; vertical-align: middle;"></span> 1 nuc change
+                        <span style="display: inline-block; width: 12px; height: 3.5px; border-bottom: 2px dashed #ef4444; margin-right: 4px; margin-left: 12px; vertical-align: middle;"></span> MNS (&ge;2 nuc)
+                    </div>
+                    <canvas id="network-canvas" width="260" height="220"></canvas>
+                    <div class="alignment-title" style="margin-top: 1.25rem; margin-bottom: 0.5rem; align-self: flex-start; font-size: 0.95rem; font-weight: 600;">Branches under Selection (EBF)</div>
+                    <div id="modal-ebf-list" style="width: 100%; max-height: 140px; overflow-y: auto; font-size: 0.75rem; align-self: flex-start; border-top: 1px solid var(--border); padding-top: 0.5rem;">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Force trailing slash for directory paths so relative fetches resolve correctly
+        if (window.location.pathname.match(/\/toga-(meme|absrel)$/)) {
+            window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+        }
+
+        // State variables
+        let genesData = [];
+        let activeGene = null;
+        let activeGeneData = null;
+        let activeSite = null;
+        let landscapeChart = null;
+
+        // Species state variables
+        let speciesData = [];
+        let activeSpecies = null;
+        let activeSiteToSelect = null;
+        let activeTab = 'gene';
+        let speciesSortCol = 'gene_name';
+        let speciesSortAsc = true;
+
+        // Fetch global stats and initial gene list on load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchSummary();
+            fetchGenes();
+            fetchSpecies();
+            
+            document.getElementById('gene-search').addEventListener('input', filterGenesList);
+            document.getElementById('species-search').addEventListener('input', filterSpeciesList);
+        });
+
+        function fetchSummary() {
+            fetch('/api/summary')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('stat-total-genes').innerText = data.total_genes;
+                    document.getElementById('stat-total-sites').innerText = data.total_sig_sites;
+                    document.getElementById('stat-gold-count').innerText = data.gold_count;
+                    document.getElementById('stat-silver-count').innerText = data.silver_count;
+                    document.getElementById('stat-likely-error-count').innerText = data.likely_error_count;
+                    
+                    const totalEvaluated = data.gold_count + data.silver_count + data.likely_error_count;
+                    if (totalEvaluated > 0) {
+                        document.getElementById('stat-gold-pct').innerText = `${(data.gold_count / totalEvaluated * 100).toFixed(1)}% of significant sites`;
+                        document.getElementById('stat-silver-pct').innerText = `${(data.silver_count / totalEvaluated * 100).toFixed(1)}% of significant sites`;
+                        document.getElementById('stat-likely-error-pct').innerText = `${(data.likely_error_count / totalEvaluated * 100).toFixed(1)}% of significant sites`;
+                    }
+                })
+                .catch(err => console.error("Error fetching summary:", err));
+        }
+
+        function fetchGenes() {
+            fetch('/api/genes')
+                .then(res => res.json())
+                .then(data => {
+                    genesData = data;
+                    renderGenesList(data);
+                })
+                .catch(err => console.error("Error fetching genes:", err));
+        }
+
+        function renderGenesList(genes) {
+            const container = document.getElementById('gene-list');
+            container.innerHTML = '';
+            
+            if (genes.length === 0) {
+                container.innerHTML = '<div style="padding: 1rem; color: var(--text-muted); text-align: center;">No genes found</div>';
+                return;
+            }
+            
+            genes.forEach(g => {
+                const item = document.createElement('div');
+                item.className = `gene-item ${activeGene === g.gene_name ? 'active' : ''}`;
+                item.onclick = () => selectGene(g.gene_name);
+                
+                // Show badges for breakdown of sig sites by support category
+                let badge = '';
+                if (g.num_sig_sites > 0) {
+                    badge = '<div style="display: flex; gap: 0.25rem; flex-shrink: 0; align-items: center;">';
+                    if (g.gold_sites > 0) {
+                        badge += `<span class="badge badge-gold" title="Gold (robust single nuc): ${g.gold_sites}">${g.gold_sites}G</span>`;
+                    }
+                    if (g.silver_sites > 0) {
+                        badge += `<span class="badge badge-silver" title="Silver (robust MNS): ${g.silver_sites}">${g.silver_sites}S</span>`;
+                    }
+                    if (g.likely_error_sites > 0) {
+                        badge += `<span class="badge badge-likely-error" title="Likely Error (artifact): ${g.likely_error_sites}">${g.likely_error_sites}E</span>`;
+                    }
+                    badge += '</div>';
+                }
+                
+                item.innerHTML = `
+                    <div style="min-width: 0; padding-right: 0.5rem;">
+                        <div class="gene-name" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${g.gene_name}</div>
+                        <div class="gene-meta">${g.num_sites} codons | ${g.num_seqs} seqs</div>
+                    </div>
+                    ${badge}
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function filterGenesList() {
+            const query = document.getElementById('gene-search').value.toLowerCase().trim();
+            const filtered = genesData.filter(g => g.gene_name.toLowerCase().includes(query));
+            renderGenesList(filtered);
+        }
+
+        function selectGene(geneName) {
+            activeGene = geneName;
+            activeSite = null;
+            
+            // Highlight active in list
+            const items = document.querySelectorAll('.gene-item');
+            items.forEach(item => {
+                const nameDiv = item.querySelector('.gene-name');
+                if (nameDiv && nameDiv.innerText === geneName) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Hide empty state, show content
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('gene-detail-content').style.display = 'block';
+            closeModal();
+            
+            fetch(`/api/gene/${geneName}`)
+                .then(res => res.json())
+                .then(data => {
+                    activeGeneData = data;
+                    renderGeneDetails(data);
+                    if (activeSiteToSelect !== null) {
+                        selectSite(geneName, activeSiteToSelect);
+                        activeSiteToSelect = null;
+                    }
+                })
+                .catch(err => console.error(`Error fetching gene detail for ${geneName}:`, err));
+        }
+
+        function renderGeneDetails(geneDetail) {
+            document.getElementById('detail-gene-name').innerText = geneDetail.gene_name;
+            document.getElementById('detail-gene-sites').innerText = geneDetail.num_sites;
+            document.getElementById('detail-gene-seqs').innerText = geneDetail.num_seqs;
+            document.getElementById('detail-gene-sig-sites').innerText = geneDetail.significant_sites.length;
+            
+            // Global dN/dS and Branch Outliers
+            const dndsContainer = document.getElementById('stat-dnds-container');
+            const outliersContainer = document.getElementById('stat-outliers-container');
+            
+            if (geneDetail.global_dnds !== undefined && geneDetail.global_dnds !== null) {
+                document.getElementById('detail-gene-dnds').innerText = Number(geneDetail.global_dnds).toFixed(3);
+                dndsContainer.style.display = 'flex';
+            } else {
+                dndsContainer.style.display = 'none';
+            }
+            
+            if (geneDetail.num_branch_outliers !== undefined && geneDetail.num_branch_outliers !== null) {
+                const count = geneDetail.num_branch_outliers;
+                const outliersVal = document.getElementById('detail-gene-outliers');
+                outliersVal.innerText = count;
+                
+                if (count > 0 && geneDetail.outlier_branches) {
+                    outliersVal.title = "Outlier branches: " + geneDetail.outlier_branches;
+                    outliersVal.style.textDecoration = 'underline';
+                    outliersVal.style.textDecorationStyle = 'dotted';
+                    outliersVal.style.cursor = 'help';
+                } else {
+                    outliersVal.title = '';
+                    outliersVal.style.textDecoration = 'none';
+                    outliersVal.style.cursor = 'default';
+                }
+                outliersContainer.style.display = 'flex';
+            } else {
+                outliersContainer.style.display = 'none';
+            }
+            
+            // Count classifications for breakdown
+            let gold = 0, silver = 0, likely_error = 0;
+            geneDetail.significant_sites.forEach(s => {
+                if (s.classification === 'GOLD') gold++;
+                else if (s.classification === 'SILVER') silver++;
+                else if (s.classification === 'LIKELY_ERROR' || s.classification === 'BRONZE') likely_error++;
+            });
+
+            const breakdownContainer = document.getElementById('detail-gene-sig-breakdown');
+            if (breakdownContainer) {
+                breakdownContainer.innerHTML = '';
+                if (geneDetail.significant_sites.length > 0) {
+                    if (gold > 0) breakdownContainer.innerHTML += `<span class="badge badge-gold" title="Gold (robust single nuc)">${gold} Gold</span>`;
+                    if (silver > 0) breakdownContainer.innerHTML += `<span class="badge badge-silver" title="Silver (robust MNS)">${silver} Silver</span>`;
+                    if (likely_error > 0) breakdownContainer.innerHTML += `<span class="badge badge-likely-error" title="Likely Error (artifact)">${likely_error} Likely Error</span>`;
+                }
+            }
+            
+            // Render Table
+            const tbody = document.getElementById('sites-table-body');
+            tbody.innerHTML = '';
+            
+            if (geneDetail.significant_sites.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No significant selection sites found under MEME for this gene.</td></tr>';
+            } else {
+                geneDetail.significant_sites.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.id = `site-row-${s.site_index}`;
+                    tr.style.cursor = 'pointer';
+                    tr.onclick = () => selectSite(geneDetail.gene_name, s.site_index);
+                    
+                    const badgeClass = `badge-${s.classification.toLowerCase().replace('_', '-')}`;
+                    
+                    // Group substitutions by AA transition to create a visual graphic (chips with tooltips)
+                    const groups = {};
+                    s.substitutions.forEach(str => {
+                        const match = str.match(/^([^:]+):([^-]+)->([^(]+)\((.+)\)$/);
+                        if (match) {
+                            const [_, branch, anc_aa, der_aa, codons] = match;
+                            const transition = `${anc_aa} ➔ ${der_aa}`;
+                            if (!groups[transition]) {
+                                groups[transition] = [];
+                            }
+                            groups[transition].push({ branch, codons });
+                        }
+                    });
+
+                    let substText = "";
+                    Object.entries(groups).forEach(([transition, items]) => {
+                        const branchList = items.map(item => `${item.branch} (${item.codons.replace('->', ' ➔ ')})`).join(', ');
+                        const count = items.length;
+                        substText += `<span class="subst-chip" title="Carrying Taxa: ${branchList}">${transition} <span class="subst-count">${count}</span></span>`;
+                    });
+                    if (!substText) substText = '<span style="color: var(--text-muted);">None</span>';
+                    
+                    tr.innerHTML = `
+                        <td style="font-weight: 600;">Site ${s.site_index}</td>
+                        <td style="font-family: 'JetBrains Mono', monospace;">${s.p_value.toExponential(2)}</td>
+                        <td style="font-family: 'JetBrains Mono', monospace;">${s.q_value !== undefined && s.q_value !== null ? s.q_value.toExponential(2) : '-'}</td>
+                        <td style="font-size: 0.8rem; line-height: 1.4;">${substText}</td>
+                        <td><span class="status-badge ${badgeClass}">${s.classification.replace('_', ' ')}</span></td>
+                        <td>${getSelectionTypeBadge(s.selection_type)}</td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${s.filter_reason || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            
+            // Render Manhattan Landscape Chart
+            drawLandscapeChart(geneDetail.all_sites);
+
+            // Render Branch Outliers Chart
+            const lengths = geneDetail.branch_lengths ? geneDetail.branch_lengths.split(',').map(Number) : [];
+            drawOutliersChart(lengths, geneDetail.outlier_threshold || 0.0);
+        }
+
+        function drawLandscapeChart(sites) {
+            const canvas = document.getElementById('landscape-chart');
+            const ctx = canvas.getContext('2d');
+            
+            // Handle resizing
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw axis lines
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.lineTo(width - padding.right, height - padding.bottom);
+            ctx.stroke();
+            
+            // Transform data to -log10(p-value)
+            const plotData = sites.map(s => {
+                const p = s.p_value;
+                const q = s.q_value;
+                const score = p > 0 ? -Math.log10(p) : 0;
+                return {
+                    site: s.site_index,
+                    score: score,
+                    p_value: p,
+                    q_value: q,
+                    class: s.classification
+                };
+            });
+            
+            const maxSite = sites.length > 0 ? sites[sites.length - 1].site_index : 1;
+            const maxScore = Math.max(...plotData.map(d => d.score), 2.0); // at least scale to 2.0
+            
+            // Scale helper functions
+            const getX = (site) => padding.left + (site / maxSite) * (width - padding.left - padding.right);
+            const getY = (score) => height - padding.bottom - (score / maxScore) * (height - padding.top - padding.bottom);
+            
+            // Draw dynamic FDR q=0.10 significance threshold line
+            const sigSites = plotData.filter(d => d.q_value <= 0.10);
+            if (sigSites.length > 0) {
+                const maxSigP = Math.max(...sigSites.map(d => d.p_value));
+                const threshY = getY(-Math.log10(maxSigP));
+                ctx.strokeStyle = '#dc2626';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, threshY);
+                ctx.lineTo(width - padding.right, threshY);
+                ctx.stroke();
+                ctx.setLineDash([]); // reset
+                
+                // Label for threshold
+                ctx.fillStyle = '#dc2626';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText(`FDR q=0.10 (p=${maxSigP.toExponential(2)})`, padding.left + 5, threshY - 5);
+            }
+            
+            // Draw Y-axis labels
+            ctx.fillStyle = '#111111';
+            ctx.textAlign = 'right';
+            ctx.font = 'bold 10px sans-serif';
+            for (let i = 0; i <= maxScore; i += 1) {
+                const y = getY(i);
+                ctx.fillText(i.toString(), padding.left - 8, y + 3);
+            }
+            
+            // Y-axis title
+            ctx.save();
+            ctx.translate(15, height / 2 - 10);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText("-log10(p-value)", 0, 0);
+            ctx.restore();
+            
+            // X-axis title
+            ctx.textAlign = 'center';
+            ctx.fillText("Codon Position", width / 2, height - 10);
+            
+            // Draw data points
+            plotData.forEach(d => {
+                const x = getX(d.site);
+                const y = getY(d.score);
+                
+                // Color based on status
+                let color = '#d1d5db'; // default grey
+                let radius = 2;
+                
+                if (d.q_value <= 0.10) {
+                    radius = 4.5;
+                    if (d.class === 'GOLD') color = '#ffc107';
+                    else if (d.class === 'SILVER') color = '#2563eb';
+                    else if (d.class === 'LIKELY_ERROR' || d.class === 'BRONZE') color = '#dc2626';
+                }
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw border for significant points
+                if (d.q_value <= 0.10) {
+                    ctx.strokeStyle = '#111111';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+            
+            // Keep plotData for interactivity if needed
+            canvas.onclick = (e) => {
+                const mouseRect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - mouseRect.left;
+                const mouseY = e.clientY - mouseRect.top;
+                
+                // Find nearest significant point
+                let nearest = null;
+                let minDist = 15; // 15px radius for clicking
+                
+                plotData.forEach(d => {
+                    if (d.q_value > 0.10) return; // only click significant
+                    const x = getX(d.site);
+                    const y = getY(d.score);
+                    
+                    const dist = Math.sqrt((x - mouseX)**2 + (y - mouseY)**2);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = d;
+                    }
+                });
+                
+                if (nearest) {
+                    selectSite(activeGene, nearest.site);
+                }
+            };
+        }
+
+        function drawOutliersChart(lengths, threshold) {
+            const container = document.getElementById('branch-outliers-plot-container');
+            const canvas = document.getElementById('outliers-chart');
+            if (!lengths || lengths.length === 0 || !canvas) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 600;
+            canvas.height = 130; // fixed height for inline stats
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = { top: 15, right: 20, bottom: 25, left: 50 };
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw axis lines
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.lineTo(width - padding.right, height - padding.bottom);
+            ctx.stroke();
+            
+            const maxVal = Math.max(...lengths, threshold, 0.1) * 1.1; // scale to max value with 10% padding
+            const getX = (idx) => padding.left + (idx / (lengths.length - 1)) * (width - padding.left - padding.right);
+            const getY = (val) => height - padding.bottom - (val / maxVal) * (height - padding.top - padding.bottom);
+            
+            // Draw bars
+            lengths.forEach((len, idx) => {
+                const x = getX(idx);
+                const y = getY(len);
+                const barWidth = Math.max(1, (width - padding.left - padding.right) / lengths.length - 0.5);
+                
+                ctx.fillStyle = len > threshold ? '#dc2626' : '#a1a1aa'; // red for outliers, zinc/gray for normal
+                ctx.fillRect(x - barWidth/2, y, barWidth, height - padding.bottom - y);
+            });
+            
+            // Draw cutoff threshold line
+            const threshY = getY(threshold);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, threshY);
+            ctx.lineTo(width - padding.right, threshY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Cutoff Label
+            ctx.fillStyle = '#dc2626';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Cutoff: ${threshold.toFixed(3)}`, width - padding.right - 5, threshY - 4);
+            
+            // Y-Axis Ticks & Grid
+            ctx.fillStyle = '#111111';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            
+            const numTicks = 3;
+            for (let i = 0; i <= numTicks; i++) {
+                const val = (i / numTicks) * maxVal;
+                const y = getY(val);
+                
+                // Draw grid line
+                ctx.strokeStyle = '#e4e4e7';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+                
+                ctx.fillText(val.toFixed(2), padding.left - 6, y);
+            }
+            
+            // Labels
+            ctx.fillStyle = '#71717a';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Branches (${lengths.length} total, sorted by length)`, padding.left + (width - padding.left - padding.right)/2, height - 6);
+        }
+
+        function selectSite(geneName, siteIdx) {
+            activeSite = siteIdx;
+            
+            // Highlight selected row in table
+            const rows = document.querySelectorAll('#sites-table-body tr');
+            rows.forEach(r => {
+                if (r.id === `site-row-${siteIdx}`) {
+                    r.classList.add('active-site');
+                    r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    r.classList.remove('active-site');
+                }
+            });
+            
+            // Open alignment modal overlay
+            const modal = document.getElementById('alignment-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+            
+            const siteDetail = activeGeneData ? activeGeneData.significant_sites.find(s => s.site_index === siteIdx) : null;
+            let statText = "";
+            if (siteDetail) {
+                const pText = siteDetail.p_value.toExponential(2);
+                const qText = siteDetail.q_value !== undefined && siteDetail.q_value !== null ? siteDetail.q_value.toExponential(2) : '-';
+                statText = ` (p-val: ${pText}, q-val: ${qText})`;
+            }
+            document.getElementById('modal-alignment-title').innerText = `Local Codon Alignment (Site ${siteIdx})${statText}`;
+            document.getElementById('modal-alignment-code').innerHTML = '<span style="color: var(--text-muted);">Loading alignment window...</span>';
+            
+            // Draw substitution network graph and render EBF branches list
+            if (siteDetail && siteDetail.substitutions) {
+                drawSubstitutionNetwork(siteDetail.substitutions);
+            }
+            if (activeGeneData) {
+                renderSiteTree(activeGeneData.newick_tree, siteDetail ? siteDetail.substitutions : null);
+            }
+            
+            const ebfContainer = document.getElementById('modal-ebf-list');
+            if (ebfContainer) {
+                ebfContainer.innerHTML = '';
+                if (siteDetail && siteDetail.branch_ebfs && siteDetail.branch_ebfs.length > 0) {
+                    siteDetail.branch_ebfs.forEach(item => {
+                        const div = document.createElement('div');
+                        div.style.display = 'flex';
+                        div.style.justifyContent = 'space-between';
+                        div.style.padding = '0.3rem 0';
+                        div.style.borderBottom = '1px solid var(--border)';
+                        
+                        let color = '#94a3b8';
+                        let weight = 'normal';
+                        if (item.ebf >= 100) {
+                            color = '#10b981'; // Green (decisive support)
+                            weight = '600';
+                        } else if (item.ebf >= 50) {
+                            color = '#34d399'; // Light Green
+                        } else if (item.ebf >= 20) {
+                            color = '#60a5fa'; // Blue (strong support)
+                        }
+                        
+                        div.innerHTML = `
+                            <span style="color: #e2e8f0; font-weight: 500;">${item.branch}</span>
+                            <span style="color: ${color}; font-weight: ${weight}; font-family: 'JetBrains Mono', monospace;">EBF=${item.ebf}</span>
+                        `;
+                        ebfContainer.appendChild(div);
+                    });
+                } else {
+                    ebfContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.7rem;">No branches with strong support (EBF &ge; 20).</span>';
+                }
+            }
+            
+            fetch(`/api/alignment/${geneName}/${siteIdx}`)
+                .then(res => res.json())
+                .then(data => {
+                    renderAlignmentWindow(data, siteIdx);
+                })
+                .catch(err => {
+                    document.getElementById('modal-alignment-code').innerHTML = `<span style="color: var(--color-bronze);">Error loading alignment: ${err.message}</span>`;
+                });
+        }
+
+        const GENETIC_CODE = {
+            'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+            'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+            'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+            'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+            'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+            'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+            'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+            'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+            'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+            'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+            'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+            'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+            'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+            'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+            'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*', 'TGA':'*',
+            'TGC':'C', 'TGT':'C', 'TGG':'W',
+        };
+
+        const AA_COLORS = {
+            'A': '#334155', 'I': '#334155', 'L': '#334155', 'M': '#334155', 'F': '#334155', 'W': '#334155', 'V': '#334155', 'P': '#475569', // Hydrophobic (Slate/Gray)
+            'C': '#0d9488', 'G': '#0d9488', 'S': '#0f766e', 'T': '#0f766e', 'Y': '#115e59', 'N': '#134e4a', 'Q': '#134e4a', // Polar/Uncharged (Teal/Green)
+            'K': '#4338ca', 'R': '#3730a3', 'H': '#312e81', // Positively charged (Blue/Indigo)
+            'D': '#991b1b', 'E': '#7f1d1d', // Negatively charged (Red/Dark Red)
+            '*': '#7f1d1d', // Stop (Dark Red)
+            '?': '#0f172a'  // Unknown/Gap
+        };
+
+        function translateCodon(codon) {
+            const c = codon.toUpperCase();
+            if (c.length !== 3 || c.includes('-') || c.includes('N')) return '?';
+            return GENETIC_CODE[c] || '?';
+        }
+
+        function isProblematicCodon(seq) {
+            const s = seq.toUpperCase();
+            return !/^[ACGT]{3}$/.test(s);
+        }
+
+        function renderAlignmentWindow(alignData, siteIdx) {
+            const codeContainer = document.getElementById('modal-alignment-code');
+            codeContainer.innerHTML = '';
+            
+            alignData.alignment.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.style.marginBottom = '4px';
+                rowDiv.style.display = 'flex';
+                rowDiv.style.alignItems = 'center';
+                
+                // Taxon name
+                const nameSpan = document.createElement('span');
+                nameSpan.style.display = 'inline-block';
+                nameSpan.style.width = '200px';
+                nameSpan.style.overflow = 'hidden';
+                nameSpan.style.textOverflow = 'ellipsis';
+                nameSpan.style.whiteSpace = 'nowrap';
+                nameSpan.style.color = '#94a3b8';
+                nameSpan.style.fontFamily = "'JetBrains Mono', monospace";
+                nameSpan.style.fontSize = '0.78rem';
+                nameSpan.style.fontWeight = '500';
+                nameSpan.innerText = row.taxon;
+                nameSpan.title = row.taxon; // Tooltip showing full taxon name
+                rowDiv.appendChild(nameSpan);
+                
+                // Codons container
+                const codonsWrapper = document.createElement('div');
+                codonsWrapper.style.display = 'flex';
+                codonsWrapper.style.gap = '3px';
+                
+                row.codons.forEach(cod => {
+                    const codonSpan = document.createElement('span');
+                    codonSpan.style.display = 'inline-block';
+                    codonSpan.style.width = '36px';
+                    codonSpan.style.textAlign = 'center';
+                    codonSpan.style.borderRadius = '4px';
+                    codonSpan.style.padding = '0.15rem 0rem';
+                    codonSpan.style.fontSize = '0.8rem';
+                    codonSpan.style.fontFamily = "'JetBrains Mono', monospace";
+                    codonSpan.style.fontWeight = '500';
+                    
+                    const aa = translateCodon(cod.sequence);
+                    let bgColor = AA_COLORS[aa] || '#1e293b';
+                    let textColor = '#cbd5e1';
+                    
+                    if (cod.sequence === '---') {
+                        bgColor = '#0f172a';
+                        textColor = '#475569';
+                    }
+                    
+                    codonSpan.style.backgroundColor = bgColor;
+                    codonSpan.style.color = textColor;
+                    codonSpan.innerText = cod.sequence;
+                    codonSpan.title = `Codon: ${cod.sequence} | AA: ${aa}`;
+                    
+                    // Highlight logic at focal site
+                    if (cod.site_index === siteIdx) {
+                        codonSpan.style.fontWeight = 'bold';
+                        if (isProblematicCodon(cod.sequence)) {
+                            // Problematic (gap, N, partially resolved) at focal site
+                            codonSpan.style.backgroundColor = '#7f1d1d';
+                            codonSpan.style.color = '#fecaca';
+                            codonSpan.style.border = '2px solid #ef4444';
+                            codonSpan.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.8)';
+                            codonSpan.title = `Problematic focal codon: ${cod.sequence} (contains gaps/Ns)`;
+                        } else {
+                            // Normal focal codon
+                            codonSpan.style.border = '2px solid #f59e0b';
+                            codonSpan.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.7)';
+                            codonSpan.title = `Focal site: ${cod.sequence} (AA: ${aa})`;
+                        }
+                    }
+                    
+                    codonsWrapper.appendChild(codonSpan);
+                });
+                
+                rowDiv.appendChild(codonsWrapper);
+                codeContainer.appendChild(rowDiv);
+            });
+        }
+
+        function drawSubstitutionNetwork(substs) {
+            const canvas = document.getElementById('network-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+            
+            // Parse substitutions (compressed string: branch:anc_aa->der_aa(anc_codon->der_codon))
+            const nodesMap = new Map();
+            const uniqueEdges = new Map();
+            
+            substs.forEach(str => {
+                const match = str.match(/^([^:]+):([^-]+)->([^(]+)\((.+)\)$/);
+                if (match) {
+                    const [_, branch, anc_aa, der_aa, codons] = match;
+                    const [anc_codon, der_codon] = codons.split('->');
+                    
+                    const anc_label = `${anc_codon} (${anc_aa})`;
+                    const der_label = `${der_codon} (${der_aa})`;
+                    
+                    nodesMap.set(anc_label, { label: anc_label });
+                    nodesMap.set(der_label, { label: der_label });
+                    
+                    // Create an undirected key
+                    const edgeKey = [anc_label, der_label].sort().join(' -- ');
+                    
+                    if (!uniqueEdges.has(edgeKey)) {
+                        uniqueEdges.set(edgeKey, {
+                            source: anc_label,
+                            target: der_label,
+                            anc_codon: anc_codon,
+                            der_codon: der_codon,
+                            count: 0
+                        });
+                    }
+                    uniqueEdges.get(edgeKey).count += 1;
+                }
+            });
+            
+            const uniqueNodes = Array.from(nodesMap.keys());
+            const N = uniqueNodes.length;
+            if (N === 0) return;
+            
+            const cx = width / 2;
+            const cy = height / 2;
+            const R = Math.min(cx, cy) - 30; // radius
+            
+            uniqueNodes.forEach((nodeName, idx) => {
+                // Circular layout
+                const theta = (idx * 2 * Math.PI) / N;
+                const x = cx + R * Math.cos(theta);
+                const y = cy + R * Math.sin(theta);
+                nodesMap.get(nodeName).x = x;
+                nodesMap.get(nodeName).y = y;
+            });
+            
+            const edgeList = Array.from(uniqueEdges.values());
+            
+            // Draw edges first (under nodes)
+            edgeList.forEach(e => {
+                const n1 = nodesMap.get(e.source);
+                const n2 = nodesMap.get(e.target);
+                if (!n1 || !n2) return;
+                
+                const dist = getCodonDistance(e.anc_codon, e.der_codon);
+                
+                ctx.beginPath();
+                ctx.moveTo(n1.x, n1.y);
+                ctx.lineTo(n2.x, n2.y);
+                
+                if (dist >= 2) {
+                    ctx.strokeStyle = '#dc2626'; // Bauhaus Red for MNS
+                    ctx.lineWidth = 3.5;
+                    ctx.setLineDash([4, 4]); // dashed for MNS
+                } else {
+                    ctx.strokeStyle = '#16a34a'; // Bauhaus Green for single change
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([]);
+                }
+                ctx.stroke();
+            });
+            ctx.setLineDash([]); // reset dash
+            
+            // Draw edge labels (counts) on top of the edges
+            edgeList.forEach(e => {
+                const n1 = nodesMap.get(e.source);
+                const n2 = nodesMap.get(e.target);
+                if (!n1 || !n2) return;
+                
+                const dist = getCodonDistance(e.anc_codon, e.der_codon);
+                
+                const mx = (n1.x + n2.x) / 2;
+                const my = (n1.y + n2.y) / 2;
+                
+                // Draw background circle for label
+                ctx.beginPath();
+                ctx.arc(mx, my, 9, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = dist >= 2 ? '#dc2626' : '#16a34a';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Draw text label
+                ctx.fillStyle = dist >= 2 ? '#dc2626' : '#16a34a';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(e.count.toString(), mx, my);
+            });
+            
+            // Draw nodes
+            uniqueNodes.forEach(nodeName => {
+                const n = nodesMap.get(nodeName);
+                
+                // Draw node circle
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, 22, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#111111';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw label text
+                ctx.fillStyle = '#111111';
+                ctx.font = 'bold 8.5px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Display codon & AA label
+                ctx.fillText(n.label, n.x, n.y);
+            });
+        }
+
+        function getCodonDistance(c1, c2) {
+            if (!c1 || !c2 || c1.length !== 3 || c2.length !== 3) return 1;
+            return (c1[0] !== c2[0] ? 1 : 0) + (c1[1] !== c2[1] ? 1 : 0) + (c1[2] !== c2[2] ? 1 : 0);
+        }
+
+        function renderSiteTree(treeStr, substs) {
+            const svgElement = d3.select("#site-tree-svg");
+            svgElement.selectAll("*").remove();
+
+            if (!treeStr) {
+                svgElement.append("text").attr("x", 10).attr("y", 30).attr("fill", "var(--text-muted)").text("No tree structure available.");
+                return;
+            }
+
+            // Parse substitutions (compressed string: branch:anc_aa->der_aa(anc_codon->der_codon))
+            const substMap = {};
+            const sigLeaves = new Set();
+            if (substs && substs.length > 0) {
+                substs.forEach(str => {
+                    const match = str.match(/^([^:]+):([^-]+)->([^(]+)\((.+)\)$/);
+                    if (match) {
+                        const [_, branch, anc_aa, der_aa, codons] = match;
+                        const [anc_codon, der_codon] = codons.split('->');
+                        const label = `${anc_aa}➔${der_aa} (${anc_codon}➔${der_codon})`;
+                        substMap[branch.toUpperCase()] = label;
+                        sigLeaves.add(branch.toUpperCase());
+                    }
+                });
+            }
+
+            const cleanedNewick = treeStr.replace(/\{[^}]*\}/g, "");
+            const leafCount = (cleanedNewick.match(/,/g) || []).length + 1;
+            const dynamicHeight = Math.max(350, leafCount * 11);
+            
+            // Fixed width of 800px ensures horizontal scrolling works when needed
+            svgElement.attr("height", dynamicHeight).attr("width", 800);
+
+            try {
+                const tree = d3.layout.phylotree()
+                    .svg(svgElement)
+                    .options({
+                        'zoom': false,
+                        'brush': false,
+                        'collapsible': false,
+                        'selectable': false,
+                        'align-tips': false
+                    })
+                    .size([dynamicHeight - 20, 680]); // Width 680 leaves 120px on the right for tip labels
+
+                tree.style_edges((element, edgeData) => {
+                    const nodeName = edgeData.target.name;
+                    
+                    const parent = d3.select(element.node().parentNode);
+                    parent.selectAll("text.branch-label").remove();
+
+                    if (nodeName && substMap[nodeName.toUpperCase()]) {
+                        element.style("stroke", "#f59e0b");
+                        element.style("stroke-width", "3.5px");
+                        
+                        // Add title attribute to DOM node
+                        element.attr("title", `Substitution: ${substMap[nodeName.toUpperCase()]}`);
+                        
+                        element.selectAll("title").remove();
+                        element.append("title").text(`Substitution: ${substMap[nodeName.toUpperCase()]}`);
+                        
+                        // Render branch label text directly on the tree
+                        if (edgeData.source && edgeData.target && edgeData.source.y !== undefined && edgeData.target.y !== undefined) {
+                            const my = edgeData.target.x;
+                            const mx = (edgeData.source.y + edgeData.target.y) / 2;
+                            parent.append("text")
+                                .attr("class", "branch-label")
+                                .attr("x", mx)
+                                .attr("y", my - 4)
+                                .attr("text-anchor", "middle")
+                                .style("fill", "#f59e0b")
+                                .style("font-size", "7.5px")
+                                .style("font-weight", "bold")
+                                .style("font-family", "'JetBrains Mono', monospace")
+                                .text(substMap[nodeName.toUpperCase()]);
+                        }
+                    } else {
+                        element.style("stroke", "#475569");
+                        element.style("stroke-width", "1.5px");
+                    }
+                });
+
+                tree.style_nodes((element, nodeData) => {
+                    const isLeaf = ! (nodeData.children && nodeData.children.length);
+                    if (isLeaf) {
+                        const nodeName = nodeData.name;
+                        if (nodeName && sigLeaves.has(nodeName.toUpperCase())) {
+                            element.select("text")
+                                .style("fill", "#f59e0b")
+                                .style("font-weight", "bold");
+                        }
+                    }
+                });
+
+                tree(cleanedNewick).layout();
+
+                svgElement.selectAll(".node text")
+                    .style("font-family", "'JetBrains Mono', monospace")
+                    .style("font-size", "8px")
+                    .style("fill", "#cbd5e1");
+            } catch (err) {
+                console.error("Error rendering site tree:", err);
+                svgElement.append("text").attr("x", 10).attr("y", 30).attr("fill", "var(--color-likely-error)").text("Error rendering tree: " + err.message);
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const geneBtn = document.getElementById('tab-btn-gene');
+            const speciesBtn = document.getElementById('tab-btn-species');
+            const geneWorkspace = document.getElementById('gene-workspace');
+            const speciesWorkspace = document.getElementById('species-workspace');
+            
+            if (tab === 'gene') {
+                geneBtn.classList.add('active');
+                speciesBtn.classList.remove('active');
+                geneWorkspace.style.display = 'grid';
+                speciesWorkspace.style.display = 'none';
+            } else {
+                geneBtn.classList.remove('active');
+                speciesBtn.classList.add('active');
+                geneWorkspace.style.display = 'none';
+                speciesWorkspace.style.display = 'grid';
+                
+                if (activeSpecies) {
+                    setTimeout(() => {
+                        if (window.lastSpeciesDetail) {
+                            drawSpeciesGenesChart(window.lastSpeciesDetail.top_genes);
+                        }
+                    }, 50);
+                }
+            }
+        }
+
+        function fetchSpecies() {
+            fetch('/api/species')
+                .then(res => res.json())
+                .then(data => {
+                    speciesData = data;
+                    renderSpeciesList(data);
+                })
+                .catch(err => console.error("Error fetching species list:", err));
+        }
+
+        function renderSpeciesList(species) {
+            const container = document.getElementById('species-list');
+            container.innerHTML = '';
+            
+            if (species.length === 0) {
+                container.innerHTML = '<div style="padding: 1rem; color: var(--text-muted); text-align: center;">No species or nodes found</div>';
+                return;
+            }
+            
+            species.forEach(s => {
+                const item = document.createElement('div');
+                item.className = `gene-item ${activeSpecies === s.node_id ? 'active' : ''}`;
+                item.onclick = () => selectSpecies(s.node_id);
+                
+                let badge = '';
+                if (s.is_leaf) {
+                    badge = '<span class="badge" style="background-color: #eaeaea; color: var(--text-main); border-color: var(--border);">Leaf</span>';
+                } else {
+                    badge = `<span class="badge badge-silver" style="background-color: var(--color-silver); color: #ffffff;">Node (${s.num_leaves})</span>`;
+                }
+                
+                item.innerHTML = `
+                    <div style="min-width: 0; padding-right: 0.5rem; flex-grow: 1;">
+                        <div class="gene-name" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.9rem;">${s.label}</div>
+                        <div class="gene-meta">${s.node_id}</div>
+                    </div>
+                    ${badge}
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function filterSpeciesList() {
+            const query = document.getElementById('species-search').value.toLowerCase().trim();
+            const filtered = speciesData.filter(s => 
+                s.label.toLowerCase().includes(query) || 
+                s.node_id.toLowerCase().includes(query)
+            );
+            renderSpeciesList(filtered);
+        }
+
+        function selectSpecies(nodeId) {
+            activeSpecies = nodeId;
+            
+            const items = document.querySelectorAll('#species-list .gene-item');
+            items.forEach(item => {
+                const metaDiv = item.querySelector('.gene-meta');
+                if (metaDiv && metaDiv.innerText === nodeId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            document.getElementById('species-empty-state').style.display = 'none';
+            document.getElementById('species-detail-content').style.display = 'block';
+            
+            fetch(`/api/species/${nodeId}`)
+                .then(res => res.json())
+                .then(data => {
+                    window.lastSpeciesDetail = data;
+                    renderSpeciesDetails(data);
+                })
+                .catch(err => console.error("Error fetching species details:", err));
+        }
+
+        function sortSpeciesSignals(col) {
+            if (speciesSortCol === col) {
+                speciesSortAsc = !speciesSortAsc;
+            } else {
+                speciesSortCol = col;
+                speciesSortAsc = true;
+            }
+            if (window.lastSpeciesDetail) {
+                renderSpeciesDetails(window.lastSpeciesDetail);
+            }
+        }
+
+        function renderSpeciesDetails(detail) {
+            document.getElementById('species-detail-name').innerText = detail.label;
+            document.getElementById('species-stat-genes').innerText = detail.stats.total_genes;
+            document.getElementById('species-stat-sites').innerText = detail.stats.total_sites;
+            document.getElementById('species-stat-signals').innerText = detail.stats.total_signals;
+            
+            const descContainer = document.getElementById('species-descendants-container');
+            const descList = document.getElementById('species-descendants-list');
+            if (detail.is_leaf) {
+                descContainer.style.display = 'none';
+            } else {
+                descContainer.style.display = 'block';
+                descList.innerText = detail.descendants.replace(/,/g, ', ');
+            }
+            
+            drawSpeciesGenesChart(detail.top_genes);
+            
+            // Update table headers with sorting indicators
+            const cols = ['gene_name', 'site_index', 'mutation', 'classification', 'selection_type', 'p_value', 'q_value'];
+            const headerBaseNames = {
+                gene_name: 'Gene Name',
+                site_index: 'Codon Position',
+                mutation: 'Inferred Mutation',
+                classification: 'Curation Status',
+                selection_type: 'Selection Type',
+                p_value: 'p-value',
+                q_value: 'q-value'
+            };
+            
+            cols.forEach(col => {
+                const th = document.getElementById(`th-${col}`);
+                if (th) {
+                    let text = headerBaseNames[col];
+                    if (col === speciesSortCol) {
+                        text += speciesSortAsc ? ' ▲' : ' ▼';
+                        th.style.color = 'var(--color-silver)'; // Highlight active column
+                    } else {
+                        th.style.color = '';
+                    }
+                    th.innerText = text;
+                }
+            });
+
+            const tbody = document.getElementById('species-signals-table-body');
+            tbody.innerHTML = '';
+            
+            if (detail.signals.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No selection events found for this species/node.</td></tr>';
+                return;
+            }
+            
+            // Sort a copy of signals
+            const sortedSignals = [...detail.signals];
+            if (speciesSortCol) {
+                sortedSignals.sort((a, b) => {
+                    let valA = a[speciesSortCol];
+                    let valB = b[speciesSortCol];
+                    
+                    if (speciesSortCol === 'mutation') {
+                        valA = `${a.ancestral_aa}➔${a.derived_aa}`;
+                        valB = `${b.ancestral_aa}➔${b.derived_aa}`;
+                    }
+                    
+                    if (typeof valA === 'string') {
+                        const comp = valA.localeCompare(valB, undefined, {numeric: true, sensitivity: 'base'});
+                        return speciesSortAsc ? comp : -comp;
+                    } else {
+                        return speciesSortAsc ? valA - valB : valB - valA;
+                    }
+                });
+            }
+            
+            sortedSignals.forEach(sig => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.title = "Click to jump to gene curation view for this site";
+                tr.onclick = () => jumpToGeneSite(sig.gene_name, sig.site_index);
+                
+                const badgeClass = `badge-${sig.classification.toLowerCase().replace('_', '-')}`;
+                const mutation = `${sig.ancestral_aa} ➔ ${sig.derived_aa} (${sig.ancestral_codon} ➔ ${sig.derived_codon})`;
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 700; color: var(--text-main);">${sig.gene_name}</td>
+                    <td style="font-weight: 600;">Site ${sig.site_index}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${mutation}</td>
+                    <td><span class="status-badge ${badgeClass}">${sig.classification.replace('_', ' ')}</span></td>
+                    <td>${getSelectionTypeBadge(sig.selection_type)}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${sig.p_value.toExponential(2)}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${sig.q_value !== undefined && sig.q_value !== null ? sig.q_value.toExponential(2) : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function drawSpeciesGenesChart(topGenes) {
+            const canvas = document.getElementById('species-genes-chart');
+            const ctx = canvas.getContext('2d');
+            
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 600;
+            canvas.height = 250;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = { top: 15, right: 180, bottom: 25, left: 90 };
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!topGenes || topGenes.length === 0) {
+                ctx.fillStyle = '#555555';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No gene data available', width / 2, height / 2);
+                return;
+            }
+            
+            const data = topGenes.slice(0, 10);
+            
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.stroke();
+            
+            const maxVal = Math.max(...data.map(d => d.site_count), 1);
+            const numBars = data.length;
+            const chartHeight = height - padding.top - padding.bottom;
+            const barHeight = Math.min(16, (chartHeight / numBars) * 0.6);
+            const gap = (chartHeight / numBars) - barHeight;
+            
+            data.forEach((d, idx) => {
+                const y = padding.top + idx * (barHeight + gap) + gap / 2;
+                const barWidth = ((width - padding.left - padding.right) * (d.site_count / maxVal));
+                
+                ctx.fillStyle = '#2563eb';
+                ctx.fillRect(padding.left, y, barWidth, barHeight);
+                ctx.strokeStyle = '#111111';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(padding.left, y, barWidth, barHeight);
+                
+                ctx.fillStyle = '#111111';
+                ctx.fillRect(padding.left + barWidth, y + 2, 2, barHeight - 2);
+                ctx.fillRect(padding.left + 2, y + barHeight, barWidth, 2);
+                
+                ctx.fillStyle = '#111111';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(d.gene_name, padding.left - 8, y + barHeight / 2);
+                
+                ctx.fillStyle = '#111111';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${d.site_count} sites (${d.signal_count} mutations)`, padding.left + barWidth + 8, y + barHeight / 2);
+            });
+        }
+
+        function jumpToGeneSite(geneName, siteIndex) {
+            activeSiteToSelect = siteIndex;
+            switchTab('gene');
+            selectGene(geneName);
+        }
+
+        function getSelectionTypeBadge(type) {
+            if (!type) return '-';
+            let label = type.replace('_', ' ');
+            label = label.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+            
+            let color = '#71717a'; 
+            let bgColor = '#f4f4f5';
+            let borderColor = '#e4e4e7';
+            
+            if (type === 'LINEAGE_SPECIFIC') {
+                color = '#52525b';
+                bgColor = '#f4f4f5';
+                borderColor = '#d4d4d8';
+            } else if (type === 'PERVASIVE') {
+                color = '#1d4ed8'; 
+                bgColor = '#eff6ff';
+                borderColor = '#bfdbfe';
+            } else if (type === 'CLADE_RESTRICTED') {
+                color = '#047857'; 
+                bgColor = '#ecfdf5';
+                borderColor = '#a7f3d0';
+            } else if (type === 'DEEP_ANCESTRAL') {
+                color = '#7e22ce'; 
+                bgColor = '#faf5ff';
+                borderColor = '#e9d5ff';
+            }
+            
+            return `<span class="status-badge" style="background-color: ${bgColor}; color: ${color}; border-color: ${borderColor}; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">${label}</span>`;
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('alignment-modal');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

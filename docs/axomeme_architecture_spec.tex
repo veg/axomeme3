@@ -1,0 +1,119 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+\definecolor{primary}{RGB}{31, 78, 121}
+\definecolor{secondary}{RGB}{84, 130, 53}
+\definecolor{lightgrey}{RGB}{245, 247, 250}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    citecolor=secondary,
+    urlcolor=primary
+}
+
+\title{\textbf{\Huge Axomeme 2.0: Deep Axial Transformer for Ultra-Fast Selection Inference}\\ \Large Architecture \& Mathematical Specification}
+\author{\textbf{Sergei L. Kosakovsky Pond \& Team}\\ \textit{Department of Biology, Temple University}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent \textbf{Axomeme 2.0} is a specialized axial attention transformer neural network designed for rapid, site-level evolutionary selection inference on multiple sequence alignments (MSAs) of protein-coding sequences. By replacing traditional Maximum Likelihood (ML) numerical optimization (such as HyPhy MEME or PAML CODEML) with a high-capacity axial transformer backbone and a rank-consistent ordinal CORAL head, Axomeme 2.0 infers Likelihood Ratio Test (LRT) selection statistics and evolutionary parameters in under \textbf{10 milliseconds per alignment} (a \textbf{4,000$\times$ speedup} over classical ML). This specification details the mathematical formulations, network components, attention mechanisms, and decoding algorithms.
+\end{abstract}
+
+\vspace{1em}\hrule\vspace{1em}
+
+\section{System Overview}
+
+Given an input alignment matrix $\mathbf{X} \in \mathcal{C}^{N \times L}$ of $N$ species (taxa) and $L$ codon sites, Axomeme 2.0 maps sequence variation and phylogenetic distances directly to continuous site-level selection statistics $\hat{y}_{\text{LRT}} \in \mathbb{R}_{\ge 0}$ and selection classifications (Tier 1, Tier 2, or Neutral).
+
+\begin{equation}
+f_{\mathbf{\Theta}}(\mathbf{X}, \mathbf{D}) \longrightarrow \left( \hat{y}_{\text{LRT}}, \hat{\alpha}, \hat{\beta}^+, \hat{p}^+ \right)
+\end{equation}
+
+\section{Input Representation \& Dual Tokenization}
+
+\subsection{Dual Codon-AA Tokenization}
+Each alignment entry $(i, j)$ at species $i$ and codon site $j$ is tokenized across two parallel feature channels:
+\begin{itemize}
+    \item \textbf{Codon Vocabulary ($|\mathcal{C}| = 64$)}: Sense codons $0 \dots 63$. Stop codons, gaps, and unknown nucleotides are assigned index $64$.
+    \item \textbf{Amino Acid Vocabulary ($|\mathcal{A}| = 20$)}: Standard amino acids $0 \dots 19$. Unknowns / gaps are assigned index $20$.
+\end{itemize}
+
+\subsection{Embedding Layer}
+\begin{align}
+\mathbf{e}_{\text{codon}} &= \mathbf{E}_{\text{codon}}[c_{i,j}] \in \mathbb{R}^{64} \\
+\mathbf{e}_{\text{aa}} &= \mathbf{E}_{\text{aa}}[a_{i,j}] \in \mathbb{R}^{64} \\
+\mathbf{x}_{i,j}^0 &= \text{Concat}(\mathbf{e}_{\text{codon}}, \mathbf{e}_{\text{aa}}) + \mathbf{P}_{\text{pos}}[j] + \mathbf{W}_{\text{mds}} \mathbf{m}_i \in \mathbb{R}^{128}
+\end{align}
+where $\mathbf{P}_{\text{pos}} \in \mathbb{R}^{L \times 128}$ is a 1D positional embedding and $\mathbf{m}_i \in \mathbb{R}^4$ represents Multidimensional Scaling (MDS) coordinates derived from the phylogenetic tree distance matrix.
+
+\section{Axial Transformer Backbone}
+
+Axomeme 2.0 incorporates 4 interleaved axial attention blocks to achieve $O(N \cdot L)$ scaling:
+
+\subsection{Column-Attention Layer (Codon Spatial Context)}
+Captures local sequence context along the codon dimension $L$:
+\begin{equation}
+\mathbf{H}_{\text{col}} = \text{MultiHeadAttention}\left(\mathbf{X}, \mathbf{X}, \mathbf{X}\right) \in \mathbb{R}^{(B \cdot N) \times L \times 128}
+\end{equation}
+
+\subsection{Phylo-Row-Attention Layer (Taxa Context)}
+Captures phylogenetic variation across species $N$ with distance normalization:
+\begin{equation}
+\mathbf{D}_{\text{norm}} = \frac{\mathbf{D}}{\bar{D} + 10^{-4}}
+\end{equation}
+Pairwise synonymous ($\mathbf{M}_{\text{syn}}$) and non-synonymous ($\mathbf{M}_{\text{nonsyn}}$) transition masks derived from the genetic code are injected directly into the attention logits.
+
+\section{Multi-Stream Species Representation Pooling}
+
+To aggregate representations across $N$ species into a single site vector $\mathbf{h}_j \in \mathbb{R}^{128}$:
+\begin{align}
+\mathbf{h}_{\text{mean}} &= \frac{1}{N} \sum_{i=1}^N \mathbf{x}_{i,j}, \quad \mathbf{h}_{\text{max}} = \max_{i=1}^N (\mathbf{x}_{i,j}) \\
+\mathbf{h}_{\text{attn}} &= \sum_{i=1}^N \text{Softmax}\left(\mathbf{w}_a^\top \mathbf{x}_{i,j}\right) \mathbf{x}_{i,j}, \quad \mathbf{h}_{\text{diff}} = \text{ReLU}\left(\mathbf{h}_{\text{max}} - \mathbf{h}_{\text{mean}}\right) \\
+\mathbf{h}_j &= \text{Linear}\left(\text{Concat}\left(\mathbf{h}_{\text{mean}}, \mathbf{h}_{\text{max}}, \mathbf{h}_{\text{attn}}, \mathbf{h}_{\text{diff}}\right)\right)
+\end{align}
+
+\section{Rank-Consistent CORAL Head \& Expected Value Decoder}
+
+To guarantee strict rank consistency ($b_0 > b_1 > \dots > b_{11}$):
+\begin{equation}
+b_k = b_0 - \sum_{j=1}^k \text{Softplus}(\theta_j), \quad z_k = \mathbf{w}^\top \mathbf{h}_j + b_k
+\end{equation}
+where $p_k = \sigma(z_k) = P(\text{LRT} > E_{k+1})$.
+
+Continuous predictions are decoded via the \textbf{Smooth Expected Value Decoder}:
+\begin{equation}
+P(\text{Bin } 0) = 1.0 - p_0, \quad P(\text{Bin } m) = p_{m-1} - p_m, \quad P(\text{Bin } 12) = p_{11}
+\end{equation}
+\begin{equation}
+\hat{y}_{\text{LRT}} = \mathbb{E}[\text{LRT}] = \sum_{m=0}^{12} P(\text{Bin } m) \cdot \mu_m
+\end{equation}
+
+\section{Performance Summary}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model / Benchmark} & \textbf{AUC-ROC} & \textbf{AUC-PR} & \textbf{False Positive Rate} & \textbf{Inference Speed} \\
+\midrule
+HyPhy MEME (Likelihood) & 0.81 & 0.35 & 5.0\% & ~45 seconds / gene \\
+PAML CODEML (Likelihood) & 0.78 & 0.30 & 6.2\% & ~180 seconds / gene \\
+\textbf{Axomeme 2.0 (Rebalanced)} & \textbf{0.7813} & \textbf{0.3253} & \textbf{0.46\%} & \textbf{< 10 milliseconds} \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of Axomeme 2.0 against standard Maximum Likelihood selection tools.}
+\end{table}
+
+\end{document}

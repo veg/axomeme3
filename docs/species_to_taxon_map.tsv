@@ -1,0 +1,743 @@
+Species	Common_Name	Original_Assembly_Name	Trimmed_Taxon_Name	Tree_Leaf_Name
+Mustela eversmannii	Steppe polecat	HLmusEve1	musEve	musEve
+Mustela nigripes	black-footed ferret	HLmusNig1	musNig	musNig
+Mustela putorius furo	domestic ferret	HLmusFur2	musFur	musFur
+Mustela lutreola	European mink	HLmusLut1	musLut	musLut
+Mustela nivalis	Least weasel	HLmusNiva2A	musNiva	musNiva
+Mustela erminea	ermine	HLmusErm1	musErm	musErm
+Mustela strigidorsa	Black-striped weasel	HLmusStr1	musStr	musStr
+Neogale vison	American mink	HLneoViso3A	neoViso	neoViso
+Lontra canadensis	Northern American river otter	HLlonCan1	lonCan	lonCan
+Enhydra lutris kenyoni	sea otter	enhLutKen1	enhLutKen	enhLutKen
+Enhydra lutris nereis	sea otter	enhLutNer1	enhLutNer	enhLutNer
+Lutra lutra	Eurasian river otter	HLlutLut1	lutLut	lutLut
+Aonyx cinereus	Asian small-clawed otter	HLaonCin1	aonCin	aonCin
+Pteronura brasiliensis	giant otter	HLpteBra2	pteBra	pteBra
+Pekania pennanti	Fisher	HLpekPenn1	pekPenn	pekPenn
+Martes martes	European pine marten	HLmarMart2	marMart	marMart
+Martes zibellina	sable	HLmarZib1	marZib	marZib
+Martes foina	beach marten	HLmarFoi1	marFoi	marFoi
+Martes flavigula	yellow-throated marten	HLmarFlv1	marFlv	marFlv
+Gulo gulo luscus	American wolverine	HLgulGulLus2	gulGulLus	gulGulLus
+Eira barbara	Tayra	HLeirBar1	eirBar	eirBar
+Mellivora capensis	ratel	HLmelCap1	melCap	melCap
+Meles meles	Eurasian badger	HLmeeMel1	meeMel	meeMel
+Taxidea taxus jeffersonii	American badger	HLtaxTax1	taxTax	taxTax
+Bassariscus sumichrasti	Cacomistle	HLbasSum1	basSum	basSum
+Bassariscus astutus	ringtail	HLbasAst1	basAst	basAst
+Procyon lotor	raccoon	HLproLot1	proLot	proLot
+Nasua narica	White-nosed coati	HLnasNar1	nasNar	nasNar
+Potos flavus	kinkajou	HLpotFla1	potFla	potFla
+Ailurus fulgens	lesser panda	HLailFul2	ailFul	ailFul
+Spilogale gracilis	western spotted skunk	HLspiGra1	spiGra	spiGra
+Spilogale interrupta	plains spotted skunk	HLspiInt1	spiInt	spiInt
+Pusa saimensis	Ringed seal	HLpusHisSai1	pusHisSai	pusHisSai
+Pusa hispida botnica	Ringed seal	HLpusHisBot1	pusHisBot	pusHisBot
+Pusa sibirica	Baikal seal	HLpusSib1	pusSib	pusSib
+Halichoerus grypus	Gray seal	HLhalGryp3A	halGryp	halGryp
+Phoca vitulina	harbor seal	HLphoVit1	phoVit	phoVit
+Phoca largha	spotted seal	HLphoLar1	phoLar	phoLar
+Erignathus barbatus	bearded seal	HLeriBar1	eriBar	eriBar
+Neomonachus schauinslandi	Hawaiian monk seal	neoSch1	neoSch	neoSch
+Leptonychotes weddellii	Weddell seal	HLlepWed2	lepWed	lepWed
+Hydrurga leptonyx	Leopard seal	HLhydLept1	hydLept	hydLept
+Mirounga angustirostris	Northern elephant seal	HLmirAng2	mirAng	mirAng
+Mirounga leonina	Southern elephant seal	HLmirLeo1	mirLeo	mirLeo
+Callorhinus ursinus	northern fur seal	HLcalUrs1	calUrs	calUrs
+Zalophus californianus	California sea lion	HLzalCali2	zalCali	zalCali
+Eumetopias jubatus	Steller sea lion	HLeumJub1	eumJub	eumJub
+Arctocephalus gazella	antarctic fur seal	HLarcGaz2	arcGaz	arcGaz
+Arctocephalus australis	South American fur seal	HLarcAus1	arcAus	arcAus
+Arctocephalus townsendi	Guadalupe fur seal	HLarcTow1	arcTow	arcTow
+Otaria byronia	South American sea lion	HLotaByr1	otaByr	otaByr
+Odobenus rosmarus	walrus	HLodoRos1	odoRos	odoRos
+Odobenus rosmarus divergens	Pacific walrus	odoRosDiv1	odoRosDiv	odoRosDiv
+Ailuropoda melanoleuca	giant panda	HLailMel3	ailMel	ailMel
+Helarctos malayanus	Malayan sun bear	HLhelMal1	helMal	helMal
+Ursus thibetanus thibetanus	Asiatic black bear	HLursThi1	ursThi	ursThi
+Ursus americanus	American black bear	HLursAme3	ursAme	ursAme
+Ursus arctos	brown bear	HLursArc2	ursArc	ursArc
+Ursus maritimus	polar bear	HLursMar2	ursMar	ursMar
+Tremarctos ornatus	spectacled bear	HLtreOrn2	treOrn	treOrn
+Chrysocyon brachyurus	maned wolf	HLchrBra1	chrBra	chrBra
+Speothos venaticus	Bush dog	HLspeVen1	speVen	speVen
+Canis lupus familiaris	dog	canFam4	canFam	canFam
+Canis lupus dingo	dingo	HLcanLupDin2	canLupDin	canLupDin
+Canis lupus baileyi	Mexican gray wolf	HLcanLupBai8A	canLupBai	canLupBai
+Canis lupus	Gray wolf	HLcanLup8	canLup	canLup
+Canis latrans	Coyote	HLcanLat1	canLat	canLat
+Lycaon pictus	African hunting dog	HLlycPict4A	lycPict	lycPict
+Vulpes corsac	Corsac fox	HLvulCor1	vulCor	vulCor
+Vulpes ferrilata	Tibetan sand fox	HLvulFer1	vulFer	vulFer
+Vulpes vulpes	Red fox	HLvulVul3	vulVul	vulVul
+Vulpes lagopus	Arctic fox	HLvulLag2	vulLag	vulLag
+Urocyon cinereoargenteus	Gray fox	HLuroCin1	uroCin	uroCin
+Urocyon littoralis catalinae	Santa Catalina Island fox	HLuroLitCat1	uroLitCat	uroLitCat
+Nyctereutes procyonoides	raccoon dog	HLnycPro4	nycPro	nycPro
+Otocyon megalotis	bat-eared fox	HLotoMeg2	otoMeg	otoMeg
+Lynx pardinus	Spanish lynx	HLlynPar1	lynPar	lynPar
+Lynx canadensis	Canada lynx	HLlynCana2	lynCana	lynCana
+Lynx rufus	bobcat	HLlynRuf1	lynRuf	lynRuf
+Acinonyx jubatus	cheetah	HLaciJub3	aciJub	aciJub
+Puma concolor	puma	HLpumCon1	pumCon	pumCon
+Herpailurus yagouaroundi	jaguarundi	HLpumYag1	pumYag	pumYag
+Prionailurus bengalensis	leopard cat	HLpriBen2	priBen	priBen
+Prionailurus iriomotensis	Iriomote cat	HLpriIri1	priIri	priIri
+Prionailurus viverrinus	fishing cat	HLpriViv3	priViv	priViv
+Felis chaus	jungle cat	HLfelCha1	felCha	felCha
+Felis catus	domestic cat	felCat9	felCat	felCat
+Felis nigripes	black-footed cat	HLfelNig2	felNig	felNig
+Otocolobus manul	Pallas cat	HLotoMan1	otoMan	otoMan
+Caracal caracal	caracal	HLcarCaa1	carCaa	carCaa
+Leopardus tigrinus	little spotted cat	HLleoTig1	leoTig	leoTig
+Panthera pardus	leopard	HLpanPar2	panPar	panPar
+Panthera leo	lion	HLpanLeo2	panLeo	panLeo
+Panthera onca	Jaguar	HLpanOnca3A	panOnca	panOnca
+Panthera uncia	snow leopard	HLpanUnc1	panUnc	panUnc
+Panthera tigris	tiger	HLpanTig3	panTig	panTig
+Neofelis nebulosa	Clouded leopard	HLneoNeb2	neoNeb	neoNeb
+Neofelis diardi	Sunda clouded leopard	HLneoDia1	neoDia	neoDia
+Urva auropunctata	small Indian mongoose	HLurvAur1	urvAur	urvAur
+Mungos mungo	banded mongoose	HLmunMug1	munMug	munMug
+Helogale parvula	dwarf mongoose	HLhelPar1	helPar	helPar
+Suricata suricatta	meerkat	HLsurSur2	surSur	surSur
+Cryptoprocta ferox	fossa	HLcryFer2	cryFer	cryFer
+Hyaena hyaena	striped hyena	HLhyaHya1	hyaHya	hyaHya
+Crocuta crocuta	spotted hyena	HLcroCro2	croCro	croCro
+Proteles cristata cristata	aardwolf	HLproCriCri1	proCriCri	proCriCri
+Paradoxurus hermaphroditus	Asian palm civet	HLparHer1	parHer	parHer
+Paguma larvata	Masked palm civet	HLpagLar1	pagLar	pagLar
+Manis javanica	Malayan pangolin	HLmanJav3	manJav	manJav
+Manis pentadactyla	Chinese pangolin	HLmanPen4	manPen	manPen
+Smutsia gigantea	Giant pangolin	HLsmuGig1	smuGig	smuGig
+Phataginus tricuspis	Tree pangolin	HLmanTri1	manTri	manTri
+Capra sibirica	Siberian ibex	HLcapSib1	capSib	capSib
+Capra ibex	Alpine ibex	HLcapIbe1	capIbe	capIbe
+Capra hircus	Goat	HLcapHirc3	capHirc	capHirc
+Capra aegagrus	wild goat	HLcapAeg1	capAeg	capAeg
+Pseudois nayaur	Bharal	HLpseNaya1	pseNaya	pseNaya
+Ammotragus lervia	aoudad	HLammLer1	ammLer	ammLer
+Nilgiritragus hylocrius	Nilgiri tahr	HLhemHyl1	hemHyl	hemHyl
+Ovis nivicola lydekkeri	snow sheep	HLoviNivLyd1	oviNivLyd	oviNivLyd
+Ovis canadensis	Bighorn sheep	HLoviCana3	oviCana	oviCana
+Ovis aries	Sheep	HLoviArie7	oviArie	oviArie
+Ovis orientalis	Asiatic mouflon	HLoviOri1	oviOri	oviOri
+Ovis ammon	argali	HLoviAmm1	oviAmm	oviAmm
+Rupicapra rupicapra	Chamois	HLrupRup1	rupRup	rupRup
+Oreamnos americanus	mountain goat	HLoreAme1	oreAme	oreAme
+Ovibos moschatus	muskox	HLoviMos1	oviMos	oviMos
+Capricornis sumatraensis	Sumatran serow	HLcapSum1	capSum	capSum
+Budorcas taxicolor	takin	HLbudTax1	budTax	budTax
+Pantholops hodgsonii	chiru	panHod1	panHod	panHod
+Hippotragus niger niger	sable antelope	HLhipNigNig2	hipNigNig	hipNigNig
+Hippotragus equinus	roan antelope	HLhipEqu1	hipEqu	hipEqu
+Oryx dammah	scimitar-horned oryx	HLoryDam1	oryDam	oryDam
+Oryx gazella	gemsbok	HLoryGaz1	oryGaz	oryGaz
+Addax nasomaculatus	Addax	HLaddNas1	addNas	addNas
+Beatragus hunteri	Hirola	HLbeaHun1	beaHun	beaHun
+Damaliscus lunatus	topi	HLdamLun1	damLun	damLun
+Connochaetes taurinus	brindled gnu	HLconTau2	conTau	conTau
+Madoqua kirkii	Kirks dik-dik	HLmadKir1	madKir	madKir
+Raphicerus campestris	steenbok	HLrapCam1	rapCam	rapCam
+Saiga tatarica	saiga antelope	HLsaiTat1	saiTat	saiTat
+Eudorcas thomsonii	Thomsons gazelle	HLeudTho1	eudTho	eudTho
+Nanger dama	Dama gazelle	HLnanDam2	nanDam	nanDam
+Nanger dama ruficollis	Dama gazelle	HLnanDamRuf3	nanDamRuf	nanDamRuf
+Nanger granti	Grants gazelle	HLnanGra1	nanGra	nanGra
+Litocranius walleri	gerenuk	HLlitWal2	litWal	litWal
+Antidorcas marsupialis	springbok	HLantMar1	antMar	antMar
+Procapra przewalskii	Przewalskis gazelle	HLproPrz1	proPrz	proPrz
+Cephalophus harveyi	Harveys duiker	HLcepHar1	cepHar	cepHar
+Sylvicapra grimmia	bush duiker	HLsylGri1	sylGri	sylGri
+Philantomba maxwellii	Maxwells duiker	HLphiMax1	phiMax	phiMax
+Redunca redunca	Bohar reedbuck	HLredRed1	redRed	redRed
+Kobus leche leche	lechwe	HLkobLecLec1	kobLecLec	kobLecLec
+Kobus ellipsiprymnus	waterbuck	HLkobEll1	kobEll	kobEll
+Neotragus pygmaeus	royal antelope	HLneoPyg1	neoPyg	neoPyg
+Oreotragus oreotragus	klipspringer	HLoreOre1	oreOre	oreOre
+Aepyceros melampus	impala	HLaepMel1	aepMel	aepMel
+Neotragus moschatus	suni	HLneoMos1	neoMos	neoMos
+Bubalus depressicornis	lowland anoa	HLbubDep1	bubDep	bubDep
+Bubalus kerabau	carabao	HLbubKer1	bubKer	bubKer
+Bubalus bubalis	water buffalo	HLbubBub2	bubBub	bubBub
+Syncerus caffer	African buffalo	HLsynCaf1	synCaf	synCaf
+Bos gaurus	gaur	HLbosGau1	bosGau	bosGau
+Bos frontalis	gayal	HLbosFro1	bosFro	bosFro
+Bos javanicus	banteng	HLbosJav1	bosJav	bosJav
+Bos indicus	zebu cattle	HLbosInd2	bosInd	bosInd
+Bos taurus	cattle	HLbosTau10	bosTau	bosTau
+Bison bonasus	European bison	HLbisBon1	bisBon	bisBon
+Bison bison bison	American bison	HLbisBisBis2	bisBisBis	bisBisBis
+Bos grunniens	domestic yak	HLbosGru1	bosGru	bosGru
+Bos mutus	wild yak	HLbosMut2	bosMut	bosMut
+Pseudoryx nghetinhensis	Saola	HLpseNghe1	pseNghe	pseNghe
+Tragelaphus eurycerus isaaci	mountain bongo	HLtraEurIsa1	traEurIsa	traEurIsa
+Tragelaphus scriptus	bushbuck	HLtraScr1	traScr	traScr
+Tragelaphus strepsiceros	greater kudu	HLtraStr1	traStr	traStr
+Tragelaphus imberbis	lesser kudu	HLtraImb1	traImb	traImb
+Moschus chrysogaster	alpine musk deer	HLmosChr1	mosChr	mosChr
+Moschus berezovskii	Chinese forest musk deer	HLmosBer3	mosBer	mosBer
+Moschus moschiferus	Siberian musk deer	HLmosMos1	mosMos	mosMos
+Rangifer tarandus granti	reindeer	HLranTarGra2	ranTarGra	ranTarGra
+Odocoileus hemionus hemionus	mule deer	HLodoHem1	odoHem	odoHem
+Odocoileus hemionus	mule deer	HLodoHem2	odoHem	odoHem_2
+Odocoileus virginianus	white-tailed deer	HLodoVir3	odoVir	odoVir
+Hydropotes inermis	Chinese water deer	HLhydIne1	hydIne	hydIne
+Capreolus capreolus	Western roe deer	HLcapCap1	capCap	capCap
+Capreolus pygargus	Eastern roe deer	HLcapPyg1	capPyg	capPyg
+Alces alces	Eurasian elk	HLalcAlc1	alcAlc	alcAlc
+Cervus albirostris	White-lipped deer	HLprzAlb2	przAlb	przAlb
+Cervus nippon	Sika deer	HLcerNip1	cerNip	cerNip
+Cervus elaphus	red deer	HLcerEla2	cerEla	cerEla
+Cervus canadensis	elk,wapiti	HLcerCan1	cerCan	cerCan
+Cervus hanglu yarkandensis	Yarkand deer	HLcerHanYar1	cerHanYar	cerHanYar
+Elaphurus davidianus	Pere Davids deer	HLelaDav1	elaDav	elaDav
+Rucervus eldii siamensis	Elds deer	HLrucEldSia1	rucEldSia	rucEldSia
+Rusa alfredi	Visayan spotted deer	HLrusAlf1	rusAlf	rusAlf
+Dama dama	fallow deer	HLdamDam1	damDam	damDam
+Axis porcinus	Hog deer	HLaxiPor1	axiPor	axiPor
+Muntiacus muntjak	muntjak	HLmunMun1	munMun	munMun
+Muntiacus vaginalis	Northern red muntjac	HLmunVag1	munVag	munVag
+Muntiacus crinifrons	black muntjac	HLmunCri2	munCri	munCri
+Muntiacus gongshanensis	Gongshanensis muntjac	HLmunGon1	munGon	munGon
+Muntiacus reevesi	Reeves muntjac	HLmunRee3	munRee	munRee
+Giraffa camelopardalis rothschildi	giraffe	HLgirCamRot3	girCamRot	girCamRot
+Giraffa camelopardalis antiquorum	Kordofan giraffe	HLgirCamAnt3	girCamAnt	girCamAnt
+Giraffa tippelskirchi	Masai giraffe	HLgirTip2	girTip	girTip
+Giraffa camelopardalis	giraffe	HLgirCam2	girCam	girCam
+Okapia johnstoni	okapi	HLokaJoh3	okaJoh	okaJoh
+Antilocapra americana	pronghorn	HLantAme1	antAme	antAme
+Tragulus javanicus	Java mouse-deer	HLtraJav1	traJav	traJav
+Tragulus kanchil	Lesser mouse deer	HLtraKan2	traKan	traKan
+Mesoplodon bidens	Sowerbys beaked whale	HLmesBid2B	mesBid	mesBid
+Mesoplodon europaeus	Gervais beaked whale	HLmesEur1	mesEur	mesEur
+Mesoplodon mirus	Trues beaked whale	HLmesMir1A	mesMir	mesMir
+Mesoplodon stejnegeri	Stejnegers beaked whale	HLmesSte1	mesSte	mesSte
+Mesoplodon densirostris	Blainvilles beaked whale	HLmesDen2	mesDen	mesDen
+Hyperoodon ampullatus	northern bottlenose whale	HLhypAmp2	hypAmp	hypAmp
+Ziphius cavirostris	Cuviers beaked whale	HLzipCav1	zipCav	zipCav
+Stenella clymene	Clymene dolphin	HLsteCly1	steCly	steCly
+Stenella longirostris orientalis	spinner dolphin	HLsteLonOri1	steLonOri	steLonOri
+Delphinus delphis	Saddleback dolphin	HLdelDelp3	delDelp	delDelp
+Stenella attenuata	bridled dolphin	HLsteAtt1	steAtt	steAtt
+Stenella frontalis	Atlantic spotted dolphin	HLsteFro1	steFro	steFro
+Stenella coeruleoalba	striped dolphin	HLsteCoe1	steCoe	steCoe
+Tursiops truncatus	common bottlenose dolphin	HLturTru5	turTru	turTru
+Tursiops aduncus	Indo-pacific bottlenose dolphin	HLturAdu2	turAdu	turAdu
+Sousa chinensis	Indo-pacific humpbacked dolphin	HLsouChi1	souChi	souChi
+Pseudorca crassidens	False killer whale	HLpseCra2A	pseCra	pseCra
+Peponocephala electra	melon-headed whale	HLpepEle1	pepEle	pepEle
+Globicephala melas	long-finned pilot whale	HLgloMel3	gloMel	gloMel
+Grampus griseus	Rissos dolphin	HLgraGris2A	graGris	graGris
+Steno bredanensis	rough-toothed dolphin	HLsteBre1	steBre	steBre
+Sagmatias australis	Peales dolphin	HLlagAus1	lagAus	lagAus
+Cephalorhynchus commersonii	Commersons dolphin	HLcepCom1	cepCom	cepCom
+Sagmatias obliquidens	Pacific white-sided dolphin	HLlagObl2	lagObl	lagObl
+Orcinus orca	killer whale	HLorcOrc3	orcOrc	orcOrc
+Lagenorhynchus albirostris	white-beaked dolphin	HLlagAlb1	lagAlb	lagAlb
+Leucopleurus acutus	Atlantic white-sided dolphin	HLlagAcu2A	lagAcu	lagAcu
+Monodon monoceros	narwhal	HLmonMon1	monMon	monMon
+Delphinapterus leucas	beluga whale	HLdelLeu4	delLeu	delLeu
+Phocoena phocoena	harbor porpoise	HLphoPho3	phoPho	phoPho
+Phocoena sinus	vaquita	HLphoSin1	phoSin	phoSin
+Neophocaena sunameri	East Asian finless porpoise	HLneoAsiSun2	neoAsiSun	neoAsiSun
+Pontoporia blainvillei	franciscana	HLponBla1	ponBla	ponBla
+Inia geoffrensis	Boutu	HLiniGeo2A	iniGeo	iniGeo
+Lipotes vexillifer	Yangtze River dolphin	lipVex1	lipVex	lipVex
+Platanista minor	Indus River dolphin	HLplaMin1	plaMin	plaMin
+Platanista gangetica	Ganges River dolphin	HLplaGan1	plaGan	plaGan
+Kogia sima	dwarf sperm whale	HLkogSim1	kogSim	kogSim
+Kogia breviceps	pygmy sperm whale	HLkogBre3	kogBre	kogBre
+Physeter macrocephalus	sperm whale	HLphyCat2	phyCat	phyCat
+Megaptera novaeangliae	Humpback whale	HLmegNova3	megNova	megNova
+Balaenoptera physalus	Fin whale	HLbalPhys5A	balPhys	balPhys
+Balaenoptera edeni	pygmy Brydes whale	HLbalEde1	balEde	balEde
+Balaenoptera ricei	Rices whale	HLbalRic2	balRic	balRic
+Balaenoptera borealis	Sei whale	HLbalBore1A	balBore	balBore
+Balaenoptera musculus	Blue whale	HLbalMus2	balMus	balMus
+Eschrichtius robustus	grey whale	HLescRob3	escRob	escRob
+Balaenoptera acutorostrata	minke whale	HLbalAcu2	balAcu	balAcu
+Balaenoptera bonaerensis	Antarctic minke whale	HLbalBon1	balBon	balBon
+Caperea marginata	Pygmy right whale	HLcapMar3	capMar	capMar
+Eubalaena australis	Southern right whale	HLeubAus1	eubAus	eubAus
+Eubalaena japonica	North Pacific right whale	HLeubJap1	eubJap	eubJap
+Eubalaena glacialis	North Atlantic right whale	HLeubGla2	eubGla	eubGla
+Balaena mysticetus	bowhead whale	HLbalMys1	balMys	balMys
+Hippopotamus amphibius	hippopotamus	HLhipAmp4	hipAmp	hipAmp
+Hippopotamus amphibius kiboko	Hippopotamus	HLhipAmphKib5A	hipAmphKib	hipAmphKib
+Hexaprotodon liberiensis	pygmy hippopotamus	HLhexLib1	hexLib	hexLib
+Babyrousa celebensis	North Sulawesi babirusa	HLbabCel1	babCel	babCel
+Sus cebifrons	Visayan warty pig	HLsusCeb1	susCeb	susCeb
+Sus scrofa	Pig	HLsusScro12	susScro	susScro
+Phacochoerus africanus	Common warthog	HLphaAfr1	phaAfr	phaAfr
+Catagonus wagneri	Chacoan peccary	HLcatWag1	catWag	catWag
+Camelus dromedarius	Arabian camel	HLcamDro3A	camDro	camDro
+Camelus bactrianus	Bactrian camel	HLcamBac1	camBac	camBac
+Camelus ferus	Wild Bactrian camel	HLcamFer3	camFer	camFer
+Lama glama	llama	HLlamGla1	lamGla	lamGla
+Lama glama chaku	llama	HLlamGlaCha1	lamGlaCha	lamGlaCha
+Lama guanicoe cacsilensis	guanaco	HLlamGuaCac1	lamGuaCac	lamGuaCac
+Vicugna vicugna mensalis	vicugna	HLvicVicMen1	vicVicMen	vicVicMen
+Vicugna pacos huacaya	alpaca	HLvicPacHua3	vicPacHua	vicPacHua
+Vicugna pacos	Alpaca	HLvicPaco5	vicPaco	vicPaco
+Tapirus terrestris	Brazilian tapir	HLtapTer1	tapTer	tapTer
+Tapirus indicus	Asiatic tapir	HLtapIndi3B	tapIndi	tapIndi
+Dicerorhinus sumatrensis harrissoni	Sumatran rhinoceros	HLdicSumHar2	dicSumHar	dicSumHar
+Dicerorhinus sumatrensis sumatrensis	Sumatran rhinoceros	HLdicSum1	dicSum	dicSum
+Ceratotherium simum cottoni	northern white rhinoceros	HLcerSimCot2	cerSimCot	cerSimCot
+Diceros bicornis minor	black rhinoceros	HLdicBicMin2	dicBicMin	dicBicMin
+Rhinoceros unicornis	greater Indian rhinoceros	HLrhiUni1	rhiUni	rhiUni
+Equus caballus	Horse	HLequCaba4	equCaba	equCaba
+Equus przewalskii	Przewalskis horse	equPrz1	equPrz	equPrz
+Equus zebra	mountain zebra	HLequZeb1	equZeb	equZeb
+Equus quagga quagga	quagga	HLequQua1	equQua	equQua
+Equus quagga boehmi	Grants zebra	HLequQuaBoe1	equQuaBoe	equQuaBoe
+Equus quagga	plains zebra	HLequQua2	equQua	equQua_2
+Equus asinus	Ass	HLequAsin4	equAsin	equAsin
+Equus asinus asinus	ass	HLequAsiAsi2	equAsiAsi	equAsiAsi
+Equus kiang	Kiang	HLequKian1	equKian	equKian
+Lasiurus borealis	red bat	HLlasBor1	lasBor	lasBor
+Lasiurus cinereus	hoary bat	HLaeoCin1	aeoCin	aeoCin
+Plecotus auritus	brown big-eared bat	HLpleAur1	pleAur	pleAur
+Corynorhinus townsendii	Townsends big-eared bat	HLcorTow1B	corTow	corTow
+Corynorhinus rafinesquii	Rafinesques big-eared bat	HLcorRaf1	corRaf	corRaf
+Pipistrellus abramus	Japanese house bat	HLpipAbr1	pipAbr	pipAbr
+Nyctalus aviator	birdlike noctule	HLnycAvi1	nycAvi	nycAvi
+Pipistrellus kuhlii	Kuhls pipistrelle	HLpipKuh2	pipKuh	pipKuh
+Pipistrellus pipistrellus	common pipistrelle	HLpipPip2	pipPip	pipPip
+Pipistrellus hanaki	Hanakis dwarf bat	HLpipHan1	pipHan	pipHan
+Pipistrellus pygmaeus	soprano pipistrelle	HLpipPyg1	pipPyg	pipPyg
+Pipistrellus nathusii	Nathusiuss pipistrelle	HLpipNat1A	pipNat	pipNat
+Vespertilio murinus	particolored bat	HLvesMur1	vesMur	vesMur
+Eptesicus fuscus	big brown bat	HLeptFus3	eptFus	eptFus
+Cnephaeus nilssonii	Northern bat	HLeptNil3	eptNil	eptNil
+Ia io	Great evening bat	HLiaxIox1	iaxIox	iaxIox
+Nycticeius humeralis	evening bat	HLnycHum2	nycHum	nycHum
+Antrozous pallidus	pallid bat	HLantPal2	antPal	antPal
+Myotis nattereri	Natterers bat	HLmyoNat1A	myoNat	myoNat
+Myotis myotis	greater mouse-eared bat	HLmyoMyo6	myoMyo	myoMyo
+Myotis daubentonii	Daubentons bat	HLmyoDau2	myoDau	myoDau
+Myotis davidii	Davids myotis bat	myoDav1	myoDav	myoDav
+Myotis pilosus	Ricketts big-footed Myotis	HLmyoRic2	myoRic	myoRic
+Myotis emarginatus	Geoffroys bat	HLmyoEma1A	myoEma	myoEma
+Myotis septentrionalis	Northern long-eared myotis	HLmyoSep1	myoSep	myoSep
+Myotis yumanensis	Yuma myotis	HLmyoYum1B	myoYum	myoYum
+Myotis findleyi	Findleys myotis	HLmyoFin1	myoFin	myoFin
+Myotis lucifugus	little brown bat	HLmyoLuc1	myoLuc	myoLuc
+Myotis vivesi	fish-eating bat	HLmyoViv1	myoViv	myoViv
+Myotis brandtii	Brandts myotis bat	myoBra1	myoBra	myoBra
+Myotis planiceps	flat-headed Myotis	HLmyoPla1	myoPla	myoPla
+Myotis mystacinus	Whiskered bat	HLmyoMys2A	myoMys	myoMys
+Murina feae	Little tube-nosed bat	HLmurAurFea1	murAurFea	murAurFea
+Miniopterus natalensis	Natal long-fingered bat	HLminNat1	minNat	minNat
+Miniopterus schreibersii	Schreibers long-fingered bat	HLminSch2A	minSch	minSch
+Mops condylurus	Angolan free-tailed bat	HLmopCon1	mopCon	mopCon
+Tadarida brasiliensis	Brazilian free-tailed bat	HLtadBra3	tadBra	tadBra
+Molossus alvarezi	Alvarezs mastiff bat	HLmolAlv2B	molAlv	molAlv
+Molossus molossus	Pallass mastiff bat	HLmolMol2	molMol	molMol
+Molossus nigricans	Northern black mastiff bat	HLmolNig2A	molNig	molNig
+Leptonycteris yerbabuenae	Lesser long-nosed bat	HLlepYer1	lepYer	lepYer
+Anoura caudifer	tailed tailless bat	HLanoCau1	anoCau	anoCau
+Artibeus lituratus	Great fruit-eating bat	HLartLit1A	artLit	artLit
+Artibeus jamaicensis	Jamaican fruit-eating bat	HLartJam2	artJam	artJam
+Sturnira hondurensis	Honduras yellow-shouldered bat	HLstuHon1	stuHon	stuHon
+Carollia perspicillata	Sebas short-tailed bat	HLcarPer3	carPer	carPer
+Phyllostomus hastatus	Greater spear-nosed bat	HLphyHast2	phyHast	phyHast
+Phyllostomus discolor	Pale spear-nosed bat	HLphyDisc4	phyDisc	phyDisc
+Tonatia bakeri	stripe-headed round-eared bat	HLtonSau1	tonSau	tonSau
+Trachops cirrhosus	fringe-lipped bat	HLtraCir2	traCir	traCir
+Micronycteris hirsuta	hairy big-eared bat	HLmicHir1	micHir	micHir
+Macrotus californicus	California big-eared bat	HLmacCal1	macCal	macCal
+Mormoops blainvillei	Antillean ghost-faced bat	HLmorBla1	morBla	morBla
+Pteronotus mesoamericanus	Mesoamerican mustached bat	HLpteMes1	pteMes	pteMes
+Pteronotus parnellii mexicanus	Parnells mustached bat	HLpteParMex3	pteParMex	pteParMex
+Pteronotus parnellii	Parnells mustached bat	HLptePar2	ptePar	ptePar
+Noctilio leporinus	greater bulldog bat	HLnocLep1	nocLep	nocLep
+Rhynchonycteris naso	Proboscis bat	HLrhyNas2B	rhyNas	rhyNas
+Saccopteryx leptura	lesser sac-winged bat	HLsacLep1	sacLep	sacLep
+Saccopteryx bilineata	greater sac-winged bat	HLsacBil1	sacBil	sacBil
+Hipposideros galeritus	Cantors roundleaf bat	HLhipGal1	hipGal	hipGal
+Hipposideros larvatus	Intermediate roundleaf bat	HLhipLar2	hipLar	hipLar
+Hipposideros armiger	great roundleaf bat	HLhipArm1	hipArm	hipArm
+Hipposideros pendleburyi	Pendleburys leaf-nosed bat	HLhipPen1	hipPen	hipPen
+Aselliscus stoliczkanus	Stoliczkas trident bat	HLaseSto4	aseSto	aseSto
+Doryrhina cyclops	cyclops roundleaf bat	HLhipCyc2	hipCyc	hipCyc
+Rhinolophus trifoliatus	Trefoil horseshoe bat	HLrhiTri2	rhiTri	rhiTri
+Rhinolophus perniger lanosus	Northern woolly horseshoe bat	HLrhiLuc4	rhiLuc	rhiLuc
+Rhinolophus yonghoiseni	Yong Hoi Sens woolly horseshoe bat	HLrhiSed2	rhiSed	rhiSed
+Rhinolophus sinicus	Chinese rufous horseshoe bat	HLrhiSin4	rhiSin	rhiSin
+Rhinolophus rex	king horseshoe bat	HLrhiRex1	rhiRex	rhiRex
+Rhinolophus affinis	Intermediate horseshoe bat	HLrhiAff4	rhiAff	rhiAff
+Rhinolophus ferrumequinum	greater horseshoe bat	HLrhiFer6	rhiFer	rhiFer
+Rhinolophus hipposideros	Lesser horseshoe bat	HLrhiHip1A	rhiHip	rhiHip
+Craseonycteris thonglongyai	hog-nosed bat	HLcraTho1	craTho	craTho
+Lyroderma lyra	Indian false vampire	HLmegLyr2	megLyr	megLyr
+Megaderma spasma	lesser false vampire bat	HLmegSpa1	megSpa	megSpa
+Rhinopoma microphyllum	Greater mouse-tailed bat	HLrhiMic1	rhiMic	rhiMic
+Pteropus alecto	black flying fox	pteAle1	pteAle	pteAle
+Pteropus rodricensis	Rodriguez flying fox	HLpteRod1	pteRod	pteRod
+Pteropus rufus	Malagasy flying fox	HLpteRuf1	pteRuf	pteRuf
+Pteropus medius	Indian flying fox	HLpteGig1	pteGig	pteGig
+Pteropus vampyrus	large flying fox	HLpteVam3	pteVam	pteVam
+Pteropus pselaphon	Bonin flying fox	HLptePse1	ptePse	ptePse
+Rousettus leschenaultii	Leschenaults rousette	HLrouLes1	rouLes	rouLes
+Rousettus madagascariensis	Madagascan rousette	HLrouMad1	rouMad	rouMad
+Rousettus aegyptiacus	Egyptian rousette	HLrouAeg4	rouAeg	rouAeg
+Eidolon dupreanum	Malagasy straw-colored fruit bat	HLeidDup1	eidDup	eidDup
+Eidolon helvum	straw-colored fruit bat	HLeidHel2	eidHel	eidHel
+Macroglossus sobrinus	Long-tongued fruit bat	HLmacSob1	macSob	macSob
+Cynopterus brachyotis	lesser short-nosed fruit bat	HLcynBra1	cynBra	cynBra
+Cynopterus sphinx	Indian short-nosed fruit bat	HLcynSph1	cynSph	cynSph
+Sorex maritimensis	Maritime shrew	HLsorMar1	sorMar	sorMar
+Sorex araneus	European shrew	HLsorAra3	sorAra	sorAra
+Sorex cinereus	cinereus shrew	HLsorCin1	sorCin	sorCin
+Sorex fumeus	smoky shrew	HLsorFum1	sorFum	sorFum
+Sorex ornatus	Ornate shrew	HLsorOrn1A	sorOrn	sorOrn
+Sorex hoyi	Pygmy shrew	HLsorHoyi1	sorHoyi	sorHoyi
+Cryptotis parvus	least shrew	HLcryPar1	cryPar	cryPar
+Blarina brevicauda	Short-tailed shrew	HLblaBrev1	blaBrev	blaBrev
+Crocidura gueldenstaedtii	Guldenstadts white-toothed shrew	HLcroGuel1	croGuel	croGuel
+Crocidura zimmermanni	Zimmermanns shrew	HLcroZim1	croZim	croZim
+Suncus etruscus	white-toothed pygmy shrew	HLsunEtr1	sunEtr	sunEtr
+Erinaceus europaeus	western European hedgehog	HLeriEur3	eriEur	eriEur
+Galemys pyrenaicus	Pyrenean desman	HLgalPyr1	galPyr	galPyr
+Desmana moschata	Insectivores	HLdesMos1	desMos	desMos
+Scaptochirus moschatus	Short-faced mole	HLscaMos1	scaMos	scaMos
+Talpa europaea	European mole	HLtalEur1A	talEur	talEur
+Talpa occidentalis	Iberian mole	HLtalOcc1	talOcc	talOcc
+Condylura cristata	star-nosed mole	conCri1	conCri	conCri
+Scalopus aquaticus	eastern mole	HLscaAqu1	scaAqu	scaAqu
+Uropsilus gracilis	gracile shrew mole	HLuroGra1	uroGra	uroGra
+Solenodon paradoxus	Hispaniolan solenodon	HLsolPar1	solPar	solPar
+Heterohyrax brucei	yellow-spotted hyrax	HLhetBru2	hetBru	hetBru
+Procavia capensis	Cape rock hyrax	HLproCap3	proCap	proCap
+Hydrodamalis gigas	Stellers sea cow	HLhydGig1	hydGig	hydGig
+Dugong dugon	Dugong	HLdugDugo3A	dugDugo	dugDugo
+Trichechus inunguis	Amazon manatee	HLtriInu1A	triInu	triInu
+Trichechus manatus	West Indian manatee	HLtriManLat2	triManLat	triManLat
+Loxodonta africana	African savanna elephant	HLloxAfr5A	loxAfr	loxAfr
+Elephas maximus indicus	Asiatic elephant	HLeleMaxInd3A	eleMaxInd	eleMaxInd
+Orycteropus afer afer	aardvark	HLoryAfeAfe2	oryAfeAfe	oryAfeAfe
+Chrysochloris asiatica	Cape golden mole	chrAsi1	chrAsi	chrAsi
+Elephantulus edwardii	Cape elephant shrew	eleEdw1	eleEdw	eleEdw
+Rhynchocyon petersi	Black and rufous elephant shrew	HLrhyPet1B	rhyPet	rhyPet
+Tenrec ecaudatus	Tailless tenrec	HLtenEcau2B	tenEcau	tenEcau
+Echinops telfairi	small Madagascar hedgehog	echTel2	echTel	echTel
+Nesogale talazaci	Talazacs shrew tenrec	HLmicTal1	micTal	micTal
+Dasypus novemcinctus	nine-banded armadillo	HLdasNov4	dasNov	dasNov
+Tolypeutes matacus	southern three-banded armadillo	HLtolMata2	tolMata	tolMata
+Bradypus torquatus	Maned three-toed sloth	HLbraTor4	braTor	braTor
+Choloepus hoffmanni	Hoffmanns two-fingered sloth	HLchoHof3	choHof	choHof
+Choloepus didactylus	southern two-toed sloth	HLchoDid2	choDid	choDid
+Myrmecophaga tridactyla	giant anteater	HLmyrTri2	myrTri	myrTri
+Tamandua tetradactyla	southern tamandua	HLtamTet2	tamTet	tamTet
+Macaca silenus	liontail macaque	HLmacSil1	macSil	macSil
+Macaca nemestrina	Pig-tailed macaque	HLmacNeme2A	macNeme	macNeme
+Macaca nigra	Celebes crested macaque	HLmacNir1	macNir	macNir
+Macaca cyclopis	Taiwan macaque	HLmacCyc1	macCyc	macCyc
+Macaca mulatta	Rhesus monkey	rheMac10	rheMac	rheMac
+Macaca fuscata	Japanese macaque	HLmacFus1	macFus	macFus
+Macaca fascicularis	Crab-eating macaque	HLmacFas8	macFas	macFas
+Macaca assamensis	Assam macaque	HLmacAss1	macAss	macAss
+Macaca thibetana thibetana	Pere Davids macaque	HLmacThiThi1	macThiThi	macThiThi
+Macaca arctoides	stump-tailed macaque	HLmacArc1	macArc	macArc
+Lophocebus aterrimus	Black crested mangabey	HLlopAte1	lopAte	lopAte
+Papio anubis	olive baboon	HLpapAnu5	papAnu	papAnu
+Papio hamadryas	hamadryas baboon	HLpapHam2	papHam	papHam
+Papio papio	Guinea baboon	HLpapPap1	papPap	papPap
+Theropithecus gelada	gelada	HLtheGel1	theGel	theGel
+Mandrillus leucophaeus	drill	HLmanLeu2	manLeu	manLeu
+Mandrillus sphinx	mandrill	HLmanSph3	manSph	manSph
+Cercocebus atys	sooty mangabey	cerAty1	cerAty	cerAty
+Chlorocebus sabaeus	green monkey	HLchlSab3	chlSab	chlSab
+Chlorocebus aethiops	grivet	HLchlAet1	chlAet	chlAet
+Erythrocebus patas	red guenon	HLeryPat3	eryPat	eryPat
+Cercopithecus mona	Mona monkey	HLcerMon1	cerMon	cerMon
+Cercopithecus neglectus	De Brazzas monkey	HLcerNeg1	cerNeg	cerNeg
+Cercopithecus albogularis	Sykes monkey	HLcerAlb1	cerAlb	cerAlb
+Cercopithecus mitis	blue monkey	HLcerMit1	cerMit	cerMit
+Miopithecus talapoin	talapoin	HLmioTal1	mioTal	mioTal
+Allenopithecus nigroviridis	Allens swamp monkey	HLallNig1	allNig	allNig
+Trachypithecus phayrei crepuscula	Phayres leaf monkey	HLtraPhaCre1	traPhaCre	traPhaCre
+Trachypithecus germaini	Indochinese lutung	HLtraGer1	traGer	traGer
+Trachypithecus francoisi	Francoiss langur	HLtraFra1	traFra	traFra
+Semnopithecus entellus	Hanuman langur	HLsemEnt1	semEnt	semEnt
+Rhinopithecus bieti	black snub-nosed monkey	rhiBie1	rhiBie	rhiBie
+Rhinopithecus strykeri	Burmese snub-nosed monkey	HLrhiStr1	rhiStr	rhiStr
+Rhinopithecus roxellana	golden snub-nosed monkey	HLrhiRox2	rhiRox	rhiRox
+Pygathrix nemaeus	Red shanked douc langur	HLpygNem1	pygNem	pygNem
+Pygathrix nigripes	Black-shanked douc langur	HLpygNig1	pygNig	pygNig
+Nasalis larvatus	proboscis monkey	nasLar1	nasLar	nasLar
+Colobus guereza	mantled guereza	HLcolGue1	colGue	colGue
+Colobus angolensis palliatus	Angolan colobus	colAng1	colAng	colAng
+Piliocolobus tephrosceles	Ugandan red Colobus	HLpilTep2	pilTep	pilTep
+Hylobates agilis	agile gibbon	HLhylAgi1	hylAgi	hylAgi
+Hylobates moloch	silvery gibbon	HLhylMol2	hylMol	hylMol
+Hylobates pileatus	pileated gibbon	HLhylPil1	hylPil	hylPil
+Symphalangus syndactylus	siamang	HLsymSyn3	symSyn	symSyn
+Nomascus leucogenys	northern white-cheeked gibbon	HLnomLeu4	nomLeu	nomLeu
+Nomascus siki	southern white-cheeked gibbon	HLnomSik1	nomSik	nomSik
+Hoolock leuconedys	eastern hoolock gibbon	HLhooLeu1	hooLeu	hooLeu
+Pan troglodytes	chimpanzee	panTro6	panTro	panTro
+Pan paniscus	pygmy chimpanzee	HLpanPan4	panPan	panPan
+Homo sapiens	human	hg38	hg	hg
+Gorilla gorilla gorilla	western lowland gorilla	gorGor6	gorGor	gorGor
+Gorilla gorilla	western gorilla	HLgorGor7	gorGor	gorGor_2
+Gorilla beringei	Eastern gorilla	HLgorBer1	gorBer	gorBer
+Pongo abelii	Sumatran orangutan	ponAbe3	ponAbe	ponAbe
+Pongo pygmaeus	Bornean orangutan	HLponPyg1	ponPyg	ponPyg
+Saimiri boliviensis boliviensis	Bolivian squirrel monkey	HLsaiBolBol3	saiBolBol	saiBolBol
+Saimiri boliviensis	Bolivian squirrel monkey	HLsaiBoli4	saiBoli	saiBoli
+Saimiri sciureus	Common squirrel monkey	HLsaiSci1	saiSci	saiSci
+Sapajus apella	Tufted capuchin	HLsapApe1	sapApe	sapApe
+Cebus imitator	white-faced sapajou	cebCap1	cebCap	cebCap
+Cebus albifrons	white-fronted capuchin	HLcebAlb2	cebAlb	cebAlb
+Callithrix jacchus	White-tufted-ear marmoset	HLcalJacc6	calJacc	calJacc
+Callithrix penicillata	Black-pencilled marmoset	HLcalPen1	calPen	calPen
+Cebuella pygmaea	pygmy marmoset	HLcalPym1	calPym	calPym
+Callimico goeldii	Goeldis marmoset	HLcalGoe1	calGoe	calGoe
+Leontopithecus rosalia	golden lion tamarin	HLleoRos1	leoRos	leoRos
+Leontopithecus chrysomelas	golden-headed lion tamarin	HLleoChr1	leoChr	leoChr
+Saguinus imperator	tamarin	HLsagImp1	sagImp	sagImp
+Saguinus oedipus	Cotton-top tamarin	HLsagOed1	sagOed	sagOed
+Saguinus midas	Midas tamarin	HLsagMid1	sagMid	sagMid
+Aotus nancymaae	Mas night monkey	aotNan1	aotNan	aotNan
+Ateles marginatus	White-cheeked spider monkey	HLateMar1	ateMar	ateMar
+Ateles chamek	Black spider monkey	HLateCha1	ateCha	ateCha
+Ateles belzebuth	White-bellied spider monkey	HLateBel1	ateBel	ateBel
+Ateles paniscus	Red-faced black spider monkey	HLatePan1	atePan	atePan
+Ateles hybridus	brown spider monkey	HLateHyb1	ateHyb	ateHyb
+Ateles fusciceps	Brown-headed spider monkey	HLateFus1	ateFus	ateFus
+Ateles geoffroyi	black-handed spider monkey	HLateGeo1	ateGeo	ateGeo
+Brachyteles arachnoides	Woolly spider monkey	HLbraAra1	braAra	braAra
+Lagothrix lagotricha	Brown woolly monkey	HLlagLag1	lagLag	lagLag
+Alouatta palliata	mantled howler monkey	HLaloPal1	aloPal	aloPal
+Alouatta caraya	Black howler monkey	HLaloCara1	aloCara	aloCara
+Cacajao hosomi	Primates	HLcacHos1	cacHos	cacHos
+Cacajao ayresi	Primates	HLcacAyr1	cacAyr	cacAyr
+Cacajao melanocephalus	Black-headed Uacari	HLcacMel1	cacMel	cacMel
+Cacajao calvus	Bald Uacari	HLcacCal1	cacCal	cacCal
+Chiropotes israelita	Primates	HLchiIsr1	chiIsr	chiIsr
+Chiropotes sagulatus	Primates	HLchiSag1	chiSag	chiSag
+Pithecia vanzolinii	Vanzolinis bald-faced saki	HLpitVan1	pitVan	pitVan
+Pithecia mittermeieri	Mittermeiers Tapajos saki	HLpitMit1	pitMit	pitMit
+Pithecia pithecia	white-faced saki	HLpitPit1	pitPit	pitPit
+Cheracebus torquatus	Collared titi	HLcheTor1	cheTor	cheTor
+Cheracebus regulus	Jurua collared titi	HLcheReg1	cheReg	cheReg
+Cheracebus lucifer	Primates	HLcheLuc1	cheLuc	cheLuc
+Cheracebus lugens	Black titi	HLcheLug1	cheLug	cheLug
+Plecturocebus moloch	Red-bellied titi	HLpleMol1	pleMol	pleMol
+Plecturocebus grovesi	Alta Floresta titi monkey	HLpleGro1	pleGro	pleGro
+Plecturocebus bernhardi	Prince Bernhards titi	HLpleBer1	pleBer	pleBer
+Plecturocebus cupreus	Coppery titi	HLpleCup1	pleCup	pleCup
+Plecturocebus brunneus	Brown titi	HLpleBru1	pleBru	pleBru
+Plecturocebus caligatus	Chestnut-bellied titi	HLpleCal1	pleCal	pleCal
+Plecturocebus dubius	Primates	HLpleDub1	pleDub	pleDub
+Plecturocebus cinerascens	Ashy titi	HLpleCin1	pleCin	pleCin
+Plecturocebus miltoni	Miltons titi	HLpleMil1	pleMil	pleMil
+Plecturocebus hoffmannsi	Hoffmanns titi	HLpleHof1	pleHof	pleHof
+Plecturocebus donacophilus	Bolivian titi	HLpleDon1	pleDon	pleDon
+Cephalopachus bancanus	Horsfields tarsier	HLcepBan1	cepBan	cepBan
+Microcebus murinus	gray mouse lemur	micMur3	micMur	micMur
+Microcebus griseorufus	Reddish-gray mouse lemur	HLmicGri1	micGri	micGri
+Microcebus ravelobensis	Golden brown mouse lemur	HLmicRav1	micRav	micRav
+Microcebus sp. 3 GT-2019	unclassified mouse lemur	HLmicSpe31	micSpe	micSpe
+Microcebus tavaratra	Northern rufous mouse lemur	HLmicTav1	micTav	micTav
+Microcebus lehilahytsara	Mittermeiers mouse lemur	HLmicMit1	micMit	micMit
+Mirza coquereli	Coquerels mouse lemur	HLmirCoq1	mirCoq	mirCoq
+Mirza zaza	Northern giant mouse lemur	HLmirZaz1	mirZaz	mirZaz
+Cheirogaleus medius	Lesser dwarf lemur	HLcheMed1	cheMed	cheMed
+Eulemur rufifrons	Bennetts brown lemur	HLeulRuf1	eulRuf	eulRuf
+Eulemur fulvus collaris	brown lemur	HLeulCol1	eulCol	eulCol
+Eulemur fulvus	brown lemur	HLeulFul1	eulFul	eulFul
+Eulemur mongoz	mongoose lemur	HLeulMon1	eulMon	eulMon
+Eulemur flavifrons	Sclaters lemur	HLeulFla1	eulFla	eulFla
+Eulemur macaco	black lemur	eulMac1	eulMac	eulMac
+Eulemur coronatus	Crowned lemur	HLeulCoro1	eulCoro	eulCoro
+Hapalemur alaotrensis	Lac Alaotra bamboo lemur	HLhapAlao1	hapAlao	hapAlao
+Prolemur simus	greater bamboo lemur	HLproSim1	proSim	proSim
+Lemur catta	Ring-tailed lemur	HLlemCat2	lemCat	lemCat
+Varecia variegata	ruffed lemur	HLvarVar1	varVar	varVar
+Propithecus coquereli	Coquerels sifaka	HLproCoq2	proCoq	proCoq
+Indri indri	Indri	HLindInd1	indInd	indInd
+Daubentonia madagascariensis	aye-aye	HLdauMad1	dauMad	dauMad
+Otolemur crassicaudatus	thick-tailed bush baby	HLotoCra1	otoCra	otoCra
+Otolemur garnettii	small-eared galago	otoGar3	otoGar	otoGar
+Galago senegalensis	Senegal galago	HLgalSen1	galSen	galSen
+Galago moholi	Moholi bushbaby	HLgalMoh1	galMoh	galMoh
+Nycticebus coucang	slow loris	HLnycCou2	nycCou	nycCou
+Nycticebus bengalensis	Bengal slow loris	HLnycBen1	nycBen	nycBen
+Xanthonycticebus pygmaeus	pygmy slow loris	HLxanPyg1	xanPyg	xanPyg
+Loris tardigradus	slender loris	HLlorTar1	lorTar	lorTar
+Cynocephalus volans	Philippine flying lemur	HLcynVol1	cynVol	cynVol
+Galeopterus variegatus	Sunda flying lemur	HLgalVar2	galVar	galVar
+Tupaia tana	large tree shrew	HLtupTan1	tupTan	tupTan
+Tupaia chinensis	Chinese tree shrew	HLtupChi2	tupChi	tupChi
+Oryctolagus cuniculus	Rabbit	HLoryCuni5	oryCuni	oryCuni
+Oryctolagus cuniculus cuniculus	rabbit	HLoryCunCun4	oryCunCun	oryCunCun
+Sylvilagus bachmani	brush rabbit	HLsylBac1	sylBac	sylBac
+Sylvilagus floridanus	eastern cottontail	HLsylFlo1	sylFlo	sylFlo
+Lepus townsendii	White-tailed jackrabbit	HLlepTow1	lepTow	lepTow
+Lepus timidus	Mountain hare	HLlepTim1	lepTim	lepTim
+Lepus tolai	Tolai hare	HLlepTola1	lepTola	lepTola
+Lepus capensis	Brown hare	HLlepCap1	lepCap	lepCap
+Lepus yarkandensis	Yarkand hare	HLlepYar1	lepYar	lepYar
+Lepus europaeus	European hare	HLlepEur1	lepEur	lepEur
+Lepus oiostolus	Woolly hare	HLlepOio1	lepOio	lepOio
+Lepus americanus	snowshoe hare	HLlepAme1	lepAme	lepAme
+Ochotona curzoniae	black-lipped pika	HLochCur1	ochCur	ochCur
+Ochotona princeps	American pika	HLochPri4	ochPri	ochPri
+Ochotona argentata	Helan Shan pika	HLochArge1	ochArge	ochArge
+Ictidomys tridecemlineatus	thirteen-lined ground squirrel	HLictTri2	ictTri	ictTri
+Cynomys gunnisoni	Gunnisons prairie dog	HLcynGun1	cynGun	cynGun
+Urocitellus parryii	Arctic ground squirrel	HLuroPar2A	uroPar	uroPar
+Spermophilus citellus	European suslik	HLspeCit1	speCit	speCit
+Spermophilus dauricus	Daurian ground squirrel	HLspeDau1	speDau	speDau
+Marmota flaviventris	Yellow-bellied marmot	HLmarFlav2B	marFlav	marFlav
+Marmota vancouverensis	Vancouver marmot	HLmarVan1	marVan	marVan
+Marmota himalayana	Himalayan marmot	HLmarHim1	marHim	marHim
+Marmota marmota marmota	Alpine marmot	HLmarMar1	marMar	marMar
+Marmota monax	woodchuck	HLmarMon3	marMon	marMon
+Callospermophilus lateralis	Golden-mantled ground squirrel	HLcalLat1B	calLat	calLat
+Otospermophilus beecheyi	California ground squirrel	HLotoBeec1	otoBeec	otoBeec
+Tamias sibiricus	Siberian chipmunk	HLtamSib1	tamSib	tamSib
+Xerus rutilus	unstriped ground squirrel	HLxerRut1	xerRut	xerRut
+Xerus inauris	South African ground squirrel	HLxerIna1	xerIna	xerIna
+Sciurus carolinensis	gray squirrel	HLsciCar1	sciCar	sciCar
+Sciurus niger	fox squirrel	HLsciNig1	sciNig	sciNig
+Sciurus vulgaris	Eurasian red squirrel	HLsciVul1	sciVul	sciVul
+Glaucomys volans	southern flying squirrel	HLglaVol1	glaVol	glaVol
+Pteromys volans	Siberian flying squirrel	HLpteVola1	pteVola	pteVola
+Aplodontia rufa	mountain beaver	HLaplRuf1	aplRuf	aplRuf
+Glis glis	Fat dormouse	HLgliGli1	gliGli	gliGli
+Graphiurus murinus	woodland dormouse	HLgraMur1	graMur	graMur
+Muscardinus avellanarius	Hazel dormouse	HLmusAvel2	musAvel	musAvel
+Eliomys quercinus	garden dormouse	HLeliQue1A	eliQue	eliQue
+Peromyscus californicus insignis	California mouse	HLperCalIns3	perCalIns	perCalIns
+Peromyscus eremicus	cactus mouse	HLperEre1	perEre	perEre
+Peromyscus crinitus	canyon mouse	HLperCri1	perCri	perCri
+Peromyscus maniculatus sonoriensis	North American deer mouse	HLperManSon3	perManSon	perManSon
+Peromyscus maniculatus bairdii	prairie deer mouse	HLperManBai2	perManBai	perManBai
+Peromyscus polionotus subgriseus	oldfield mouse	HLperPol1	perPol	perPol
+Peromyscus leucopus	white-footed mouse	HLperLeu1	perLeu	perLeu
+Neotomodon alstoni	Mexican volcano mouse	HLneoAls1	neoAls	neoAls
+Peromyscus nasutus	northern rock mouse	HLperNas1	perNas	perNas
+Onychomys arenicola	Chihuahuan grasshopper mouse	HLonyAre1A	onyAre	onyAre
+Onychomys torridus	southern grasshopper mouse	HLonyTor1	onyTor	onyTor
+Onychomys leucogaster	Northern grasshopper mouse	HLonyLeu1	onyLeu	onyLeu
+Reithrodontomys megalotis longicaudus	Western harvest mouse	HLreiMegLon1	reiMegLon	reiMegLon
+Scotinomys teguina	Alstons brown mouse	HLscoTegu1	scoTegu	scoTegu
+Neotoma lepida	desert woodrat	HLneoLep1	neoLep	neoLep
+Neotoma floridana	Eastern woodrat	HLneoFlor1A	neoFlor	neoFlor
+Sigmodon hispidus	Hispid cotton rat	HLsigHisp3	sigHisp	sigHisp
+Phyllotis vaccarum	Punta de Vaca leaf-eared mouse	HLphyVac1	phyVac	phyVac
+Microtus californicus	California vole	HLmicCal1A	micCal	micCal
+Microtus ochrogaster	prairie vole	micOch1	micOch	micOch
+Microtus pennsylvanicus	Meadow vole	HLmicPen1A	micPen	micPen
+Microtus oregoni	creeping vole	HLmicOre1	micOre	micOre
+Microtus richardsoni arvicoloides	water vole	HLmicRicArv1	micRicArv	micRicArv
+Microtus obscurus	Altai voie	HLmicObs1	micObs	micObs
+Microtus arvalis	Common vole	HLmicArv1	micArv	micArv
+Microtus agrestis	short-tailed field vole	HLmicAgr2	micAgr	micAgr
+Neodon fuscus	Smokey vole	HLneoFus1	neoFus	neoFus
+Neodon shergylaensis	Shergyla mountain vole	HLneoShe1	neoShe	neoShe
+Alexandromys fortis	Reed vole	HLaleFor1	aleFor	aleFor
+Alexandromys oeconomus	Root vole	HLaleOec1	aleOec	aleOec
+Chionomys nivalis	European snow vole	HLchiNiv1	chiNiv	chiNiv
+Arvicola amphibius	Eurasian water mole	HLarvAmp1	arvAmp	arvAmp
+Bramus lutescens	Transcaucasian mole vole	HLellLut1	ellLut	ellLut
+Ellobius talpinus	Northern mole vole	HLellTal1	ellTal	ellTal
+Myodes glareolus	Bank vole	HLmyoGla2	myoGla	myoGla
+Clethrionomys rutilus	Northern red-backed vole	HLcleRut1	cleRut	cleRut
+Dicrostonyx torquatus	Arctic lemming	HLdicTor1	dicTor	dicTor
+Ondatra zibethicus	muskrat	HLondZib1	ondZib	ondZib
+Cricetulus griseus	Chinese hamster	HLcriGri3	criGri	criGri
+Cricetus cricetus	Black-bellied hamster	HLcriCri1	criCri	criCri
+Mesocricetus auratus	golden hamster	HLmesAur3	mesAur	mesAur
+Phodopus roborovskii	desert hamster	HLphoRob1	phoRob	phoRob
+Phodopus sungorus	winter white dwarf hamster	HLphoSun2	phoSun	phoSun
+Mus spicilegus	steppe mouse	HLmusSpi1	musSpi	musSpi
+Mus spretus	Western wild mouse	HLmusSpr2	musSpr	musSpr
+Mus musculus	House mouse	HLmusMusc41	musMusc	musMusc
+Mus musculus molossinus	Japanese wild mouse	HLmusMusMol40	musMusMol	musMusMol
+Mus caroli	Ryukyu mouse	HLmusCar1	musCar	musCar
+Mus minutoides	Southern African pygmy mouse	HLmusMin1	musMin	musMin
+Mus pahari	shrew mouse	HLmusPah1	musPah	musPah
+Mastomys coucha	southern multimammate mouse	HLmasCou1	masCou	masCou
+Montemys delectorum	delectable soft-furred mouse	HLpraDel1	praDel	praDel
+Apodemus sylvaticus	European woodmouse	HLapoSyl2	apoSyl	apoSyl
+Apodemus agrarius	Eurasian field mouse	HLapoAgr1	apoAgr	apoAgr
+Apodemus speciosus	Large Japanese field mouse	HLapoSpe1	apoSpe	apoSpe
+Tokudaia osimensis	Amami-oshima island spiny rat	HLtokOsi1	tokOsi	tokOsi
+Tokudaia tokunoshimensis	Tokunoshima spiny rat	HLtokTok1	tokTok	tokTok
+Tokudaia muenninki	Okinawa island spiny rat	HLtokMue1	tokMue	tokMue
+Rhabdomys dilectus	mesic four-striped grass rat	HLrhaDil1	rhaDil	rhaDil
+Rhabdomys pumilio	Four-striped grass mouse	HLrhaPum1	rhaPum	rhaPum
+Arvicanthis niloticus	African grass rat	HLarvNil1	arvNil	arvNil
+Grammomys surdaster	African woodland thicket rat	HLgraSur1	graSur	graSur
+Mastacomys fuscus	broad-toothed rat	HLmasFus1	masFus	masFus
+Pseudomys fumeus	smoky mouse	HLpseFum1	pseFum	pseFum
+Pseudomys desertor	brown desert mouse	HLpseDes1	pseDes	pseDes
+Uromys caudimaculatus	giant uromys	HLuroCau1	uroCau	uroCau
+Hydromys chrysogaster	Golden-bellied water rat	HLhydChr1	hydChr	hydChr
+Rhynchomys soricoides	Mount Data shrew rat	HLrhySor1	rhySor	rhySor
+Micromys minutus	European harvest mouse	HLmicMin1	micMin	micMin
+Rattus norvegicus	Norway rat	HLratNor8	ratNor	ratNor
+Rattus rattus	black rat	HLratRat7	ratRat	ratRat
+Acomys cahirinus	Egyptian spiny mouse	HLacoCah1	acoCah	acoCah
+Acomys dimidiatus	Eastern spiny mouse	HLacoDim1	acoDim	acoDim
+Acomys minous	Crete spiny mouse	HLacoMin1	acoMin	acoMin
+Acomys kempi	Kemps spiny mouse	HLacoKem1	acoKem	acoKem
+Acomys percivali	Percivals spiny mouse	HLacoPer1	acoPer	acoPer
+Acomys russatus	golden spiny mouse	HLacoRus1	acoRus	acoRus
+Psammomys obesus	fat sand rat	HLpsaObe1	psaObe	psaObe
+Meriones psammophilus	Rodents	HLmerPsa1	merPsa	merPsa
+Meriones unguiculatus	Mongolian gerbil	HLmerUng2	merUng	merUng
+Rhombomys opimus	great gerbil	HLrhoOpi1	rhoOpi	rhoOpi
+Pachyuromys duprasi	fat-tailed gerbil	HLpacDup1	pacDup	pacDup
+Lophiomys imhausi	crested rat	HLlopImh1	lopImh	lopImh
+Cricetomys gambianus	Gambian giant pouched rat	HLcriGam1	criGam	criGam
+Cricetomys ansorgei	southern giant pouched rat	HLcriAns1	criAns	criAns
+Nannospalax galili	Upper Galilee mountains blind mole rat	nanGal1	nanGal	nanGal
+Rhizomys pruinosus	hoary bamboo rat	HLrhiPru1	rhiPru	rhiPru
+Eospalax fontanierii	Chinese zokor	HLeosFon1	eosFon	eosFon
+Myospalax aspalax	False zokor	HLmyoAspa1	myoAspa	myoAspa
+Myospalax psilurus	Transbaikal zokor	HLmyoPsil1	myoPsil	myoPsil
+Typhlomys cinereus	Soft-furred tree mouse	HLtypCin1	typCin	typCin
+Orientallactaga bullata	Gobi jerboa	HLallBul1	allBul	allBul
+Orientallactaga sibirica	Mongolian five-toed jerboa	HLoriSib2	oriSib	oriSib
+Jaculus jaculus	lesser Egyptian jerboa	HLjacJac2	jacJac	jacJac
+Dipus sagitta	northern three-toed jerboa	HLdipSag1	dipSag	dipSag
+Salpingotus crassicauda	Thick-tailed pygmy jerboa	HLsalCra1	salCra	salCra
+Zapus hudsonius	meadow jumping mouse	HLzapHud1	zapHud	zapHud
+Dipodomys ordii	Ords kangaroo rat	dipOrd2	dipOrd	dipOrd
+Dipodomys stephensi	Stephenss kangaroo rat	HLdipSte1	dipSte	dipSte
+Dipodomys merriami	Merriams kangaroo rat	HLdipMer1	dipMer	dipMer
+Dipodomys spectabilis	banner-tailed kangaroo rat	HLdipSpe1	dipSpe	dipSpe
+Perognathus longimembris pacificus	Pacific pocket mouse	HLperLonPac2	perLonPac	perLonPac
+Thomomys bottae	Bottas pocket gopher	HLthoBot2A	thoBot	thoBot
+Geomys bursarius	Plains pocket gopher	HLgeoBur1	geoBur	geoBur
+Castor canadensis	American beaver	HLcasCana4A	casCana	casCana
+Pedetes capensis	springhare	HLpedCap1	pedCap	pedCap
+Ctenodactylus gundi	Northern gundi	HLcteGund2A	cteGund	cteGund
+Hystrix brachyura	Malayan porcupine	HLhysBra1	hysBra	hysBra
+Hystrix cristata	crested porcupine	HLhysCri1	hysCri	hysCri
+Thryonomys swinderianus	Greater cane rat	HLthrSwi1	thrSwi	thrSwi
+Petromus typicus	dassie-rat	HLpetTyp1	petTyp	petTyp
+Heterocephalus glaber	naked mole-rat	HLhetGla5	hetGla	hetGla
+Fukomys damarensis	Damara mole-rat	HLfukDam2	fukDam	fukDam
+Bathyergus suillus	Cape dune mole-rat	HLbatSui1	batSui	batSui
+Octodon degus	degu	octDeg1	octDeg	octDeg
+Ctenomys sociabilis	social tuco-tuco	HLcteSoc1	cteSoc	cteSoc
+Myocastor coypus	coypu	HLmyoCoy2	myoCoy	myoCoy
+Lagostomus maximus	plains viscacha	HLlagMax1	lagMax	lagMax
+Chinchilla lanigera	long-tailed chinchilla	chiLan1	chiLan	chiLan
+Dinomys branickii	pacarana	HLdinBra1	dinBra	dinBra
+Coendou prehensilis	Brazilian porcupine	HLcoePre1	coePre	coePre
+Erethizon dorsatum	North American porcupine	HLereDor3	ereDor	ereDor
+Dasyprocta punctata	punctate agouti	HLdasPun1	dasPun	dasPun
+Cavia aperea	Brazilian guinea pig	cavApe1	cavApe	cavApe
+Cavia tschudii	Montane guinea pig	HLcavTsc1	cavTsc	cavTsc
+Cavia porcellus	domestic guinea pig	HLcavPor4	cavPor	cavPor
+Dolichotis patagonum	Patagonian cavy	HLdolPat1	dolPat	dolPat
+Hydrochoerus hydrochaeris	capybara	HLhydHyd1	hydHyd	hydHyd

@@ -1,0 +1,10 @@
+\BOOKMARK [1][-]{section.1}{System Overview}{}% 1
+\BOOKMARK [1][-]{section.2}{Input Representation \046 Dual Tokenization}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Dual Codon-AA Tokenization}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Embedding Layer}{section.2}% 4
+\BOOKMARK [1][-]{section.3}{Axial Transformer Backbone}{}% 5
+\BOOKMARK [2][-]{subsection.3.1}{Column-Attention Layer \(Codon Spatial Context\)}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.2}{Phylo-Row-Attention Layer \(Taxa Context\)}{section.3}% 7
+\BOOKMARK [1][-]{section.4}{Multi-Stream Species Representation Pooling}{}% 8
+\BOOKMARK [1][-]{section.5}{Rank-Consistent CORAL Head \046 Expected Value Decoder}{}% 9
+\BOOKMARK [1][-]{section.6}{Performance Summary}{}% 10

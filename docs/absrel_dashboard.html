@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOGA aBSREL Selection Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #f5f4ef; /* Bauhaus warm off-white / light cream */
+            --bg-card: #ffffff; /* Crisp pure white panels */
+            --bg-hover: #eae8df; /* Muted hover gray-cream */
+            --text-main: #111111; /* Strong pure charcoal black for text */
+            --text-muted: #555555; /* Neutral charcoal gray */
+            --color-gold: #ffc107; /* Bauhaus Yellow / Amber */
+            --color-silver: #2563eb; /* Bauhaus Blue */
+            --color-likely-error: #dc2626; /* Bauhaus Red */
+            --color-gray: #78716c;
+            --color-success: #16a34a;
+            --accent: #111111; /* Clean black accent */
+            --border: #111111; /* Crisp dark border width */
+            --hard-shadow: 4px 4px 0px 0px #111111; /* Hard offset shadow */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-success);
+            border-radius: 50%;
+            border: 1px solid var(--border);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            box-shadow: var(--hard-shadow);
+            transition: all 0.15s ease;
+        }
+
+        .stat-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px #111111;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Split Workspace Layout */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        /* Gene Browser Panel (Left) */
+        .gene-browser {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--hard-shadow);
+        }
+
+        .search-box {
+            padding: 1rem;
+            border-bottom: 2px solid var(--border);
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            transition: background-color 0.15s;
+        }
+
+        .search-input:focus {
+            background-color: #ffffff;
+        }
+
+        .gene-list-container {
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ffffff;
+        }
+
+        .gene-item {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gene-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .gene-item.active {
+            background-color: var(--bg-hover);
+            border-left: 6px solid var(--border);
+        }
+
+        .gene-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .gene-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        .badge-sig {
+            background-color: #eaeaea;
+            color: var(--text-main);
+        }
+
+        /* Detail Panel (Right) */
+        .detail-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .detail-panel > * {
+            flex-shrink: 0;
+        }
+
+        .detail-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: var(--hard-shadow);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .gene-title h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .gene-title p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .gene-stats-grid {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .gene-substat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .gene-substat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .gene-substat-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        /* Plot Area */
+        .plot-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            margin-bottom: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            background-color: #ffffff;
+            padding: 0.5rem;
+        }
+
+        /* Branch selection display */
+        .branch-card {
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            background-color: #ffffff;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--hard-shadow);
+            overflow: hidden;
+        }
+
+        .branch-card-header {
+            background-color: var(--bg-hover);
+            border-bottom: 2px solid var(--border);
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .branch-card-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .branch-meta-item strong {
+            color: var(--text-main);
+        }
+
+        .branch-card-body {
+            padding: 1.25rem;
+        }
+
+        .branch-rate-dist {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: var(--bg-dark);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .carrying-leaves-container {
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .carrying-leaves-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .carrying-leaf-tag {
+            display: inline-block;
+            background-color: #eaeaea;
+            border: 1px solid var(--border);
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Table of Sites */
+        .sites-table-wrapper {
+            overflow-x: auto;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            background-color: #ffffff;
+        }
+
+        th {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #fcfbf8;
+        }
+
+        tr.active-site td {
+            background-color: var(--bg-hover);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1.5px solid var(--border);
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .badge-gold { background-color: var(--color-gold); color: #000000; }
+        .badge-silver { background-color: var(--color-silver); color: #ffffff; }
+        .badge-likely-error { background-color: var(--color-likely-error); color: #ffffff; }
+
+        .subst-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1.5px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: help;
+            margin: 0.15rem;
+            transition: all 0.15s ease;
+        }
+
+        .subst-chip:hover {
+            background-color: var(--bg-hover);
+            transform: scale(1.02);
+        }
+
+        /* Alignment Drawer (Slide-out panel) */
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -650px;
+            width: 620px;
+            height: 100vh;
+            background-color: #ffffff;
+            border-left: 3px solid var(--border);
+            box-shadow: -10px 0px 30px rgba(0,0,0,0.15);
+            z-index: 100;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 1.25rem;
+            border-bottom: 2px solid var(--border);
+            background-color: var(--bg-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-title h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .drawer-title p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: 2px solid var(--border);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px 0px #111111;
+            transition: all 0.1s ease;
+        }
+
+        .close-btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px #111111;
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .alignment-view {
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            overflow-x: auto;
+            background-color: #ffffff;
+        }
+
+        .msa-table {
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            width: 100%;
+        }
+
+        .msa-header-row th {
+            background-color: var(--bg-hover);
+            padding: 0.3rem 0.5rem;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            border-right: 1px solid #ddd;
+            font-size: 0.72rem;
+        }
+
+        .msa-row td {
+            padding: 0.35rem 0.5rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            border-right: 1px solid #eee;
+        }
+
+        .msa-row td.taxon-col {
+            font-weight: 700;
+            text-align: left;
+            background-color: #fcfcfc;
+            border-right: 2px solid var(--border);
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Highlighting descendant species carrying selection */
+        .msa-row.carrying-descendant td.taxon-col {
+            background-color: #fee2e2; /* Highlight red */
+            color: #b91c1c;
+            border-left: 4px solid var(--color-likely-error);
+        }
+
+        .msa-row.carrying-descendant td {
+            background-color: #fffbeb;
+        }
+
+        .msa-codon {
+            padding: 0.15rem 0.3rem;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .msa-codon.active-col {
+            border: 2px solid var(--border);
+            font-weight: 700;
+            background-color: #fee2e2; /* light red highlight */
+            color: #b91c1c;
+        }
+
+        .msa-codon.gap {
+            color: #bbb;
+        }
+
+        .msa-codon.diff {
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .view-msa-btn {
+            background-color: #ffffff;
+            border: 1.5px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px 0px #111111;
+            transition: all 0.1s ease;
+        }
+
+        .view-msa-btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px #111111;
+            background-color: var(--bg-hover);
+        }
+
+        /* Helper styles */
+        .error-message {
+            padding: 2rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-likely-error);
+        }
+
+        .loading-spinner {
+            padding: 3rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .legend-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        /* Charts layout grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Phylotree SVG style overrides */
+        .link {
+            fill: none;
+            stroke: var(--color-gray);
+            stroke-width: 1.5px;
+        }
+
+        .node circle {
+            fill: var(--bg-dark);
+            stroke: var(--border);
+            stroke-width: 1.5px;
+        }
+
+        .node text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            fill: var(--text-main);
+        }
+    </style>
+    <!-- Chart.js for Manhattan/scatter plot -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- D3.js v3, Underscore, and phylotree.js for phylogenetic tree rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://veg.github.io/phylotree.js/phylotree.js"></script>
+    <link rel="stylesheet" href="https://veg.github.io/phylotree.js/phylotree.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>TOGA aBSREL Selection Dashboard</h1>
+            <p>Branch-specific Adaptive Selection and Multi-Nucleotide substitution filter diagnostic platform</p>
+        </div>
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>DATA SET LOADED</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Stats Cards Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Genes tested</span>
+                <span class="stat-val" id="stat-total-genes">-</span>
+                <span class="stat-desc">With positive selection</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Significant Branches</span>
+                <span class="stat-val" id="stat-sig-branches">-</span>
+                <span class="stat-desc">p &le; 0.05 (corrected)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Sites Under Selection</span>
+                <span class="stat-val" id="stat-selected-sites">-</span>
+                <span class="stat-desc">Empirical Bayes Factor &ge; 100</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Verified Selection</span>
+                <span class="stat-val" id="stat-verified" style="color: var(--color-silver);">-</span>
+                <span class="stat-desc">GOLD or SILVER support</span>
+            </div>
+            <div class="stat-card" style="border-color: var(--color-likely-error);">
+                <span class="stat-label" style="color: var(--color-likely-error);">Likely Alignment Errors</span>
+                <span class="stat-val" id="stat-likely-errors" style="color: var(--color-likely-error);">-</span>
+                <span class="stat-desc">Flagged by quality checks</span>
+            </div>
+        </div>
+
+        <!-- Split Layout Workspace -->
+        <div class="workspace">
+            <!-- Left panel: Gene list -->
+            <div class="gene-browser">
+                <div class="search-box">
+                    <input type="text" id="gene-search" class="search-input" placeholder="Search gene symbol...">
+                </div>
+                <div class="gene-list-container" id="gene-list">
+                    <div class="loading-spinner">Loading genes list...</div>
+                </div>
+            </div>
+
+            <!-- Right panel: Branch & site details -->
+            <div class="detail-panel" id="detail-panel">
+                <div class="error-message">Select a gene from the left panel browser to view curation details.</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Slide-out Drawer for MSA visualization -->
+    <div class="drawer" id="alignment-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <h3 id="drawer-gene-site">GENE - SITE - ALIGNMENT</h3>
+                <p id="drawer-branch-info">Branch under selection: -</p>
+            </div>
+            <button class="close-btn" onclick="closeDrawer()">CLOSE</button>
+        </div>
+        <div class="drawer-body">
+            <div class="carrying-leaves-title" style="margin-bottom: -0.5rem;">Alignment window (highlighted species are descendants of selected branch)</div>
+            <div class="alignment-view" id="alignment-view">
+                <div class="loading-spinner">Loading alignment window...</div>
+            </div>
+            <div class="carrying-leaves-container" id="drawer-descendant-clade">
+                <!-- tags populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide-out Drawer for Tree visualization -->
+    <div class="drawer" id="tree-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <h3 id="drawer-tree-gene">GENE - PHYLOGENETIC TREE</h3>
+                <p>Branches under episodic selection highlighted in red</p>
+            </div>
+            <button class="close-btn" onclick="closeTreeDrawer()">CLOSE</button>
+        </div>
+        <div class="drawer-body">
+            <div class="legend-container" style="margin-bottom: 0.5rem; flex-wrap: wrap;">
+                <div class="legend-item">
+                    <span class="legend-dot" style="background-color: var(--color-likely-error); width: 18px; height: 3px; border-radius: 0; border: none; display: inline-block; vertical-align: middle;"></span>
+                    <span>Significant Selection (p &le; 0.05)</span>
+                </div>
+                <div class="legend-item" style="margin-left: 1rem;">
+                    <span class="legend-dot" style="background-color: var(--color-gray); width: 18px; height: 1.5px; border-radius: 0; border: none; display: inline-block; vertical-align: middle;"></span>
+                    <span>Neutral / Unselected</span>
+                </div>
+            </div>
+            <div style="background-color: white; border: 2px solid var(--border); border-radius: 4px; padding: 0.75rem; flex: 1; overflow: auto;">
+                <svg id="tree_display" style="width: 100%;"></svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Force trailing slash for directory paths so relative fetches resolve correctly
+        if (window.location.pathname.match(/\/toga-(meme|absrel)$/)) {
+            window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+        }
+
+        let genesData = [];
+        let activeGene = null;
+        let activeGeneData = null;
+        let scatterChart = null;
+
+        // Fetch summary metrics on page load
+        async function fetchSummary() {
+            try {
+                const res = await fetch('api/summary.json');
+                const data = await res.json();
+                document.getElementById('stat-total-genes').textContent = Number(data.total_genes).toLocaleString();
+                document.getElementById('stat-sig-branches').textContent = Number(data.total_sig_branches).toLocaleString();
+                document.getElementById('stat-selected-sites').textContent = Number(data.total_selected_sites).toLocaleString();
+                document.getElementById('stat-verified').textContent = Number(data.gold_count + data.silver_count).toLocaleString();
+                document.getElementById('stat-likely-errors').textContent = Number(data.likely_error_count).toLocaleString();
+            } catch (err) {
+                console.error("Error fetching summary stats:", err);
+            }
+        }
+
+        // Fetch genes list and render sidebar browser
+        async function fetchGenes() {
+            try {
+                const res = await fetch('api/genes.json');
+                genesData = await res.json();
+                renderGeneList(genesData);
+            } catch (err) {
+                document.getElementById('gene-list').innerHTML = `<div class="error-message">Error loading genes: ${err.message}</div>`;
+            }
+        }
+
+        // Render list of genes in sidebar
+        function renderGeneList(list) {
+            const container = document.getElementById('gene-list');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="error-message">No matching genes found.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            list.forEach(g => {
+                const div = document.createElement('div');
+                div.className = `gene-item ${activeGene === g.gene_name ? 'active' : ''}`;
+                div.onclick = () => selectGene(g.gene_name);
+                
+                const meta = `Sig Branches: <strong>${g.num_significant}</strong> / Sites: <strong>${g.num_selected_sites}</strong>`;
+                
+                div.innerHTML = `
+                    <div>
+                        <div class="gene-name">${g.gene_name}</div>
+                        <div class="gene-meta">${meta}</div>
+                    </div>
+                    <div>
+                        <span class="badge ${g.likely_error_sites > 0 ? 'badge-likely-error' : 'badge-sig'}" 
+                              style="${g.likely_error_sites > 0 ? 'background-color: var(--color-likely-error); color: white;' : ''}">
+                              ${g.likely_error_sites > 0 ? 'Errors' : 'Clean'}
+                        </span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Sidebar search input filtering
+        document.getElementById('gene-search').addEventListener('input', (e) => {
+            const query = e.target.value.toUpperCase().trim();
+            if (!query) {
+                renderGeneList(genesData);
+                return;
+            }
+            const filtered = genesData.filter(g => g.gene_name.toUpperCase().includes(query));
+            renderGeneList(filtered);
+        });
+
+        // Load specific gene details on click
+        async function selectGene(geneName) {
+            activeGene = geneName;
+            
+            // Mark active item in sidebar list
+            const items = document.querySelectorAll('.gene-item');
+            items.forEach(el => {
+                const nameEl = el.querySelector('.gene-name');
+                if (nameEl && nameEl.textContent === geneName) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            const detailPanel = document.getElementById('detail-panel');
+            detailPanel.innerHTML = '<div class="loading-spinner">Loading gene details, tree structures, and Bayes factor diagnostics...</div>';
+
+            try {
+                const res = await fetch(`api/gene/${geneName}.json`);
+                const data = await res.json();
+                activeGeneData = data;
+                renderGeneDetail(data);
+            } catch (err) {
+                detailPanel.innerHTML = `<div class="error-message">Error loading gene details: ${err.message}</div>`;
+            }
+        }
+
+        // Render main detailed view of the gene results
+        function renderGeneDetail(data) {
+            const container = document.getElementById('detail-panel');
+            container.innerHTML = '';
+
+            // 1. Gene Header Card
+            const header = document.createElement('div');
+            header.className = 'detail-card';
+            header.innerHTML = `
+                <div class="detail-header">
+                    <div class="gene-title">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <h2>${data.gene_name}</h2>
+                            <button class="view-msa-btn" onclick="openTreeDrawer()" style="margin-top: 0.15rem; padding: 0.25rem 0.6rem; font-size: 0.75rem;">View Tree</button>
+                        </div>
+                        <p>aBSREL analysis properties</p>
+                    </div>
+                    <div class="gene-stats-grid">
+                        <div class="gene-substat">
+                            <span class="gene-substat-label">Sequence count</span>
+                            <span class="gene-substat-val">${data.num_seqs}</span>
+                        </div>
+                        <div class="gene-substat">
+                            <span class="gene-substat-label">Codon sites</span>
+                            <span class="gene-substat-val">${data.num_sites}</span>
+                        </div>
+                        <div class="gene-substat">
+                            <span class="gene-substat-label">Sig branches</span>
+                            <span class="gene-substat-val">${data.num_significant} / ${data.num_tested}</span>
+                        </div>
+                        <div class="gene-substat">
+                            <span class="gene-substat-label">AICc</span>
+                            <span class="gene-substat-val">${data.aic_c ? Number(data.aic_c).toFixed(1) : 'N/A'}</span>
+                        </div>
+                        <div class="gene-substat">
+                            <span class="gene-substat-label">Runtime</span>
+                            <span class="gene-substat-val">${data.runtime_sec ? data.runtime_sec.toFixed(1) + 's' : 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="legend-container">
+                    <span class="carrying-leaves-title" style="margin-right: auto; margin-bottom: 0;">Empirical Bayes Factor Diagnostic Map</span>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background-color: var(--color-gold);"></span>
+                        <span>Gold (High Quality Single)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background-color: var(--color-silver);"></span>
+                        <span>Silver (MNS/Serine Island)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background-color: var(--color-likely-error);"></span>
+                        <span>Likely Error</span>
+                    </div>
+                </div>
+                
+                <div class="plot-container" style="height: 280px; width: 100%; margin-bottom: 1.5rem;">
+                    <canvas id="absrelScatterChart"></canvas>
+                </div>
+            `;
+            container.appendChild(header);
+
+            // Render Manhattan/scatter plot for selected sites
+            renderScatterPlot(data);
+
+            // 2. Render significant branch sections
+            if (data.significant_branches.length === 0) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'detail-card error-message';
+                emptyCard.textContent = "No branches under selection show significant p-values in this gene.";
+                container.appendChild(emptyCard);
+                return;
+            }
+
+            data.significant_branches.forEach(branch => {
+                const bCard = document.createElement('div');
+                bCard.className = 'branch-card';
+                
+                // carrying leaves tags list
+                const leafTags = branch.carrying_leaves.map(l => `<span class="carrying-leaf-tag">${l}</span>`).join('');
+                
+                // rate distribution string format
+                const rateDistText = branch.rate_distribution.map(r => `&omega; = ${r[0].toFixed(2)} (prop = ${(r[1]*100).toFixed(1)}%)`).join(' | ');
+
+                let sitesTableRows = '';
+                if (branch.selected_sites.length === 0) {
+                    sitesTableRows = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); font-weight: 500;">No site-level selection events (EBF &ge; 100) recorded on this branch.</td></tr>`;
+                } else {
+                    branch.selected_sites.forEach(s => {
+                        const classPillClass = s.classification === 'GOLD' ? 'badge-gold' : 
+                                               s.classification === 'SILVER' ? 'badge-silver' : 'badge-likely-error';
+                        
+                        const substsChips = s.substitutions.map(sub => `<span class="subst-chip" title="Ancestral-to-derived reconstructed codons">${sub}</span>`).join(' ');
+
+                        sitesTableRows += `
+                            <tr id="site-row-${data.gene_name}-${branch.branch_name}-${s.site_index}">
+                                <td style="font-weight: 700; font-family: 'JetBrains Mono', monospace;">Site ${s.site_index}</td>
+                                <td><span class="status-badge ${classPillClass}">${s.classification.replace('_', ' ')}</span></td>
+                                <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">EBF = ${s.bayes_factor.toFixed(1)}</td>
+                                <td style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">${s.filter_reason || 'N/A'}</td>
+                                <td>${substsChips || '<span style="color: #bbb; font-size: 0.75rem;">None</span>'}</td>
+                                <td style="text-align: right;">
+                                    <button class="view-msa-btn" onclick="viewAlignment('${data.gene_name}', ${s.site_index}, '${branch.branch_name}')">View MSA</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                bCard.innerHTML = `
+                    <div class="branch-card-header">
+                        <div class="branch-card-title">
+                            <span>Branch:</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; background-color: var(--border); color: white; padding: 0.1rem 0.5rem; border-radius: 4px;">${branch.branch_name}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">(${branch.is_leaf ? 'Leaf' : 'Internal'})</span>
+                        </div>
+                        <div class="branch-card-meta">
+                            <span class="branch-meta-item">Corrected P-value: <strong>${branch.corrected_p_value.toFixed(4)}</strong></span>
+                            <span class="branch-meta-item">LRT: <strong>${branch.lrt.toFixed(1)}</strong></span>
+                            <span class="branch-meta-item">Max &omega;: <strong>${branch.omega_max.toFixed(1)}</strong></span>
+                            <span class="branch-meta-item">Branch Length: <strong>${branch.branch_length.toFixed(4)}</strong></span>
+                        </div>
+                    </div>
+                    <div class="branch-card-body">
+                        <div class="branch-rate-dist">Adaptive Model Rate Classes: ${rateDistText}</div>
+                        
+                        <div class="carrying-leaves-container">
+                            <div class="carrying-leaves-title">Carrying Descendants (Clade Leaves)</div>
+                            <div>${leafTags}</div>
+                        </div>
+
+                        <div class="carrying-leaves-title" style="margin-top: 1.25rem; margin-bottom: 0.35rem;">Sites Under Selection (Empirical Bayes Factor Diagnostic)</div>
+                        <div class="sites-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Codon Position</th>
+                                        <th>Classification</th>
+                                        <th>Bayes Factor</th>
+                                        <th>Diagnostic Details</th>
+                                        <th>Substitutions</th>
+                                        <th style="text-align: right;">Curation View</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sitesTableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(bCard);
+            });
+        }
+
+        // Render Chart.js scatter plot
+        function renderScatterPlot(data) {
+            const ctx = document.getElementById('absrelScatterChart').getContext('2d');
+            
+            if (scatterChart) {
+                scatterChart.destroy();
+            }
+
+            const points = data.all_selected_sites.map(s => {
+                let color = '#78716c';
+                if (s.classification === 'GOLD') color = '#ffc107'; // yellow
+                if (s.classification === 'SILVER') color = '#2563eb'; // blue
+                if (s.classification === 'LIKELY_ERROR') color = '#dc2626'; // red
+                
+                return {
+                    x: s.site_index,
+                    y: s.bayes_factor,
+                    branch: s.branch_name,
+                    classification: s.classification,
+                    color: color
+                };
+            });
+
+            scatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Bayes Factor',
+                        data: points,
+                        backgroundColor: points.map(p => p.color),
+                        borderColor: '#111111',
+                        borderWidth: 1.5,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Site Position (Codons)',
+                                font: { weight: 'bold' }
+                            },
+                            min: 1,
+                            max: data.num_sites
+                        },
+                        y: {
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Bayes Factor (EBF)',
+                                font: { weight: 'bold' }
+                            },
+                            min: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const p = context.raw;
+                                    return `Site ${p.x} [EBF=${p.y.toFixed(1)}] on Branch "${p.branch}" (${p.classification})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Phylogenetic Tree using phylotree.js
+        function renderTree(treeStr, significantBranches) {
+            if (!treeStr) {
+                document.getElementById('tree_display').innerHTML = '<text x="10" y="30" fill="var(--text-muted)">No tree structure available for this gene.</text>';
+                return;
+            }
+            const svgElement = d3.select("#tree_display");
+            svgElement.selectAll("*").remove();
+
+            const cleanedNewick = treeStr.replace(/\{[^}]*\}/g, "");
+            const sigBranchNames = significantBranches.map(b => b.branch_name.toUpperCase());
+            const sigLeaves = new Set();
+            significantBranches.forEach(b => {
+                if (b.carrying_leaves) {
+                    b.carrying_leaves.forEach(leaf => sigLeaves.add(leaf.toUpperCase()));
+                }
+            });
+            const leafCount = (cleanedNewick.match(/,/g) || []).length + 1;
+            const dynamicHeight = Math.max(300, leafCount * 11);
+
+            svgElement.attr("height", dynamicHeight).attr("width", 570);
+
+            try {
+                const tree = d3.layout.phylotree()
+                    .svg(svgElement)
+                    .options({
+                        'zoom': false,
+                        'brush': false,
+                        'collapsible': false,
+                        'selectable': false,
+                        'align-tips': false
+                    })
+                    .size([dynamicHeight - 20, 260]);
+
+                tree.style_edges((element, edgeData) => {
+                    const nodeName = edgeData.target.name;
+                    if (nodeName && sigBranchNames.includes(nodeName.toUpperCase())) {
+                        element.style("stroke", "var(--color-likely-error)"); // Red highlight
+                        element.style("stroke-width", "3.5px");
+                    } else {
+                        element.style("stroke", "var(--color-gray)");
+                        element.style("stroke-width", "1.5px");
+                    }
+                });
+
+                tree.style_nodes((element, nodeData) => {
+                    const isLeaf = ! (nodeData.children && nodeData.children.length);
+                    if (isLeaf) {
+                        const nodeName = nodeData.name;
+                        if (nodeName && sigLeaves.has(nodeName.toUpperCase())) {
+                            element.select("text")
+                                .style("fill", "var(--color-likely-error)") // Highlight species name in red
+                                .style("font-weight", "bold");
+                        }
+                    }
+                });
+
+                tree(cleanedNewick).layout();
+
+                svgElement.selectAll(".node text")
+                    .style("font-family", "'JetBrains Mono', monospace")
+                    .style("font-size", "8px");
+            } catch (err) {
+                console.error("Error rendering tree:", err);
+                svgElement.append("text").attr("x", 10).attr("y", 30).attr("fill", "var(--color-likely-error)").text("Error rendering tree: " + err.message);
+            }
+        }
+
+        // Open tree drawer
+        function openTreeDrawer() {
+            if (!activeGeneData) return;
+            closeDrawer(); // Close MSA drawer if open
+            const drawer = document.getElementById('tree-drawer');
+            drawer.classList.add('open');
+            document.getElementById('drawer-tree-gene').textContent = `${activeGeneData.gene_name} - PHYLOGENETIC TREE`;
+            renderTree(activeGeneData.tree_str, activeGeneData.significant_branches);
+        }
+
+        // Close tree drawer
+        function closeTreeDrawer() {
+            document.getElementById('tree-drawer').classList.remove('open');
+        }
+
+        // View alignment in slide-out drawer
+        async function viewAlignment(gene, siteIdx, branchName) {
+            closeTreeDrawer(); // Close tree drawer if open
+            // Highlight active row
+            const rows = document.querySelectorAll('tr');
+            rows.forEach(r => r.classList.remove('active-site'));
+            const targetRow = document.getElementById(`site-row-${gene}-${branchName}-${siteIdx}`);
+            if (targetRow) {
+                targetRow.classList.add('active-site');
+            }
+
+            // Open drawer
+            const drawer = document.getElementById('alignment-drawer');
+            drawer.classList.add('open');
+
+            document.getElementById('drawer-gene-site').textContent = `${gene} - Site ${siteIdx}`;
+            document.getElementById('drawer-branch-info').textContent = `Evaluating branch under selection: "${branchName}"`;
+
+            const viewContainer = document.getElementById('alignment-view');
+            viewContainer.innerHTML = '<div class="loading-spinner">Fetching alignment sequence block...</div>';
+
+            try {
+                // Fetch window
+                const res = await fetch(`api/alignment/${gene}/${siteIdx}.json`);
+                const alignData = await res.json();
+                
+                // Fetch carrying leaves for this branch to highlight them
+                const geneRes = await fetch(`api/gene/${gene}.json`);
+                const geneData = await geneRes.json();
+                const branchObj = geneData.significant_branches.find(b => b.branch_name === branchName);
+                const carryingLeaves = branchObj ? branchObj.carrying_leaves : [];
+
+                renderMSA(alignData.alignment, siteIdx, carryingLeaves);
+            } catch (err) {
+                viewContainer.innerHTML = `<div class="error-message">Error loading alignment: ${err.message}</div>`;
+            }
+        }
+
+        // Render MSA sequence alignment grid in drawer
+        function renderMSA(alignment, siteIdx, carryingLeaves) {
+            const viewContainer = document.getElementById('alignment-view');
+            
+            // Build header columns
+            const firstRow = alignment[0];
+            const codonsCount = firstRow.codons.length;
+            let headerCols = '<th style="border-right: 2px solid var(--border);">Species</th>';
+            firstRow.codons.forEach(c => {
+                const isActive = c.site_index === siteIdx;
+                headerCols += `<th class="${isActive ? 'active-col' : ''}" style="${isActive ? 'background-color: var(--border); color: white;' : ''}">Col ${c.site_index}</th>`;
+            });
+            
+            // Find reference codon (hg)
+            const hgRow = alignment.find(row => row.taxon === 'hg');
+            const refCodonAtSite = hgRow 
+                ? hgRow.codons.find(c => c.site_index === siteIdx).sequence 
+                : alignment[0].codons.find(c => c.site_index === siteIdx).sequence;
+
+            const carryingLeavesUpper = carryingLeaves.map(l => l.toUpperCase());
+            let tableRows = '';
+            alignment.forEach(row => {
+                const isCarrying = carryingLeavesUpper.includes(row.taxon.toUpperCase());
+                let rowHtml = `<tr class="msa-row ${isCarrying ? 'carrying-descendant' : ''}">`;
+                rowHtml += `<td class="taxon-col" title="${row.taxon}">${row.taxon}</td>`;
+                
+                row.codons.forEach(c => {
+                    const isActive = c.site_index === siteIdx;
+                    const isGap = c.sequence.includes('-') || c.sequence.includes('N');
+                    const isDiff = !isGap && (c.sequence !== refCodonAtSite) && isActive;
+                    
+                    let cellClass = 'msa-codon';
+                    if (isActive) cellClass += ' active-col';
+                    if (isGap) cellClass += ' gap';
+                    if (isDiff) cellClass += ' diff';
+                    
+                    rowHtml += `<td><span class="${cellClass}">${c.sequence}</span></td>`;
+                });
+                
+                rowHtml += '</tr>';
+                tableRows += rowHtml;
+            });
+
+            viewContainer.innerHTML = `
+                <table class="msa-table">
+                    <thead>
+                        <tr class="msa-header-row">
+                            ${headerCols}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            `;
+
+            // Render carrying leaves tags in drawer bottom
+            const drawerDescendants = document.getElementById('drawer-descendant-clade');
+            const tags = carryingLeaves.map(l => `<span class="carrying-leaf-tag">${l}</span>`).join('');
+            drawerDescendants.innerHTML = `
+                <div class="carrying-leaves-title">Clade descendants mapped to branch:</div>
+                <div style="margin-top: 0.25rem;">${tags || '<span class="carrying-leaf-tag">' + carryingLeaves + '</span>'}</div>
+            `;
+        }
+
+        // Close drawer
+        function closeDrawer() {
+            document.getElementById('alignment-drawer').classList.remove('open');
+            const rows = document.querySelectorAll('tr');
+            rows.forEach(r => r.classList.remove('active-site'));
+        }
+
+        // Initialize dashboard
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchSummary();
+            fetchGenes();
+        });
+    </script>
+</body>
+</html>

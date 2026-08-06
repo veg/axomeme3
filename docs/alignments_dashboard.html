@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOGA Genomic Alignments Curation Portal</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js and Annotation Plugin CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #f5f4ef; /* Bauhaus warm off-white / light cream */
+            --bg-card: #ffffff; /* Crisp pure white panels */
+            --bg-hover: #eae8df; /* Muted hover gray-cream */
+            --text-main: #111111; /* Strong pure charcoal black for text */
+            --text-muted: #555555; /* Neutral charcoal gray */
+            
+            --primary: #2563eb; /* Bauhaus Blue */
+            --primary-glow: rgba(37, 99, 235, 0.1);
+            --success: #16a34a;
+            --success-glow: rgba(22, 163, 74, 0.1);
+            --warning: #ffc107;
+            --warning-glow: rgba(255, 193, 7, 0.1);
+            --danger: #dc2626;
+            --danger-glow: rgba(220, 38, 38, 0.1);
+            --accent-purple: #8b5cf6;
+            
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --border: #111111; /* Crisp dark border width */
+            --hard-shadow: 4px 4px 0px 0px #111111; /* Hard offset shadow */
+            --transition: all 0.15s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-hover);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+        }
+
+        /* Container & Layout */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header */
+        header {
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            border: 1px solid var(--border);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            box-shadow: var(--hard-shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px #111111;
+        }
+
+        .stat-card.alignments { border-left: 6px solid var(--primary); }
+        .stat-card.sequences { border-left: 6px solid var(--accent-purple); }
+        .stat-card.sus { border-left: 6px solid var(--danger); }
+        .stat-card.pseudo { border-left: 6px solid var(--success); }
+        .stat-card.outliers { border-left: 6px solid var(--warning); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-desc span {
+            font-weight: 700;
+        }
+
+        /* Histograms Row */
+        .histograms-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1100px) {
+            .histograms-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dashboard Main Layout */
+        .dashboard-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1200px) {
+            .dashboard-body.with-charts {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: var(--hard-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Toolbar and inputs */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem 0.6rem 2.2rem;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            transition: background-color 0.15s;
+        }
+
+        .search-input:focus {
+            background-color: #ffffff;
+            border-color: var(--border);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px 0px #111111;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background-color: var(--bg-hover);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px 0px #111111;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px 0px #111111;
+        }
+
+        /* Table & Data Representation */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 4px;
+            border: 2px solid var(--border);
+            background-color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--bg-dark);
+            padding: 0.85rem 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background-color: var(--bg-hover);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            color: var(--text-main);
+        }
+
+        tr {
+            transition: background-color 0.15s;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-hover);
+            cursor: pointer;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badge/Tags styling */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .badge-success {
+            background-color: var(--success-glow);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-glow);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-glow);
+            color: var(--warning);
+        }
+
+        .badge-info {
+            background-color: #eaeaea;
+            color: var(--text-main);
+        }
+
+        .gene-link {
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .gene-link:hover {
+            text-decoration: underline;
+        }
+
+        .transcript-id {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sus-percent-bar-wrapper {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .sus-percent-bar {
+            height: 100%;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .pagination-info {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .page-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background-color: var(--bg-hover);
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Slide-out details drawer */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .drawer-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100%;
+            background-color: #ffffff;
+            border-left: 2px solid var(--border);
+            z-index: 1001;
+            box-shadow: -10px 0 0px 0px rgba(17, 17, 17, 0.15);
+            transition: right 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 650px) {
+            .drawer {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        .drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background-color: var(--bg-dark);
+        }
+
+        .drawer-title-area h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .drawer-title-area p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .close-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-weight: 700;
+        }
+
+        .close-btn:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .drawer-content {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .detail-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background-color: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+
+        .meta-item-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .meta-item-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-top: 0.2rem;
+            color: var(--text-main);
+        }
+
+        .seq-list-header {
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .seq-card {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+
+        .seq-card:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px 0px #111111;
+        }
+
+        .seq-card.reference {
+            border-left: 6px solid var(--primary);
+        }
+
+        .seq-card.sus {
+            border-left: 6px solid var(--danger);
+        }
+
+        .seq-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .seq-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .seq-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            border-top: 1px solid #eaeaea;
+            padding-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .seq-metric span {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .sus-reason-text {
+            color: var(--danger);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Charts panel */
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .chart-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .top-sus-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .top-sus-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--bg-hover);
+        }
+
+        .top-sus-item:last-child {
+            border-bottom: none;
+        }
+
+        .top-sus-name {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .top-sus-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>TOGA Genomic Alignments Curation Portal</h1>
+            <p>Curation dashboard for 19,953 codonified alignments & 14,997,766 genomic sequences</p>
+        </div>
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            Database Connected & Indexed
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Stats Counter Cards -->
+        <div class="stats-grid">
+            <div class="stat-card alignments">
+                <div class="stat-label">Alignments</div>
+                <div class="stat-val" id="stat-alignments">-</div>
+                <div class="stat-desc">Genomic genes parsed</div>
+            </div>
+            <div class="stat-card sequences">
+                <div class="stat-label">Sequences</div>
+                <div class="stat-val" id="stat-sequences">-</div>
+                <div class="stat-desc">Parsed across species</div>
+            </div>
+            <div class="stat-card sus">
+                <div class="stat-label">Suspicious Genes</div>
+                <div class="stat-val" id="stat-sus-genes">-</div>
+                <div class="stat-desc">Suspect alignments (<span>-</span>%)</div>
+            </div>
+            <div class="stat-card pseudo">
+                <div class="stat-label">Pseudogenes</div>
+                <div class="stat-val" id="stat-pseudogenes">-</div>
+                <div class="stat-desc">Ensembl-resolved biotypes</div>
+            </div>
+            <div class="stat-card outliers">
+                <div class="stat-label" style="color: var(--warning);">Size Outliers</div>
+                <div class="stat-val" id="stat-outliers" style="color: var(--warning);">-</div>
+                <div class="stat-desc">Abnormal length/seqs (<span>-</span>%)</div>
+            </div>
+        </div>
+
+        <!-- Histograms Row -->
+        <div class="histograms-row">
+            <div class="card">
+                <div class="card-title">Alignment Length Distribution (Codons)</div>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="codon-histogram-chart"></canvas>
+                </div>
+                <div class="stat-desc" style="text-align: center; margin-top: 0.5rem;">
+                    Log10 scale. Outlier bounds: <span id="codon-lower-bound" style="font-weight:600; color:var(--danger);">-</span> to <span id="codon-upper-bound" style="font-weight:600; color:var(--danger);">-</span> codons.
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Taxon Representative Coverage (Sequences)</div>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="seq-histogram-chart"></canvas>
+                </div>
+                <div class="stat-desc" style="text-align: center; margin-top: 0.5rem;">
+                    Linear scale. Lower outlier threshold: <span id="seq-lower-bound" style="font-weight:600; color:var(--danger);">-</span> sequences.
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Body with charts -->
+        <div class="dashboard-body with-charts">
+            <!-- Alignments List Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>Alignments Catalog</span>
+                    </div>
+                </div>
+
+                <!-- Toolbar (Search & Filter) -->
+                <div class="toolbar">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-box" class="search-input" placeholder="Search by resolved symbol, transcript ID, or file name...">
+                    </div>
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="clean">Clean</button>
+                        <button class="filter-btn" data-filter="sus">Suspicious</button>
+                        <button class="filter-btn" data-filter="pseudogene">Pseudogenes</button>
+                        <button class="filter-btn" data-filter="outlier" style="color: var(--warning); border-color: rgba(245, 158, 11, 0.2);">Outliers</button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table id="alignments-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%" data-sort="resolved_gene_name">Gene Symbol</th>
+                                <th style="width: 25%" data-sort="transcript_id">Transcript ID</th>
+                                <th style="width: 15%" data-sort="alignment_length">Len (bp)</th>
+                                <th style="width: 15%" data-sort="num_sequences">Sequences</th>
+                                <th style="width: 20%" data-sort="num_sus_sequences">Sus %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">Loading alignments database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="pagination-info">
+                        Showing 0 to 0 of 0 alignments
+                    </div>
+                    <div class="pagination-controls" id="pagination-controls">
+                        <!-- Buttons injected by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts/Details sidebar -->
+            <div class="sidebar-charts">
+                <!-- Reason Breakdown Chart Card -->
+                <div class="card chart-card">
+                    <div class="card-title">Curation Diagnostics</div>
+                    <div class="chart-container">
+                        <canvas id="sus-chart"></canvas>
+                    </div>
+                    <div class="stat-desc" style="text-align: center; margin-top: 0.5rem;">
+                        Breakdown of sequence rejection criteria
+                    </div>
+                </div>
+
+                <!-- Top Pseudogenes/Suspicious Candidates -->
+                <div class="card chart-card">
+                    <div class="card-title">Top Pseudogene Candidates</div>
+                    <ul class="top-sus-list" id="top-sus-list">
+                        <!-- Top sus genes will be injected here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+
+    <!-- Details Slide-out Drawer -->
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-area">
+                <h2 id="drawer-gene-name">GENE_NAME</h2>
+                <p id="drawer-transcript-id">ENST00000000000.0</p>
+            </div>
+            <button class="close-btn" id="close-drawer">✕</button>
+        </div>
+        <div class="drawer-content">
+            <!-- Outlier Alert Card (Conditional) -->
+            <div id="drawer-outlier-card" style="display:none; background: var(--warning-glow); border: 2px solid var(--warning); border-radius: 4px; padding: 1rem; margin-bottom: 1rem; box-shadow: 2px 2px 0px 0px #111111;">
+                <div class="meta-item-label" style="color: var(--text-main);">Size Outlier Curation Flag</div>
+                <div style="font-weight: 700; font-size: 0.9rem; margin-top: 0.25rem; color: var(--text-main);" id="drawer-outlier-text">-</div>
+            </div>
+
+            <div class="detail-meta-grid">
+                <div>
+                    <div class="meta-item-label">Alignment Length</div>
+                    <div class="meta-item-val" id="drawer-length">- bp</div>
+                </div>
+                <div>
+                    <div class="meta-item-label">Ensembl Biotype</div>
+                    <div class="meta-item-val" id="drawer-biotype">-</div>
+                </div>
+                <div>
+                    <div class="meta-item-label">Total Sequences</div>
+                    <div class="meta-item-val" id="drawer-seqs-count">-</div>
+                </div>
+                <div>
+                    <div class="meta-item-label">Suspect Sequences</div>
+                    <div class="meta-item-val" id="drawer-sus-count">-</div>
+                </div>
+            </div>
+
+            <div id="drawer-sus-reasons-card" style="display:none; background: var(--danger-glow); border: 2px solid var(--danger); border-radius: 4px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 2px 2px 0px 0px #111111;">
+                <div class="meta-item-label" style="color: var(--text-main);">Alignment Alert Curation Warning</div>
+                <div style="font-weight: 700; font-size: 0.9rem; margin-top: 0.25rem; color: var(--text-main);" id="drawer-sus-reasons-text">-</div>
+            </div>
+
+            <div class="seq-list-header">
+                <span>Species Sequence Details</span>
+                <span id="seq-count-badge" class="badge badge-info">-</span>
+            </div>
+
+            <div id="drawer-sequence-list">
+                <!-- Sequence cards injected by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let currentPage = 1;
+        const pageLimit = 15;
+        let searchQuery = "";
+        let activeFilter = "all";
+        let sortBy = "resolved_gene_name";
+        let sortDir = "asc";
+        
+        let chartInstance = null;
+        let codonHistChart = null;
+        let seqHistChart = null;
+
+        // Elements
+        const searchBox = document.getElementById('search-box');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const tableBody = document.getElementById('table-body');
+        const paginationInfo = document.getElementById('pagination-info');
+        const paginationControls = document.getElementById('pagination-controls');
+        
+        const drawer = document.getElementById('drawer');
+        const drawerOverlay = document.getElementById('drawer-overlay');
+        const closeDrawer = document.getElementById('close-drawer');
+        
+        // Sorting triggers
+        const tableHeaders = document.querySelectorAll('#alignments-table th');
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStats();
+            fetchAlignments();
+            
+            // Search Input Event
+            let searchTimeout;
+            searchBox.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    searchQuery = e.target.value;
+                    currentPage = 1;
+                    fetchAlignments();
+                }, 300);
+            });
+
+            // Filter Events
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    activeFilter = e.target.getAttribute('data-filter');
+                    currentPage = 1;
+                    fetchAlignments();
+                });
+            });
+
+            // Sorting Events
+            tableHeaders.forEach(th => {
+                th.addEventListener('click', () => {
+                    const sortField = th.getAttribute('data-sort');
+                    if (!sortField) return;
+                    
+                    if (sortBy === sortField) {
+                        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortBy = sortField;
+                        sortDir = 'asc';
+                    }
+                    
+                    fetchAlignments();
+                });
+            });
+
+            // Close Drawer Events
+            closeDrawer.addEventListener('click', hideDrawer);
+            drawerOverlay.addEventListener('click', hideDrawer);
+        });
+
+        // Fetch Global Stats
+        function fetchStats() {
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('stat-alignments').textContent = data.total_alignments.toLocaleString();
+                    document.getElementById('stat-sequences').textContent = data.total_sequences.toLocaleString();
+                    
+                    const susPct = ((data.total_sus_genes / data.total_alignments) * 100).toFixed(1);
+                    document.getElementById('stat-sus-genes').textContent = data.total_sus_genes.toLocaleString();
+                    document.querySelector('.stat-card.sus .stat-desc span').textContent = susPct;
+                    
+                    document.getElementById('stat-pseudogenes').textContent = data.total_pseudogenes.toLocaleString();
+                    
+                    const outlierPct = ((data.outliers_count / data.total_alignments) * 100).toFixed(1);
+                    document.getElementById('stat-outliers').textContent = data.outliers_count.toLocaleString();
+                    document.querySelector('.stat-card.outliers .stat-desc span').textContent = outlierPct;
+                    
+                    // Outlier Threshold labels
+                    document.getElementById('codon-lower-bound').textContent = data.codon_stats.lower_bound;
+                    document.getElementById('codon-upper-bound').textContent = data.codon_stats.upper_bound;
+                    document.getElementById('seq-lower-bound').textContent = data.seq_stats.lower_bound;
+                    
+                    // Render Reason Breakdown Chart
+                    renderChart(data.reasons_breakdown);
+                    
+                    // Render Top Sus Candidates
+                    renderTopSusList(data.top_sus_candidates);
+                    
+                    // Render Histograms
+                    renderHistograms(data.codon_histogram, data.codon_stats, data.seq_histogram, data.seq_stats);
+                })
+                .catch(err => console.error("Error fetching stats:", err));
+        }
+
+        // Fetch Alignments
+        function fetchAlignments() {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">Fetching alignments...</td></tr>';
+            
+            const params = new URLSearchParams({
+                page: currentPage,
+                limit: pageLimit,
+                search: searchQuery,
+                filter: activeFilter,
+                sort_by: sortBy,
+                sort_dir: sortDir
+            });
+
+            fetch(`/api/alignments?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    renderTable(data.alignments);
+                    renderPagination(data.total, data.page, data.limit);
+                })
+                .catch(err => {
+                    console.error("Error fetching alignments:", err);
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: var(--danger);">Failed to load alignments from server.</td></tr>';
+                });
+        }
+
+        // Render Table Rows
+        function renderTable(alignments) {
+            if (alignments.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">No alignments match your criteria.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            alignments.forEach(al => {
+                const tr = document.createElement('tr');
+                tr.addEventListener('click', () => showDetails(al.id));
+                
+                const susPct = al.num_sequences > 0 ? ((al.num_sus_sequences / al.num_sequences) * 100) : 0;
+                let pctColor = 'var(--success)';
+                if (susPct > 50) pctColor = 'var(--danger)';
+                else if (susPct > 10) pctColor = 'var(--warning)';
+
+                let tagsStr = '';
+                if (al.is_pseudogene) {
+                    tagsStr += `<span class="badge badge-success" style="margin-left: 0.5rem; scale: 0.95;">Pseudogene</span>`;
+                } else if (al.is_sus_gene) {
+                    tagsStr += `<span class="badge badge-danger" style="margin-left: 0.5rem; scale: 0.95;">Suspect</span>`;
+                } else {
+                    tagsStr += `<span class="badge badge-info" style="margin-left: 0.5rem; scale: 0.95; opacity: 0.85;">Clean</span>`;
+                }
+                
+                if (al.is_outlier && al.outlier_reasons) {
+                    tagsStr += `<span class="badge badge-warning" style="margin-left: 0.5rem; scale: 0.95;" title="${al.outlier_reasons}">Outlier</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <span class="gene-link">${al.resolved_gene_name || 'Unknown'}</span>
+                            ${tagsStr}
+                        </div>
+                    </td>
+                    <td><span class="transcript-id">${al.transcript_id}</span></td>
+                    <td>${al.alignment_length.toLocaleString()}</td>
+                    <td>${al.num_sequences}</td>
+                    <td>
+                        <div style="font-weight: 600; color: ${pctColor};">${susPct.toFixed(1)}%</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${al.num_sus_sequences}/${al.num_sequences} sequences</div>
+                        <div class="sus-percent-bar-wrapper">
+                            <div class="sus-percent-bar" style="width: ${susPct}%; background-color: ${pctColor};"></div>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Render Pagination Controls
+        function renderPagination(total, page, limit) {
+            const totalPages = Math.ceil(total / limit);
+            const start = total === 0 ? 0 : (page - 1) * limit + 1;
+            const end = Math.min(page * limit, total);
+            
+            paginationInfo.textContent = `Showing ${start.toLocaleString()} to ${end.toLocaleString()} of ${total.toLocaleString()} alignments`;
+            
+            paginationControls.innerHTML = '';
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.textContent = '◀';
+            prevBtn.disabled = page === 1;
+            prevBtn.addEventListener('click', () => {
+                currentPage--;
+                fetchAlignments();
+            });
+            paginationControls.appendChild(prevBtn);
+
+            // Page Buttons
+            let startPage = Math.max(1, page - 2);
+            let endPage = Math.min(totalPages, page + 2);
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.textContent = '1';
+                firstBtn.addEventListener('click', () => {
+                    currentPage = 1;
+                    fetchAlignments();
+                });
+                paginationControls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('button');
+                    dots.className = 'page-btn';
+                    dots.textContent = '...';
+                    dots.disabled = true;
+                    paginationControls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${page === i ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    fetchAlignments();
+                });
+                paginationControls.appendChild(pageBtn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('button');
+                    dots.className = 'page-btn';
+                    dots.textContent = '...';
+                    dots.disabled = true;
+                    paginationControls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.textContent = totalPages;
+                lastBtn.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    fetchAlignments();
+                });
+                paginationControls.appendChild(lastBtn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.textContent = '▶';
+            nextBtn.disabled = page === totalPages;
+            nextBtn.addEventListener('click', () => {
+                currentPage++;
+                fetchAlignments();
+            });
+            paginationControls.appendChild(nextBtn);
+        }
+
+        // Show Details Drawer
+        function showDetails(alignmentId) {
+            fetch(`/api/alignment/${alignmentId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const al = data.alignment;
+                    
+                    document.getElementById('drawer-gene-name').textContent = al.resolved_gene_name || 'Unknown';
+                    document.getElementById('drawer-transcript-id').textContent = al.file_name;
+                    document.getElementById('drawer-length').textContent = `${al.alignment_length.toLocaleString()} bp (${Math.round(al.alignment_length/3).toLocaleString()} codons)`;
+                    document.getElementById('drawer-biotype').textContent = al.biotype || 'N/A';
+                    document.getElementById('drawer-seqs-count').textContent = al.num_sequences;
+                    document.getElementById('drawer-sus-count').textContent = al.num_sus_sequences;
+                    
+                    // Outlier alert
+                    const outlierCard = document.getElementById('drawer-outlier-card');
+                    if (al.is_outlier && al.outlier_reasons) {
+                        outlierCard.style.display = 'block';
+                        document.getElementById('drawer-outlier-text').textContent = al.outlier_reasons;
+                    } else {
+                        outlierCard.style.display = 'none';
+                    }
+
+                    // Suspect warning alert
+                    const alertCard = document.getElementById('drawer-sus-reasons-card');
+                    if (al.is_sus_gene && al.sus_reasons) {
+                        alertCard.style.display = 'block';
+                        document.getElementById('drawer-sus-reasons-text').textContent = al.sus_reasons;
+                    } else {
+                        alertCard.style.display = 'none';
+                    }
+
+                    // Render Sequences
+                    document.getElementById('seq-count-badge').textContent = data.sequences.length;
+                    const seqContainer = document.getElementById('drawer-sequence-list');
+                    seqContainer.innerHTML = '';
+                    
+                    data.sequences.forEach(seq => {
+                        const isRef = seq.sequence_name === 'hg38';
+                        const seqCard = document.createElement('div');
+                        seqCard.className = `seq-card ${isRef ? 'reference' : ''} ${seq.is_sus ? 'sus' : ''}`;
+                        
+                        let tagStr = '';
+                        if (isRef) {
+                            tagStr = `<span class="badge badge-info" style="scale:0.85;">Human Reference</span>`;
+                        } else if (seq.is_sus) {
+                            tagStr = `<span class="badge badge-danger" style="scale:0.85;">Suspect</span>`;
+                        } else {
+                            tagStr = `<span class="badge badge-success" style="scale:0.85;">Clean</span>`;
+                        }
+
+                        let reasonsStr = '';
+                        if (seq.is_sus && seq.sus_reasons) {
+                            reasonsStr = `
+                                <div class="sus-reason-text">
+                                    ⚠️ ${seq.sus_reasons}
+                                </div>
+                            `;
+                        }
+
+                        seqCard.innerHTML = `
+                            <div class="seq-header">
+                                <div class="seq-name">
+                                    🧬 ${seq.sequence_name}
+                                </div>
+                                ${tagStr}
+                            </div>
+                            ${reasonsStr}
+                            <div class="seq-metrics">
+                                <div class="seq-metric">Resolved: <span>${seq.resolved_length.toLocaleString()} bp</span></div>
+                                <div class="seq-metric">Gaps: <span>${seq.gap_count.toLocaleString()}</span></div>
+                                <div class="seq-metric">N-count: <span>${seq.n_count.toLocaleString()}</span></div>
+                                <div class="seq-metric" style="grid-column: span 3; border-top: 1px dashed rgba(255,255,255,0.03); margin-top: 0.25rem; padding-top: 0.25rem;">
+                                    Stop codons (in-frame): <span>${seq.stop_codon_count}</span> ${seq.has_premature_stop ? '<span style="color:var(--danger); font-weight:600;">(Premature)</span>' : ''}
+                                </div>
+                            </div>
+                        `;
+                        seqContainer.appendChild(seqCard);
+                    });
+
+                    // Open Drawer
+                    drawer.classList.add('open');
+                    drawerOverlay.classList.add('open');
+                })
+                .catch(err => console.error("Error fetching alignment detail:", err));
+        }
+
+        function hideDrawer() {
+            drawer.classList.remove('open');
+            drawerOverlay.classList.remove('open');
+        }
+
+        // Render Chart.js breakdown of suspect reasons
+        function renderChart(reasonsBreakdown) {
+            const ctx = document.getElementById('sus-chart').getContext('2d');
+            
+            const labels = Object.keys(reasonsBreakdown);
+            const values = Object.values(reasonsBreakdown);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sequences Rejected',
+                        data: values,
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.45)', // Premature stop
+                            'rgba(139, 92, 246, 0.45)', // Low coverage
+                            'rgba(59, 130, 246, 0.45)'  // Empty sequence
+                        ],
+                        borderColor: [
+                            'var(--warning)',
+                            'var(--accent)',
+                            'var(--primary)'
+                        ],
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { color: 'var(--text-muted)', font: { family: 'Inter', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'var(--text-muted)', font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Histograms with Outlier Thresholds
+        function renderHistograms(codonHist, codonStats, seqHist, seqStats) {
+            // 1. Codon Length Histogram (Log-scaled line area chart)
+            const codonCtx = document.getElementById('codon-histogram-chart').getContext('2d');
+            const codonDataPoints = codonHist.bin_centers.map((center, idx) => ({
+                x: center,
+                y: codonHist.counts[idx]
+            }));
+
+            if (codonHistChart) {
+                codonHistChart.destroy();
+            }
+
+            codonHistChart = new Chart(codonCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Gene Count',
+                        data: codonDataPoints,
+                        borderColor: 'var(--primary)',
+                        backgroundColor: 'var(--primary-glow)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'var(--primary)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                lowerLine: {
+                                    type: 'line',
+                                    scaleID: 'x',
+                                    value: codonStats.lower_bound,
+                                    borderColor: 'rgba(239, 68, 68, 0.8)',
+                                    borderWidth: 1.5,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: `Short (<${codonStats.lower_bound})`,
+                                        display: true,
+                                        position: 'start',
+                                        backgroundColor: '#ffffff',
+                                        borderColor: 'var(--border)',
+                                        borderWidth: 1,
+                                        color: 'var(--text-main)',
+                                        font: { family: 'Inter', size: 9, weight: '700' }
+                                    }
+                                },
+                                upperLine: {
+                                    type: 'line',
+                                    scaleID: 'x',
+                                    value: codonStats.upper_bound,
+                                    borderColor: 'rgba(220, 38, 38, 0.8)',
+                                    borderWidth: 1.5,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: `Long (>${codonStats.upper_bound})`,
+                                        display: true,
+                                        position: 'end',
+                                        backgroundColor: '#ffffff',
+                                        borderColor: 'var(--border)',
+                                        borderWidth: 1,
+                                        color: 'var(--text-main)',
+                                        font: { family: 'Inter', size: 9, weight: '700' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'logarithmic',
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            ticks: { 
+                                color: 'var(--text-muted)', 
+                                font: { family: 'Inter', size: 9 },
+                                callback: function(value, index, ticks) {
+                                    return value.toLocaleString();
+                                }
+                            },
+                            title: { display: true, text: 'Codons (Log Scale)', color: 'var(--text-muted)', font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { color: 'var(--text-muted)', font: { family: 'Inter', size: 9 } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Sequence Count Histogram (Linear-scaled line area chart)
+            const seqCtx = document.getElementById('seq-histogram-chart').getContext('2d');
+            const seqDataPoints = seqHist.bin_centers.map((center, idx) => ({
+                x: center,
+                y: seqHist.counts[idx]
+            }));
+
+            if (seqHistChart) {
+                seqHistChart.destroy();
+            }
+
+            seqHistChart = new Chart(seqCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Gene Count',
+                        data: seqDataPoints,
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'var(--accent)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                lowerLine: {
+                                    type: 'line',
+                                    scaleID: 'x',
+                                    value: seqStats.lower_bound,
+                                    borderColor: 'rgba(239, 68, 68, 0.8)',
+                                    borderWidth: 1.5,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: `Few seqs (<${seqStats.lower_bound})`,
+                                        display: true,
+                                        position: 'start',
+                                        backgroundColor: '#ffffff',
+                                        borderColor: 'var(--border)',
+                                        borderWidth: 1,
+                                        color: 'var(--text-main)',
+                                        font: { family: 'Inter', size: 9, weight: '700' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            ticks: { color: 'var(--text-muted)', font: { family: 'Inter', size: 9 } },
+                            title: { display: true, text: 'Sequence Count (Linear Scale)', color: 'var(--text-muted)', font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { color: 'var(--text-muted)', font: { family: 'Inter', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Top Suspect Candidates List
+        function renderTopSusList(candidates) {
+            const listEl = document.getElementById('top-sus-list');
+            listEl.innerHTML = '';
+            
+            if (candidates.length === 0) {
+                listEl.innerHTML = '<li class="top-sus-item" style="color:var(--text-muted);">No candidates identified.</li>';
+                return;
+            }
+
+            candidates.forEach(cand => {
+                const li = document.createElement('li');
+                li.className = 'top-sus-item';
+                li.addEventListener('click', () => showDetails(cand.id));
+                li.style.cursor = 'pointer';
+                
+                let biotypeStr = cand.biotype || 'Unknown biotype';
+                if (biotypeStr.length > 25) {
+                    biotypeStr = biotypeStr.substring(0, 22) + '...';
+                }
+
+                li.innerHTML = `
+                    <div>
+                        <div class="top-sus-name">${cand.resolved_gene_name}</div>
+                        <div class="top-sus-meta">${cand.transcript_id} | ${biotypeStr}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge badge-danger">${cand.sus_pct.toFixed(0)}% sus</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">${cand.num_sus_sequences}/${cand.num_sequences} seqs</div>
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

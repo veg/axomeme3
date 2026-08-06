@@ -1,0 +1,295 @@
+Directory Name	Species	NCBI accession	NCBI assembly status	contig N50 (bp)	scaffold N50 (bp)	No. ancestral genes with intact ORF	No. ancestral genes with inactivating mutations	No. ancestral genes with missing sequences	Flag Reason
+Aix_sponsa__Wood_duck__HLaixSpon1__GCA_051175885.1	Aix sponsa	GCA_051175885.1	Contig	5242973	5242973				Assembly status is Contig
+Anas_bahamensis__white-cheeked_pintail__HLanaBaha1__GCA_038381715.1	Anas bahamensis	GCA_038381715.1	Scaffold	9633	76845102				Low Contig N50 (< 10 KB)
+Anas_capensis__Cape_teal__HLanaCape1__GCA_032357685.1	Anas capensis	GCA_032357685.1	Scaffold	9950	64715642				Low Contig N50 (< 10 KB)
+Anas_melleri__Mellers_duck__HLanaMell1__GCA_052075425.1	Anas melleri	GCA_052075425.1	Scaffold	1864	29552448				Low Contig N50 (< 10 KB)
+Mergellus_albellus__Smew__HLmerAlbe1__GCA_051254355.1	Mergellus albellus	GCA_051254355.1	Scaffold	9076	38391571				Low Contig N50 (< 10 KB)
+Branta_hutchinsii__Cackling_goose__HLbraHutc1__GCA_032270845.1	Branta hutchinsii	GCA_032270845.1	Scaffold	6334	83206430				Low Contig N50 (< 10 KB)
+Cygnus_atratus__black_swan__HLcygAtr1__GCA_013377495.1	Cygnus atratus	GCA_013377495.1	Contig	12814145	12814145	-1.0	-1.0	-1.0	Assembly status is Contig
+Aythya_nyroca__Ferruginous_duck__HLaytNyro1__GCA_052075125.1	Aythya nyroca	GCA_052075125.1	Scaffold	6932	76982613				Low Contig N50 (< 10 KB)
+Bambusicola_thoracicus__Chinese_bamboo-partridge__HLbamTho1__GCA_002909625.1	Bambusicola thoracicus	GCA_002909625.1	Scaffold	10597	13160				Low Scaffold N50 (< 100 KB)
+Gavia_stellata__red-throated_loon__gavSte1__GCF_000690875.1	Gavia stellata	GCF_000690875.1	Scaffold	24321	45523	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Butorides_virescens__green_heron__HLbutVir1__GCA_017310255.1	Butorides virescens	GCA_017310255.1	Contig	222988	222988	-1.0	-1.0	-1.0	Assembly status is Contig
+Gorsachius_goisagi__Japanese_night-heron__HLgorGoi1__GCA_018403395.1	Gorsachius goisagi	GCA_018403395.1	Scaffold	42983	73010	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Pelecanus_erythrorhynchos__American_white_pelican__HLpelEryt1__GCA_051176275.1	Pelecanus erythrorhynchos	GCA_051176275.1	Contig	5571114	5571114				Assembly status is Contig
+Pelecanus_crispus__Dalmatian_pelican__pelCri1__GCF_000687375.1	Pelecanus crispus	GCF_000687375.1	Scaffold	21679	43364	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Scopus_umbretta__Hamerkop__HLscoUmbr1__GCA_013400535.1	Scopus umbretta	GCA_013400535.1	Scaffold	16158	32357				Low Scaffold N50 (< 100 KB)
+Plegadis_falcinellus__glossy_ibis__HLpleFalc1__GCA_045787385.1	Plegadis falcinellus	GCA_045787385.1	Scaffold	48305	50846				Low Scaffold N50 (< 100 KB)
+Phoebastria_albatrus__Short-tailed_albatross__HLphoAlb1__GCA_014363385.1	Phoebastria albatrus	GCA_014363385.1	Scaffold	43134	87989	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Calonectris_borealis__Corys_shearwater__HLcalBor1__GCA_013401115.1	Calonectris borealis	GCA_013401115.1	Scaffold	63034	65340	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Fulmarus_glacialis__Northern_fulmar__fulGla1__GCF_000690835.1	Fulmarus glacialis	GCF_000690835.1	Scaffold	25926	47208	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Phalacrocorax_carbo__great_cormorant__phaCar1__GCF_000708925.1	Phalacrocorax carbo	GCF_000708925.1	Scaffold	17343	48427	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Fratercula_cirrhata__tufted_puffin__HLfraCirr1__GCA_014363165.1	Fratercula cirrhata	GCA_014363165.1	Scaffold	19680	54950				Low Scaffold N50 (< 100 KB)
+Larus_smithsonianus__American_herring_gull__HLlarSmi1__GCA_013400295.1	Larus smithsonianus	GCA_013400295.1	Scaffold	59826	82245	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Recurvirostra_avosetta__Pied_Avocet__HLrecAvo1__GCA_004023745.1	Recurvirostra avosetta	GCA_004023745.1	Scaffold	10462	96778				Low Scaffold N50 (< 100 KB)
+Columba_guinea__Speckled_pigeon__HLcolGuin1__GCA_032206185.1	Columba guinea	GCA_032206185.1	Contig	7605730	7605730				Assembly status is Contig
+Nesoenas_picturatus__Madagascar_turtle-dove__HLnesPict1__GCA_053455885.1	Nesoenas picturatus	GCA_053455885.1	Contig	33114301	33114301				Assembly status is Contig
+Mesitornis_unicolor__brown_roatelo__mesUni1__GCF_000695765.1	Mesitornis unicolor	GCF_000695765.1	Scaffold	22740	47102	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Hypotaenidia_owstoni__Guam_rail__HLhypOwst1__GCA_046605145.1	Hypotaenidia owstoni	GCA_046605145.1	Contig	35906214	35906214				Assembly status is Contig
+Clamator_glandarius__Great_spotted_cuckoo__HLclaGla1__GCA_033459285.1	Clamator glandarius	GCA_033459285.1	Contig	2269972	2269972	-1.0	-1.0	-1.0	Assembly status is Contig
+Dromococcyx_pavoninus__Pavonine_cuckoo__HLdroPavo1__GCA_033558185.1	Dromococcyx pavoninus	GCA_033558185.1	Contig	1835311	1835311				Assembly status is Contig
+Geococcyx_californianus__greater_roadrunner__HLgeoCal1__GCA_013389885.1	Geococcyx californianus	GCA_013389885.1	Scaffold	47040	59473	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Eurypyga_helias__sunbittern__eurHel1__GCF_000690775.1	Eurypyga helias	GCF_000690775.1	Scaffold	24402	47243	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Phaethon_lepturus__White-tailed_tropicbird__phaLep1__GCF_000687285.1	Phaethon lepturus	GCF_000687285.1	Scaffold	22941	47896	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Oreotrochilus_melanogaster__black-breasted_hillstar__HLoreMel1__GCA_013400995.1	Oreotrochilus melanogaster	GCA_013400995.1		6248	163435	-1.0	-1.0	-1.0	Low Contig N50 (< 10 KB)
+Antrostomus_carolinensis__Chuck-wills-widow__capCar1__GCF_000700745.1	Antrostomus carolinensis	GCF_000700745.1	Scaffold	22156	46345	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Accipiter_cooperii__Coopers_hawk__HLaccCoo1__GCA_024222105.1	Accipiter cooperii	GCA_024222105.1	Scaffold	5194	35883487	-1.0	-1.0	-1.0	Low Contig N50 (< 10 KB)
+Gyps_himalayensis__Himalayan_griffon__HLgypHim1__GCA_021398385.1	Gyps himalayensis	GCA_021398385.1	Contig	3972749	3972749	-1.0	-1.0	-1.0	Assembly status is Contig
+Parabuteo_unicinctus__Harris_hawk__HLparUnic1__GCA_025311615.1	Parabuteo unicinctus	GCA_025311615.1	Scaffold	1227	34879618				Low Contig N50 (< 10 KB)
+Sarcogyps_calvus__Red-headed_vulture__HLsarCalv1__GCA_040869245.1	Sarcogyps calvus	GCA_040869245.1	Contig	28731705	28731705				Assembly status is Contig
+Falco_sparverius__American_kestrel__HLfalSpar1__GCA_034782035.1	Falco sparverius	GCA_034782035.1	Scaffold	3001	37382377				Low Contig N50 (< 10 KB)
+Aphelocoma_insularis__Santa_Cruz_jay__HLaphInsu1__GCA_048182245.1	Aphelocoma insularis	GCA_048182245.1	Contig	24220667	24220667				Assembly status is Contig
+Aphelocoma_woodhouseii__Woodhouses_scrub-Jay__HLaphWood1__GCA_048174545.1	Aphelocoma woodhouseii	GCA_048174545.1	Contig	23231059	23231059				Assembly status is Contig
+Cyanocorax_yucatanicus__Yucatan_jay__HLcyaYuca1__GCA_048174265.1	Cyanocorax yucatanicus	GCA_048174265.1	Contig	13535775	13535775				Assembly status is Contig
+Acanthornis_magna__Scrubtit__HLacaMagn1__GCA_036785705.1	Acanthornis magna	GCA_036785705.1	Contig	7715064	7715064				Assembly status is Contig
+Entomyzon_cyanotis__Blue_faced_honeyeater__HLentCya2__GCA_024500445.1	Entomyzon cyanotis	GCA_024500445.1	Contig	27441776	27441776	-1.0	-1.0	-1.0	Assembly status is Contig
+Cossypha_niveicapilla__Snowy-crowned_robin-chat__HLcosNive1__GCA_027576815.1	Cossypha niveicapilla	GCA_027576815.1	Scaffold	9328	58307819				Low Contig N50 (< 10 KB)
+Muscicapa_striata_striata__Spotted_flycatcher__HLmusStriStr1__GCA_030060385.1	Muscicapa striata striata	GCA_030060385.1	Contig	3249550	3249550				Assembly status is Contig
+Phoenicurus_ochruros__Black_redstart__HLphoOchr1__GCA_050234705.1	Phoenicurus ochruros	GCA_050234705.1	Contig	29902800	29902800				Assembly status is Contig
+Melozone_crissalis__California_towhee__HLmelCri1__GCF_028551555.1	Melozone crissalis	GCF_028551555.1	Contig	22266903	22266903	-1.0	-1.0	-1.0	Assembly status is Contig
+Carpodacus_erythrinus__Common_rosefinch__HLcarEryt1A__GCA_046618715.1	Carpodacus erythrinus	GCA_046618715.1	Contig	12925667	12925667				Assembly status is Contig
+Quiscalus_mexicanus__Great-tailed_grackle__HLquiMex1__GCA_013399035.1	Quiscalus mexicanus	GCA_013399035.1	Scaffold	60532	93215	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Geothlypis_philadelphia__Mourning_warbler__HLgeoPhil1__GCA_051175835.1	Geothlypis philadelphia	GCA_051175835.1	Contig	5709434	5709434				Assembly status is Contig
+Leiothlypis_celata__Orange-crowned_warbler__HLleiCela1__GCA_051176495.1	Leiothlypis celata	GCA_051176495.1	Contig	11613869	11613869				Assembly status is Contig
+Leiothlypis_peregrina__Tennessee_warbler__HLleiPere1__GCA_051176395.1	Leiothlypis peregrina	GCA_051176395.1	Contig	18951180	18951180				Assembly status is Contig
+Leiothlypis_ruficapilla__Nashville_warbler__HLleiRufi1__GCA_051176345.1	Leiothlypis ruficapilla	GCA_051176345.1	Contig	9737246	9737246				Assembly status is Contig
+Manacus_candei__White-collared_manakin__HLmanCan1__GCF_025592945.1	Manacus candei	GCF_025592945.1	Contig	15991245	15991245	-1.0	-1.0	-1.0	Assembly status is Contig
+Phylloscopus_collybita__Eurasian_chiffchaff__HLphyColl1__GCA_027886175.1	Phylloscopus collybita	GCA_027886175.1	Contig	28093532	28093532				Assembly status is Contig
+Phylloscopus_whistleri__Whistlers_warbler__HLphyWhi1__GCA_017589585.1	Phylloscopus whistleri	GCA_017589585.1	Contig	3796120	3796120	-1.0	-1.0	-1.0	Assembly status is Contig
+Nicator_chloris__Western_nicator__HLnicChl1__GCA_013400495.1	Nicator chloris	GCA_013400495.1	Scaffold	56498	99492	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Cettia_cetti__Cettis_warbler__HLcetCet1__GCA_013401135.1	Cettia cetti	GCA_013401135.1	Scaffold	62878	64977	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Sporophila_iberaensis__Ibera_seedeater__HLspoIber1__GCA_053841595.1	Sporophila iberaensis	GCA_053841595.1	Contig	47202461	47202461				Assembly status is Contig
+Gubernatrix_cristata__Yellow_cardinal__HLgubCris1__GCA_041475435.1	Gubernatrix cristata	GCA_041475435.1	Contig	26459013	26459013				Assembly status is Contig
+Catharus_guttatus__Hermit_thrush__HLcatGutt1__GCA_051295615.1	Catharus guttatus	GCA_051295615.1	Contig	1278345	1278345				Assembly status is Contig
+Agapornis_lilianae__Lilians_lovebird__HLagaLili1__GCA_035222285.1	Agapornis lilianae	GCA_035222285.1	Scaffold	15867	27332				Low Scaffold N50 (< 100 KB)
+Agapornis_nigrigenis__black-cheeked_lovebird__HLagaNigr1__GCA_035041115.1	Agapornis nigrigenis	GCA_035041115.1	Scaffold	66169	81463				Low Scaffold N50 (< 100 KB)
+Agapornis_personatus__Yellow-collared_lovebird__HLagaPers1__GCA_034783155.1	Agapornis personatus	GCA_034783155.1	Scaffold	15928	27927				Low Scaffold N50 (< 100 KB)
+Amazona_vittata__Puerto_Rican_parrot__amaVit1__GCA_000332375.1	Amazona vittata	GCA_000332375.1	Scaffold	6904	19239	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB)
+Cyanoliseus_patagonus__Burrowing_parakeet__HLcyaPata1__GCA_025629865.1	Cyanoliseus patagonus	GCA_025629865.1	Scaffold	11117	23079				Low Scaffold N50 (< 100 KB)
+Diopsittaca_nobilis__Red-shouldered_macaw__HLdioNobi1__GCA_024337085.1	Diopsittaca nobilis	GCA_024337085.1	Scaffold	20970	31393				Low Scaffold N50 (< 100 KB)
+Nestor_notabilis__Kea__HLnesNot1__GCA_000696875.1	Nestor notabilis	GCA_000696875.1	Scaffold	26546	61475	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Pezoporus_flaviventris__Western_Ground_Parrot__HLpezFla1__GCF_033815535.1	Pezoporus flaviventris	GCF_033815535.1	Contig	20284492	20284492	-1.0	-1.0	-1.0	Assembly status is Contig
+Pezoporus_occidentalis__Night_parrot__HLpezOcc1__GCF_034315485.1	Pezoporus occidentalis	GCF_034315485.1	Contig	5079322	5079322	-1.0	-1.0	-1.0	Assembly status is Contig
+Pezoporus_wallicus__Ground_parrot__HLpezWal1__GCF_028554395.1	Pezoporus wallicus	GCF_028554395.1	Contig	3815874	3815874	-1.0	-1.0	-1.0	Assembly status is Contig
+Buceros_rhinoceros_silvestris__Rhinoceros_hornbill__bucRhi1__GCF_000710305.1	Buceros rhinoceros silvestris	GCF_000710305.1	Scaffold	14587	53203	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Colius_striatus__speckled_mousebird__colStr1__GCF_000690715.1	Colius striatus	GCF_000690715.1	Scaffold	25860	46063	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Todiramphus_cinnamominus__Micronesian_kingfisher__HLtodCinn1__GCA_033439825.1	Todiramphus cinnamominus	GCA_033439825.1	Scaffold	26668	60279				Low Scaffold N50 (< 100 KB)
+Coracias_cyanogaster__Blue-bellied_roller__HLcorCyan1__GCA_033124195.1	Coracias cyanogaster	GCA_033124195.1	Scaffold	21473	58543				Low Scaffold N50 (< 100 KB)
+Todus_mexicanus__puerto_rican_tody__HLtodMex1__GCA_013389965.1	Todus mexicanus	GCA_013389965.1	Scaffold	8743	12670	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB)
+Leptosomus_discolor__cuckoo_roller__lepDis1__GCF_000691785.1	Leptosomus discolor	GCF_000691785.1	Scaffold	24735	62640	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Melanerpes_aurifrons__Golden-fronted_woodpecker__HLmelAur1__GCA_011125475.1	Melanerpes aurifrons	GCA_011125475.1	Contig	16045987	16045987	-1.0	-1.0	-1.0	Assembly status is Contig
+Ramphastos_sulfuratus__Keel_billed_toucan__HLramSul1__GCA_013399055.1	Ramphastos sulfuratus	GCA_013399055.1	Scaffold	38620	85980	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Apaloderma_vittatum__bar-tailed_trogon__apaVit1__GCF_000703405.1	Apaloderma vittatum	GCF_000703405.1	Scaffold	28882	56673	-1.0	-1.0	-1.0	Low Scaffold N50 (< 100 KB)
+Apteryx_mantelli_mantelli__North_Island_brown_kiwi__aptMan1__GCF_001039765.1	Apteryx mantelli mantelli	GCF_001039765.1	Contig	17252	5679020	-1.0	-1.0	-1.0	Assembly status is Contig
+Nesogale_talazaci__Talazacs_shrew_tenrec__HLmicTal1__GCA_004026705.1	Nesogale talazaci	GCA_004026705.1	Scaffold	56946	65143	11202.0	1075.0	2919.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Dugong_dugon__dugong__HLdugDug1__GCA_015147995.1	Dugong dugon	GCA_015147995.1	Scaffold	19047	31096	13361.0	366.0	1469.0	Low Scaffold N50 (< 100 KB)
+Hydrodamalis_gigas__Stellers_sea_cow__HLhydGig1__GCA_013391785.1	Hydrodamalis gigas	GCA_013391785.1	Scaffold	1345	1430	2217.0	3722.0	9257.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Lepus_americanus__snowshoe_hare__HLlepAme1__GCA_004026855.1	Lepus americanus	GCA_004026855.1	Scaffold	15057	16725	11150.0	1267.0	2779.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Pedetes_capensis__springhare__HLpedCap1__GCA_007922755.1	Pedetes capensis	GCA_007922755.1	Scaffold	54009	74432	14206.0	362.0	628.0	Low Scaffold N50 (< 100 KB)
+Castor_canadensis__American_beaver__HLcasCan3	Castor canadensis	DNA Zoo Consortium		266367	136673807	12506.0	2192.0	498.0	High inactivating mutations (> 2,000)
+Dipodomys_spectabilis__banner-tailed_kangaroo_rat__HLdipSpe1__GCF_019054845.1	Dipodomys spectabilis	GCF_019054845.1	Contig	9612466	9612466	14593.0	504.0	99.0	Assembly status is Contig
+Dipodomys_stephensi__Stephenss_kangaroo_rat__HLdipSte1__GCA_004024685.1	Dipodomys stephensi	GCA_004024685.1	Scaffold	30710	36811	12860.0	657.0	1679.0	Low Scaffold N50 (< 100 KB)
+Heterocephalus_glaber__naked_mole-rat__HLhetGla5__GCA_944319715.1	Heterocephalus glaber	GCA_944319715.1	Chromosome	3438577	95752777	12393.0	2739.0	64.0	High inactivating mutations (> 2,000)
+Cavia_tschudii__Montane_guinea_pig__HLcavTsc1__GCA_004027695.1	Cavia tschudii	GCA_004027695.1	Scaffold	64807	91436	14357.0	456.0	383.0	Low Scaffold N50 (< 100 KB)
+Cavia_aperea__Brazilian_guinea_pig__cavApe1__GCA_000688575.1	Cavia aperea	GCA_000688575.1	Scaffold	1039	27928671	9688.0	1628.0	3880.0	Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Dolichotis_patagonum__Patagonian_cavy__HLdolPat1__GCA_004027295.1	Dolichotis patagonum	GCA_004027295.1	Scaffold	27983	31026	13360.0	677.0	1159.0	Low Scaffold N50 (< 100 KB)
+Ctenomys_sociabilis__social_tuco-tuco__HLcteSoc1__GCA_004027165.1	Ctenomys sociabilis	GCA_004027165.1	Scaffold	37562	49073	13570.0	579.0	1047.0	Low Scaffold N50 (< 100 KB)
+Dasyprocta_punctata__punctate_agouti__HLdasPun1__GCA_004363535.1	Dasyprocta punctata	GCA_004363535.1	Scaffold	38650	43703	13053.0	762.0	1381.0	Low Scaffold N50 (< 100 KB)
+Dinomys_branickii__pacarana__HLdinBra1__GCA_004027595.1	Dinomys branickii	GCA_004027595.1	Scaffold	64805	77918	14289.0	454.0	453.0	Low Scaffold N50 (< 100 KB)
+Hystrix_cristata__crested_porcupine__HLhysCri1__GCA_004026905.1	Hystrix cristata	GCA_004026905.1	Scaffold	57102	64768	13940.0	567.0	689.0	Low Scaffold N50 (< 100 KB)
+Petromus_typicus__dassie-rat__HLpetTyp1__GCA_004026965.1	Petromus typicus	GCA_004026965.1	Scaffold	29916	35766	12937.0	706.0	1553.0	Low Scaffold N50 (< 100 KB)
+Thryonomys_swinderianus__Greater_cane_rat__HLthrSwi1__GCA_004025085.1	Thryonomys swinderianus	GCA_004025085.1	Scaffold	18955	21523	12437.0	927.0	1832.0	Low Scaffold N50 (< 100 KB)
+Orientallactaga_bullata__Gobi_jerboa__HLallBul1__GCA_004027895.1	Orientallactaga bullata	GCA_004027895.1	Scaffold	30651	36308	12073.0	777.0	2346.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Orientallactaga_sibirica__Mongolian_five-toed_jerboa__HLoriSib2__GCA_041429955.1	Orientallactaga sibirica	GCA_041429955.1	Contig	50637186	50637186	14836.0	318.0	42.0	Assembly status is Contig
+Salpingotus_crassicauda__Thick-tailed_pygmy_jerboa__HLsalCra1__GCA_040869305.1	Salpingotus crassicauda	GCA_040869305.1	Contig	13709620	13709620	13969.0	1055.0	172.0	Assembly status is Contig
+Zapus_hudsonius__meadow_jumping_mouse__HLzapHud1__GCA_004024765.1	Zapus hudsonius	GCA_004024765.1	Scaffold	23350	26350	12037.0	953.0	2206.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Clethrionomys_rutilus__Northern_red-backed_vole__HLcleRut1__GCA_040207285.1	Clethrionomys rutilus	GCA_040207285.1	Contig	42196457	42196457	14367.0	234.0	595.0	Assembly status is Contig
+Ellobius_talpinus__Northern_mole_vole__HLellTal1__GCA_001685095.1	Ellobius talpinus	GCA_001685095.1	Scaffold	8259	15246	11052.0	1303.0	2841.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Microtus_agrestis__short-tailed_field_vole__HLmicAgr2__GCA_902806775.1	Microtus agrestis	GCA_902806775.1	Contig	2938971	2938971	14341.0	783.0	72.0	Assembly status is Contig
+Microtus_arvalis__Common_vole__HLmicArv1__GCA_007455615.1	Microtus arvalis	GCA_007455615.1	Scaffold	34797	52876	13493.0	541.0	1162.0	Low Scaffold N50 (< 100 KB)
+Microtus_oregoni__creeping_vole__HLmicOre1__GCF_018167655.1	Microtus oregoni	GCF_018167655.1	Contig	34833828	34833828	14886.0	265.0	45.0	Assembly status is Contig
+Ondatra_zibethicus__muskrat__HLondZib1__GCA_004026605.1	Ondatra zibethicus	GCA_004026605.1	Scaffold	73746	89093	14149.0	422.0	625.0	Low Scaffold N50 (< 100 KB)
+Bramus_lutescens__Transcaucasian_mole_vole__HLellLut1__GCA_001685075.1	Bramus lutescens	GCA_001685075.1	Scaffold	11648	242123	11282.0	2881.0	1033.0	High inactivating mutations (> 2,000)
+Phodopus_roborovskii__desert_hamster__HLphoRob1__GCA_943737965.1	Phodopus roborovskii	GCA_943737965.1	Contig	25775705	25775705	14778.0	326.0	92.0	Assembly status is Contig
+Neotoma_lepida__desert_woodrat__HLneoLep1__GCA_001675575.1	Neotoma lepida	GCA_001675575.1	Scaffold	9584	151693	12269.0	825.0	2102.0	Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Neotomodon_alstoni__Mexican_volcano_mouse__HLneoAls1	Neotomodon alstoni	DNA Zoo Consortium		51626	91625725	9423.0	4169.0	1604.0	High inactivating mutations (> 2,000)
+Peromyscus_eremicus__cactus_mouse__HLperEre1__GCA_902702925.1	Peromyscus eremicus	GCA_902702925.1	Scaffold	64291	119957392	12292.0	2158.0	746.0	High inactivating mutations (> 2,000)
+Scotinomys_teguina__Alstons_brown_mouse__HLscoTegu1__GCA_049901635.1	Scotinomys teguina	GCA_049901635.1	Contig	1427988	1427988	13344.0	1423.0	429.0	Assembly status is Contig
+Holochilus_nanus__Neotropical_marsh_rat__HLholNanu1__GCA_050578075.1	Holochilus nanus	GCA_050578075.1	Scaffold	15080	42754	12897.0	544.0	1755.0	Low Scaffold N50 (< 100 KB)
+Acomys_cahirinus__Egyptian_spiny_mouse__HLacoCah1__GCA_004027535.1	Acomys cahirinus	GCA_004027535.1	Scaffold	42476	65411	13578.0	529.0	1089.0	Low Scaffold N50 (< 100 KB)
+Montemys_delectorum__delectable_soft-furred_mouse__HLpraDel1__GCA_019843815.1	Montemys delectorum	GCA_019843815.1	Scaffold	13907	22327	10658.0	1073.0	3465.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Mastacomys_fuscus__broad-toothed_rat__HLmasFus1	Mastacomys fuscus	DNA Zoo Consortium		371229	104439433	9441.0	5265.0	490.0	High inactivating mutations (> 2,000)
+Pseudomys_desertor__brown_desert_mouse__HLpseDes1	Pseudomys desertor	DNA Zoo Consortium		536677	103158894	9058.0	5865.0	273.0	High inactivating mutations (> 2,000)
+Aplodontia_rufa__mountain_beaver__HLaplRuf1__GCA_004027875.1	Aplodontia rufa	GCA_004027875.1	Scaffold	33245	37811	13721.0	476.0	999.0	Low Scaffold N50 (< 100 KB)
+Glis_glis__Fat_dormouse__HLgliGli1__GCA_004027185.1	Glis glis	GCA_004027185.1	Scaffold	26062	30338	12736.0	563.0	1897.0	Low Scaffold N50 (< 100 KB)
+Graphiurus_murinus__woodland_dormouse__HLgraMur1__GCA_004027655.1	Graphiurus murinus	GCA_004027655.1	Scaffold	22138	28463	11822.0	1020.0	2354.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Muscardinus_avellanarius__hazel_dormouse__HLmusAve1__GCA_004027005.1	Muscardinus avellanarius	GCA_004027005.1	Scaffold	44294	59013	13905.0	414.0	877.0	Low Scaffold N50 (< 100 KB)
+Marmota_vancouverensis__Vancouver_Island_marmot__HLmarVanc2__GCA_040207255.1	Marmota vancouverensis	GCA_040207255.1	Contig	66661095	66661095	13476.0	338.0	1382.0	Assembly status is Contig
+Otospermophilus_beecheyi__California_ground_squirrel__HLotoBeec1__GCA_051821045.1	Otospermophilus beecheyi	GCA_051821045.1	Chromosome	418950	124984502	9756.0	4249.0	1191.0	High inactivating mutations (> 2,000)
+Spermophilus_dauricus__Daurian_ground_squirrel__HLspeDau1__GCA_002406435.1	Spermophilus dauricus	GCA_002406435.1	Scaffold	34849	1761345	11513.0	3120.0	563.0	High inactivating mutations (> 2,000)
+Tamias_sibiricus__Siberian_chipmunk__HLtamSib1__GCA_025594165.1	Tamias sibiricus	GCA_025594165.1	Chromosome	9422552	172614981	11308.0	3802.0	86.0	High inactivating mutations (> 2,000)
+Tamias_sibiricus__Siberian_chipmunk__HLtamSibi2__GCA_047496905.1	Tamias sibiricus	GCA_047496905.1	Chromosome	9155588	166459957	11426.0	3667.0	103.0	High inactivating mutations (> 2,000)
+Xerus_inauris__South_African_ground_squirrel__HLxerIna1__GCA_004024805.1	Xerus inauris	GCA_004024805.1	Scaffold	64054	83865	14114.0	424.0	658.0	Low Scaffold N50 (< 100 KB)
+Cercopithecus_albogularis__Sykes_monkey__HLcerAlb1__GCA_023783535.1	Cercopithecus albogularis	GCA_023783535.1	Contig	13914891	13914891	13771.0	1274.0	151.0	Assembly status is Contig
+Cercopithecus_neglectus__De_Brazzas_monkey__HLcerNeg1__GCA_004027615.1	Cercopithecus neglectus	GCA_004027615.1	Scaffold	9789	10270	11545.0	1060.0	2591.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Cercopithecus_neglectus__De_Brazzas_monkey__HLcerNegl2__GCA_963574685.1	Cercopithecus neglectus	GCA_963574685.1	Scaffold	44010	44019	12445.0	559.0	2192.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Chlorocebus_aethiops__grivet__HLchlAet1__GCA_023783515.1	Chlorocebus aethiops	GCA_023783515.1	Contig	9639656	9639656	14271.0	823.0	102.0	Assembly status is Contig
+Erythrocebus_patas__red_guenon__HLeryPat3__GCA_023783455.1	Erythrocebus patas	GCA_023783455.1	Contig	18747272	18747272	13442.0	1540.0	214.0	Assembly status is Contig
+Lophocebus_aterrimus__Black_crested_mangabey__HLlopAte1__GCA_023783235.1	Lophocebus aterrimus	GCA_023783235.1	Contig	6802059	6802059	13806.0	1267.0	123.0	Assembly status is Contig
+Macaca_assamensis__Assam_macaque__HLmacAss1__GCA_023783095.1	Macaca assamensis	GCA_023783095.1	Contig	27348716	27348716	13479.0	1634.0	83.0	Assembly status is Contig
+Macaca_nigra__Celebes_crested_macaque__HLmacNir1__GCA_928851695.1	Macaca nigra	GCA_928851695.1	Scaffold	60712129	60712129	12066.0	3121.0	9.0	High inactivating mutations (> 2,000)
+Macaca_silenus__liontail_macaque__HLmacSil1__GCA_023807365.1	Macaca silenus	GCA_023807365.1	Contig	25691658	25691658	14872.0	190.0	134.0	Assembly status is Contig
+Mandrillus_sphinx__mandrill__HLmanSph3__GCA_023783085.1	Mandrillus sphinx	GCA_023783085.1	Contig	20999372	20999372	12448.0	2499.0	249.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Papio_hamadryas__hamadryas_baboon__HLpapHam2__GCA_023781915.1	Papio hamadryas	GCA_023781915.1	Contig	24989958	24989958	13585.0	1459.0	152.0	Assembly status is Contig
+Nasalis_larvatus__proboscis_monkey__nasLar1__GCA_000772465.1	Nasalis larvatus	GCA_000772465.1	Chromosome	13295	137426304	8538.0	3691.0	2967.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Pygathrix_nemaeus__Red_shanked_douc_langur__HLpygNem1__GCA_004024825.1	Pygathrix nemaeus	GCA_004024825.1	Scaffold	51434	68569	13826.0	367.0	1003.0	Low Scaffold N50 (< 100 KB)
+Pygathrix_nigripes__Black-shanked_douc_langur__HLpygNig1__GCA_023764695.1	Pygathrix nigripes	GCA_023764695.1	Contig	14260291	14260291	11233.0	3824.0	139.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Rhinopithecus_strykeri__Burmese_snub-nosed_monkey__HLrhiStr1__GCA_023764705.1	Rhinopithecus strykeri	GCA_023764705.1	Contig	16766498	16766498	12278.0	2718.0	200.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Rhinopithecus_bieti__black_snub-nosed_monkey__rhiBie1__GCF_001698545.1	Rhinopithecus bieti	GCF_001698545.1	Scaffold	36417	2225337	12475.0	2426.0	295.0	High inactivating mutations (> 2,000)
+Semnopithecus_entellus__Hanuman_langur__HLsemEnt1__GCA_004025065.1	Semnopithecus entellus	GCA_004025065.1	Scaffold	25064	29955	12579.0	808.0	1809.0	Low Scaffold N50 (< 100 KB)
+Trachypithecus_germaini__Indochinese_lutung__HLtraGer1__GCA_047047975.1	Trachypithecus germaini	GCA_047047975.1	Contig	55907425	55907425	15070.0	116.0	10.0	Assembly status is Contig
+Trachypithecus_phayrei_crepuscula__Phayres_leaf_monkey__HLtraPhaCre1__GCA_023762245.1	Trachypithecus phayrei crepuscula	GCA_023762245.1	Contig	14781066	14781066	10971.0	4079.0	146.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Gorilla_beringei__Eastern_gorilla__HLgorBer1__GCA_963575185.1	Gorilla beringei	GCA_963575185.1	Scaffold	54617	54617	13265.0	546.0	1385.0	Low Scaffold N50 (< 100 KB)
+Hoolock_leuconedys__eastern_hoolock_gibbon__HLhooLeu1__GCA_023748175.1	Hoolock leuconedys	GCA_023748175.1	Scaffold	22338800	22338800	11491.0	3569.0	136.0	High inactivating mutations (> 2,000)
+Alouatta_caraya__Black_howler_monkey__HLaloCara1__GCA_963575295.1	Alouatta caraya	GCA_963575295.1	Scaffold	32391	32393	11833.0	1031.0	2332.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Alouatta_palliata__mantled_howler_monkey__HLaloPal1__GCA_004027835.1	Alouatta palliata	GCA_004027835.1	Scaffold	51304	72427	13465.0	494.0	1237.0	Low Scaffold N50 (< 100 KB)
+Ateles_belzebuth__White-bellied_spider_monkey__HLateBel1__GCA_963573605.1	Ateles belzebuth	GCA_963573605.1	Scaffold	51917	51919	13217.0	529.0	1450.0	Low Scaffold N50 (< 100 KB)
+Ateles_chamek__Black_spider_monkey__HLateCha1__GCA_963574935.1	Ateles chamek	GCA_963574935.1	Scaffold	51908	51921	13225.0	554.0	1417.0	Low Scaffold N50 (< 100 KB)
+Ateles_fusciceps__Brown-headed_spider_monkey__HLateFus1__GCA_036589455.2	Ateles fusciceps	GCA_036589455.2	Scaffold	7542955	7560531	4262.0	10905.0	29.0	Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Ateles_geoffroyi__black-handed_spider_monkey__HLateGeo1__GCA_004024785.1	Ateles geoffroyi	GCA_004024785.1	Scaffold	59033	73111	13649.0	498.0	1049.0	Low Scaffold N50 (< 100 KB)
+Ateles_geoffroyi__black-handed_spider_monkey__HLateGeo2__GCA_023783555.1	Ateles geoffroyi	GCA_023783555.1	Contig	29212752	29212752	13331.0	1821.0	44.0	Assembly status is Contig
+Ateles_hybridus__brown_spider_monkey__HLateHyb1__GCA_916098195.1	Ateles hybridus	GCA_916098195.1	Scaffold	50515269	50515269	3875.0	11295.0	26.0	Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Ateles_marginatus__White-cheeked_spider_monkey__HLateMar1__GCA_963573555.1	Ateles marginatus	GCA_963573555.1	Scaffold	53900	53900	13239.0	589.0	1368.0	Low Scaffold N50 (< 100 KB)
+Ateles_paniscus__Red-faced_black_spider_monkey__HLatePan1__GCA_963573985.1	Ateles paniscus	GCA_963573985.1	Scaffold	58585	58589	13354.0	528.0	1314.0	Low Scaffold N50 (< 100 KB)
+Brachyteles_arachnoides__Woolly_spider_monkey__HLbraAra1__GCA_047496155.1	Brachyteles arachnoides	GCA_047496155.1	Contig	58885235	58885235	14159.0	1025.0	12.0	Assembly status is Contig
+Brachyteles_hypoxanthus__Northern_muriqui__HLbraHypo1__GCA_049997475.1	Brachyteles hypoxanthus	GCA_049997475.1	Scaffold	16955	29133	12729.0	741.0	1726.0	Low Scaffold N50 (< 100 KB)
+Lagothrix_lagotricha__Brown_woolly_monkey__HLlagLag1__GCA_963574225.1	Lagothrix lagotricha	GCA_963574225.1	Scaffold	71029	71029	13575.0	531.0	1090.0	Low Scaffold N50 (< 100 KB)
+Callithrix_penicillata__Black-pencilled_marmoset__HLcalPen1__GCA_046862485.1	Callithrix penicillata	GCA_046862485.1	Chromosome	32659	124262003	11407.0	1669.0	2120.0	High missing sequences (> 2,000)
+Saguinus_imperator__tamarin__HLsagImp1__GCA_004024885.1	Saguinus imperator	GCA_004024885.1	Scaffold	53787	65636	13852.0	479.0	865.0	Low Scaffold N50 (< 100 KB)
+Cebus_albifrons__white-fronted_capuchin__HLcebAlb2__GCA_023783575.1	Cebus albifrons	GCA_023783575.1	Contig	18502463	18502463	13593.0	1455.0	148.0	Assembly status is Contig
+Saimiri_sciureus__Common_squirrel_monkey__HLsaiSci1__GCA_963573345.1	Saimiri sciureus	GCA_963573345.1	Scaffold	28615	28615	11318.0	871.0	3007.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Cheracebus_lucifer__Primates__HLcheLuc1__GCA_963573755.1	Cheracebus lucifer	GCA_963573755.1	Scaffold	46755	46755	13076.0	788.0	1332.0	Low Scaffold N50 (< 100 KB)
+Cheracebus_lugens__Black_titi__HLcheLug1__GCA_963574535.1	Cheracebus lugens	GCA_963574535.1	Scaffold	58812	58813	13366.0	633.0	1197.0	Low Scaffold N50 (< 100 KB)
+Cheracebus_regulus__Jurua_collared_titi__HLcheReg1__GCA_963574635.1	Cheracebus regulus	GCA_963574635.1	Scaffold	56688	56688	13344.0	643.0	1209.0	Low Scaffold N50 (< 100 KB)
+Cheracebus_torquatus__Collared_titi__HLcheTor1__GCA_963574645.1	Cheracebus torquatus	GCA_963574645.1	Scaffold	49680	49680	13200.0	771.0	1225.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_bernhardi__Prince_Bernhards_titi__HLpleBer1__GCA_963574705.1	Plecturocebus bernhardi	GCA_963574705.1	Scaffold	48015	48015	13066.0	854.0	1276.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_brunneus__Brown_titi__HLpleBru1__GCA_963573885.1	Plecturocebus brunneus	GCA_963573885.1	Scaffold	52164	52164	13153.0	784.0	1259.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_caligatus__Chestnut-bellied_titi__HLpleCal1__GCA_963575255.1	Plecturocebus caligatus	GCA_963575255.1	Scaffold	50972	50975	13163.0	787.0	1246.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_cinerascens__Ashy_titi__HLpleCin1__GCA_963573415.1	Plecturocebus cinerascens	GCA_963573415.1	Scaffold	46753	46753	13046.0	801.0	1349.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_donacophilus__Bolivian_titi__HLpleDon1__GCA_004027715.1	Plecturocebus donacophilus	GCA_004027715.1	Scaffold	41149	46445	13186.0	809.0	1201.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_dubius__Primates__HLpleDub1__GCA_963575235.1	Plecturocebus dubius	GCA_963575235.1	Scaffold	48896	48896	13080.0	797.0	1319.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_grovesi__Alta_Floresta_titi_monkey__HLpleGro1__GCA_963574625.1	Plecturocebus grovesi	GCA_963574625.1	Scaffold	58159	58159	13346.0	759.0	1091.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_hoffmannsi__Hoffmanns_titi__HLpleHof1__GCA_963575245.1	Plecturocebus hoffmannsi	GCA_963575245.1	Scaffold	46107	46114	13055.0	825.0	1316.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_miltoni__Miltons_titi__HLpleMil1__GCA_963575275.1	Plecturocebus miltoni	GCA_963575275.1	Scaffold	54303	54303	13251.0	789.0	1156.0	Low Scaffold N50 (< 100 KB)
+Plecturocebus_moloch__Red-bellied_titi__HLpleMol1__GCA_963574105.1	Plecturocebus moloch	GCA_963574105.1	Scaffold	61113	61113	13445.0	708.0	1043.0	Low Scaffold N50 (< 100 KB)
+Cacajao_ayresi__Primates__HLcacAyr1__GCA_963573425.1	Cacajao ayresi	GCA_963573425.1	Scaffold	76643	76643	13896.0	426.0	874.0	Low Scaffold N50 (< 100 KB)
+Cacajao_calvus__Bald_Uacari__HLcacCal1__GCA_963573955.1	Cacajao calvus	GCA_963573955.1	Scaffold	68772	68795	13722.0	482.0	992.0	Low Scaffold N50 (< 100 KB)
+Cacajao_hosomi__Primates__HLcacHos1__GCA_963573795.1	Cacajao hosomi	GCA_963573795.1	Scaffold	71453	71457	13745.0	478.0	973.0	Low Scaffold N50 (< 100 KB)
+Cacajao_melanocephalus__Black-headed_Uacari__HLcacMel1__GCA_963573385.1	Cacajao melanocephalus	GCA_963573385.1	Scaffold	71276	71282	13772.0	435.0	989.0	Low Scaffold N50 (< 100 KB)
+Chiropotes_israelita__Primates__HLchiIsr1__GCA_963573965.1	Chiropotes israelita	GCA_963573965.1	Scaffold	61605	61606	13600.0	427.0	1169.0	Low Scaffold N50 (< 100 KB)
+Chiropotes_sagulatus__Primates__HLchiSag1__GCA_963574175.1	Chiropotes sagulatus	GCA_963574175.1	Scaffold	53522	53527	13404.0	524.0	1268.0	Low Scaffold N50 (< 100 KB)
+Pithecia_mittermeieri__Mittermeiers_Tapajos_saki__HLpitMit1__GCA_963574975.1	Pithecia mittermeieri	GCA_963574975.1	Scaffold	46168	46168	13083.0	627.0	1486.0	Low Scaffold N50 (< 100 KB)
+Pithecia_pithecia__white-faced_saki__HLpitPit1__GCA_004026645.1	Pithecia pithecia	GCA_004026645.1	Scaffold	63292	83104	14000.0	365.0	831.0	Low Scaffold N50 (< 100 KB)
+Pithecia_pithecia__white-faced_saki__HLpitPit2__GCA_023779675.1	Pithecia pithecia	GCA_023779675.1	Contig	10867430	10867430	9795.0	5369.0	32.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Pithecia_vanzolinii__Vanzolinis_bald-faced_saki__HLpitVan1__GCA_963574005.1	Pithecia vanzolinii	GCA_963574005.1	Scaffold	44982	44982	13083.0	610.0	1503.0	Low Scaffold N50 (< 100 KB)
+Cephalopachus_bancanus__Horsfields_tarsier__HLcepBan1__GCA_027257055.1	Cephalopachus bancanus	GCA_027257055.1	Contig	5252243	5252243	13655.0	1299.0	242.0	Assembly status is Contig
+Daubentonia_madagascariensis__aye-aye__HLdauMad2__GCA_023783475.1	Daubentonia madagascariensis	GCA_023783475.1	Contig	27954151	27954151	14439.0	719.0	38.0	Assembly status is Contig
+Microcebus_griseorufus__Reddish-gray_mouse_lemur__HLmicGri1__GCA_008750995.1	Microcebus griseorufus	GCA_008750995.1	Scaffold	16653	16816	9097.0	1447.0	4652.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Microcebus_lehilahytsara__Mittermeiers_mouse_lemur__HLmicMit1__GCA_008750955.1	Microcebus lehilahytsara	GCA_008750955.1	Scaffold	15314	15314	8969.0	1560.0	4667.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Microcebus_ravelobensis__Golden_brown_mouse_lemur__HLmicRav1__GCA_008750975.1	Microcebus ravelobensis	GCA_008750975.1	Scaffold	21473	21495	10758.0	933.0	3505.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Microcebus_sp._3_GT-2019__unclassified_mouse_lemur__HLmicSpe31__GCA_008750915.1	Microcebus sp. 3 GT-2019	GCA_008750915.1	Scaffold	38130	38968	11256.0	708.0	3232.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Microcebus_tavaratra__Northern_rufous_mouse_lemur__HLmicTav1__GCA_008750935.1	Microcebus tavaratra	GCA_008750935.1	Scaffold	29527	30039	10561.0	896.0	3739.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Mirza_coquereli__Coquerels_mouse_lemur__HLmirCoq1__GCA_004024645.1	Mirza coquereli	GCA_004024645.1	Scaffold	60596	79947	13615.0	451.0	1130.0	Low Scaffold N50 (< 100 KB)
+Mirza_zaza__Northern_giant_mouse_lemur__HLmirZaz1__GCA_008750895.1	Mirza zaza	GCA_008750895.1	Scaffold	73499	75843	12277.0	555.0	2364.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Indri_indri__Indri__HLindInd1__GCA_004363605.1	Indri indri	GCA_004363605.1	Scaffold	26447	28620	12810.0	879.0	1507.0	Low Scaffold N50 (< 100 KB)
+Eulemur_coronatus__Crowned_lemur__HLeulCoro1__GCA_963574965.1	Eulemur coronatus	GCA_963574965.1	Scaffold	44663	44663	13483.0	494.0	1219.0	Low Scaffold N50 (< 100 KB)
+Eulemur_fulvus__brown_lemur__HLeulFul1__GCA_004027275.1	Eulemur fulvus	GCA_004027275.1	Scaffold	21310	22561	12595.0	953.0	1648.0	Low Scaffold N50 (< 100 KB)
+Hapalemur_alaotrensis__Lac_Alaotra_bamboo_lemur__HLhapAlao1__GCA_963574485.1	Hapalemur alaotrensis	GCA_963574485.1	Scaffold	36188	36188	13082.0	453.0	1661.0	Low Scaffold N50 (< 100 KB)
+Galago_moholi__Moholi_bushbaby__HLgalMoh1__GCA_023783435.1	Galago moholi	GCA_023783435.1	Contig	583552	583552	12907.0	1663.0	626.0	Assembly status is Contig
+Galago_senegalensis__Senegal_galago__HLgalSen1__GCA_963575145.1	Galago senegalensis	GCA_963575145.1	Scaffold	30883	30883	12176.0	754.0	2266.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Loris_tardigradus__slender_loris__HLlorTar1__GCA_023783135.1	Loris tardigradus	GCA_023783135.1	Contig	7727436	7727436	13826.0	1301.0	69.0	Assembly status is Contig
+Nycticebus_bengalensis__Bengal_slow_loris__HLnycBen1__GCA_023898255.1	Nycticebus bengalensis	GCA_023898255.1	Chromosome	19794679	128767214	11322.0	3811.0	63.0	High inactivating mutations (> 2,000)
+Xanthonycticebus_pygmaeus__pygmy_slow_loris__HLxanPyg1	Xanthonycticebus pygmaeus	ngdc.cncb.ac.cn/bioproject/browse/PRJCA003786		4739222	4739222	11190.0	3729.0	277.0	High inactivating mutations (> 2,000)
+Aepyceros_melampus__impala__HLaepMel1__GCA_006408695.1	Aepyceros melampus	GCA_006408695.1	Scaffold	82459	344542	5165.0	9618.0	413.0	Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Beatragus_hunteri__Hirola__HLbeaHun1__GCA_004027495.1	Beatragus hunteri	GCA_004027495.1	Scaffold	57444	69303	14207.0	389.0	600.0	Low Scaffold N50 (< 100 KB)
+Madoqua_kirkii__Kirks_dik-dik__HLmadKir1__GCA_006408675.1	Madoqua kirkii	GCA_006408675.1	Scaffold	27722	27730	5922.0	7875.0	1399.0	Low Scaffold N50 (< 100 KB) | Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Nanger_dama__Dama_gazelle__HLnanDam2__GCA_917880005.1	Nanger dama	GCA_917880005.1	Scaffold	37125998	37125998	4462.0	10715.0	19.0	Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Nanger_granti__Grants_gazelle__HLnanGra1__GCA_006408635.1	Nanger granti	GCA_006408635.1	Scaffold	7454	528456	12916.0	817.0	1463.0	Low Contig N50 (< 10 KB)
+Neotragus_moschatus__suni__HLneoMos1__GCA_006410615.1	Neotragus moschatus	GCA_006410615.1	Scaffold	59277	952090	10295.0	3398.0	1503.0	High inactivating mutations (> 2,000)
+Neotragus_pygmaeus__royal_antelope__HLneoPyg1__GCA_006410875.1	Neotragus pygmaeus	GCA_006410875.1	Scaffold	30751	363895	9271.0	3622.0	2303.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Raphicerus_campestris__steenbok__HLrapCam1__GCA_006410735.1	Raphicerus campestris	GCA_006410735.1	Scaffold	25050	537161	10266.0	2593.0	2337.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Saiga_tatarica__saiga_antelope__HLsaiTat1__GCA_004024985.1	Saiga tatarica	GCA_004024985.1	Scaffold	6406	6453	7433.0	2730.0	5033.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Bos_grunniens__domestic_yak__HLbosGru1__GCA_005887515.2	Bos grunniens	GCA_005887515.2	Chromosome	44716738	114386978	12126.0	2833.0	237.0	High inactivating mutations (> 2,000)
+Bubalus_depressicornis__lowland_anoa__HLbubDep1__GCA_025584935.1	Bubalus depressicornis	GCA_025584935.1	Scaffold	34173	37876	13906.0	464.0	826.0	Low Scaffold N50 (< 100 KB)
+Tragelaphus_imberbis__lesser_kudu__HLtraImb1__GCA_006410775.1	Tragelaphus imberbis	GCA_006410775.1	Scaffold	12858	1775046	9004.0	2672.0	3520.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Tragelaphus_scriptus__bushbuck__HLtraScr1__GCA_006410495.1	Tragelaphus scriptus	GCA_006410495.1	Scaffold	28350	890554	9947.0	2325.0	2924.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Capra_ibex__Alpine_ibex__HLcapIbe1__GCA_006410555.1	Capra ibex	GCA_006410555.1	Scaffold	380983	61905114	7701.0	4065.0	3430.0	Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Nilgiritragus_hylocrius__Nilgiri_tahr__HLhemHyl1__GCA_004026825.1	Nilgiritragus hylocrius	GCA_004026825.1	Scaffold	66552	85340	14357.0	337.0	502.0	Low Scaffold N50 (< 100 KB)
+Ovis_ammon__argali__HLoviAmm1__GCA_003121645.1	Ovis ammon	GCA_003121645.1	Scaffold	151569	72289505	8682.0	3448.0	3066.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Ovis_canadensis__bighorn_sheep__HLoviCan2__GCA_004026945.1	Ovis canadensis	GCA_004026945.1	Scaffold	55973	69397	14044.0	477.0	675.0	Low Scaffold N50 (< 100 KB)
+Ovis_vignei__Urial__HLoviVign1__GCA_053525375.1	Ovis vignei	GCA_053525375.1	Contig	28881536	28881536	12861.0	2259.0	76.0	Assembly status is Contig | High inactivating mutations (> 2,000)
+Ovis_nivicola_lydekkeri__snow_sheep__HLoviNivLyd1__GCA_903231385.1	Ovis nivicola lydekkeri	GCA_903231385.1	Scaffold	1765443	2011554	11573.0	3511.0	112.0	High inactivating mutations (> 2,000)
+Pseudois_nayaur__Bharal__HLpseNaya1__GCA_003182575.1	Pseudois nayaur	GCA_003182575.1	Scaffold	20979	21385	13049.0	472.0	1675.0	Low Scaffold N50 (< 100 KB)
+Philantomba_maxwellii__Maxwells_duiker__HLphiMax1__GCA_006410695.1	Philantomba maxwellii	GCA_006410695.1	Scaffold	11377	383899	8823.0	2140.0	4233.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Sylvicapra_grimmia__bush_duiker__HLsylGri1__GCA_006408735.1	Sylvicapra grimmia	GCA_006408735.1	Scaffold	9720	583330	10734.0	1364.0	3098.0	Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Redunca_redunca__Bohar_reedbuck__HLredRed1__GCA_006410935.1	Redunca redunca	GCA_006410935.1	Scaffold	39282	423407	10795.0	2005.0	2396.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Cervus_elaphus_hippelaphus__Red_deer__HLcerElapHip3__GCA_002197005.1	Cervus elaphus hippelaphus	GCA_002197005.1	Chromosome	7944	107358006	11593.0	1533.0	2070.0	Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Capreolus_capreolus__Western_roe_deer__HLcapCap1__GCA_951849835.1	Capreolus capreolus	GCA_951849835.1	Contig	69851389	69851389	14891.0	299.0	6.0	Assembly status is Contig
+Odocoileus_virginianus__white-tailed_deer__HLodoVir3__GCA_014726795.1	Odocoileus virginianus	GCA_014726795.1	Scaffold	5999512	17102683	11744.0	3387.0	65.0	High inactivating mutations (> 2,000)
+Moschus_chrysogaster__alpine_musk_deer__HLmosChr1__GCA_006461725.1	Moschus chrysogaster	GCA_006461725.1	Scaffold	3769	100428	8289.0	2325.0	4582.0	Low Contig N50 (< 10 KB) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Eubalaena_japonica__North_Pacific_right_whale__HLeubJap1__GCA_004363455.1	Eubalaena japonica	GCA_004363455.1	Scaffold	34866	39813	13891.0	568.0	737.0	Low Scaffold N50 (< 100 KB)
+Balaenoptera_bonaerensis__Antarctic_minke_whale__HLbalBon1__GCA_000978805.1	Balaenoptera bonaerensis	GCA_000978805.1	Scaffold	8410	20082	11837.0	1476.0	1883.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB)
+Caperea_marginata__Pygmy_right_whale__HLcapMar3__GCA_029224305.1	Caperea marginata	GCA_029224305.1	Scaffold	19492	112264	11237.0	2214.0	1745.0	High inactivating mutations (> 2,000)
+Platanista_gangetica__Ganges_River_dolphin__HLplaGan1__GCA_017311385.1	Platanista gangetica	GCA_017311385.1	Contig	3092	3092	6364.0	3578.0	5254.0	Assembly status is Contig | Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Platanista_minor__Indus_River_dolphin__HLplaMin1__GCA_004363435.1	Platanista minor	GCA_004363435.1	Scaffold	20879	23933	12678.0	1138.0	1380.0	Low Scaffold N50 (< 100 KB)
+Pontoporia_blainvillei__franciscana__HLponBla1__GCA_011754075.1	Pontoporia blainvillei	GCA_011754075.1	Scaffold	5888	6929	8024.0	2966.0	4206.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Mesoplodon_bidens__Sowerbys_beaked_whale__HLmesBid1__GCA_004027085.1	Mesoplodon bidens	GCA_004027085.1	Scaffold	28959	33532	13475.0	818.0	903.0	Low Scaffold N50 (< 100 KB)
+Ziphius_cavirostris__Cuviers_beaked_whale__HLzipCav1__GCA_004364475.1	Ziphius cavirostris	GCA_004364475.1	Scaffold	3606	3608	9351.0	1964.0	3881.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | High missing sequences (> 2,000)
+Canis_latrans__Coyote__HLcanLat1__GCA_034620425.1	Canis latrans	GCA_034620425.1	Chromosome	42015997	64494502	13134.0	2007.0	55.0	High inactivating mutations (> 2,000)
+Spilogale_gracilis__western_spotted_skunk__HLspiGra1__GCA_004023965.1	Spilogale gracilis	GCA_004023965.1	Scaffold	63054	85970	14199.0	386.0	611.0	Low Scaffold N50 (< 100 KB)
+Spilogale_interrupta__plains_spotted_skunk__HLspiInt1__GCA_023159085.1	Spilogale interrupta	GCA_023159085.1	Contig	16718385	16718385	14344.0	844.0	8.0	Assembly status is Contig
+Mellivora_capensis__ratel__HLmelCap1__GCA_004024625.1	Mellivora capensis	GCA_004024625.1	Scaffold	50213	59143	14367.0	343.0	486.0	Low Scaffold N50 (< 100 KB)
+Mustela_sibirica__Siberian_weasel__HLmusSibi1__GCA_048197585.1	Mustela sibirica	GCA_048197585.1	Scaffold	37900	48136	13610.0	464.0	1122.0	Low Scaffold N50 (< 100 KB)
+Mustela_putorius_furo__domestic_ferret__HLmusFur2__GCA_011764305.1	Mustela putorius furo	GCA_011764305.1	Contig	23598655	23598655	14859.0	307.0	30.0	Assembly status is Contig
+Mustela_putorius_furo__domestic_ferret__HLmusPutFur2__GCF_011764305.1	Mustela putorius furo	GCF_011764305.1	Contig	23598655	23598655	14858.0	307.0	31.0	Assembly status is Contig
+Taxidea_taxus_jeffersonii__American_badger__HLtaxTax1__GCA_003697995.1	Taxidea taxus jeffersonii	GCA_003697995.1	Scaffold	37750	54556	12087.0	852.0	2257.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Arctocephalus_gazella__antarctic_fur_seal__HLarcGaz2__GCA_900642305.1	Arctocephalus gazella	GCA_900642305.1	Scaffold	537425	139181869	6418.0	8678.0	100.0	Low intact ORFs (< 8,000) | High inactivating mutations (> 2,000)
+Pusa_caspica__Caspian_seal__HLpusCasp1__GCA_048197345.1	Pusa caspica	GCA_048197345.1	Scaffold	22514	45928	13335.0	438.0	1423.0	Low Scaffold N50 (< 100 KB)
+Pusa_saimensis__Ringed_seal__HLpusHisSai1__GCA_947044825.1	Pusa saimensis	GCA_947044825.1	Contig	3664905	3664905	14753.0	361.0	82.0	Assembly status is Contig
+Ursus_americanus__American_black_bear__HLursAme3__GCF_020975775.1	Ursus americanus	GCF_020975775.1	Contig	13882922	13882922	14537.0	615.0	44.0	Assembly status is Contig
+Paradoxurus_hermaphroditus__Asian_palm_civet__HLparHer1__GCA_004024585.1	Paradoxurus hermaphroditus	GCA_004024585.1	Scaffold	62870	71823	13403.0	631.0	1162.0	Low Scaffold N50 (< 100 KB)
+Pteronotus_parnellii__Parnells_mustached_bat__HLptePar2	Pteronotus parnellii	Dryad https://doi.org/10.5061/dryad.0k6djh9z1		1927	77454	13222.0	1043.0	931.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB)
+Pteronotus_parnellii_mexicanus__Parnells_mustached_bat__HLpteParMex3__GCA_036768555.1	Pteronotus parnellii mexicanus	GCA_036768555.1	Scaffold	3693	29736806	9903.0	3322.0	1971.0	Low Contig N50 (< 10 KB) | High inactivating mutations (> 2,000)
+Carollia_perspicillata__Sebas_short-tailed_bat__HLcarPer3__GCA_004027735.1	Carollia perspicillata	GCA_004027735.1	Scaffold	10341	10739	9789.0	1988.0	3419.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Macrotus_californicus__California_big-eared_bat__HLmacCal1__GCA_007922815.1	Macrotus californicus	GCA_007922815.1	Scaffold	16386	16925	12603.0	953.0	1640.0	Low Scaffold N50 (< 100 KB)
+Micronycteris_hirsuta__hairy_big-eared_bat__HLmicHir1__GCA_004026765.1	Micronycteris hirsuta	GCA_004026765.1	Scaffold	62961	68868	12549.0	594.0	2053.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Lasiurus_borealis__red_bat__HLlasBor1__GCA_004026805.1	Lasiurus borealis	GCA_004026805.1	Scaffold	35165	38543	10549.0	1719.0	2928.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Murina_feae__Little_tube-nosed_bat__HLmurAurFea1__GCA_004026665.1	Murina feae	GCA_004026665.1	Scaffold	23400	26051	12647.0	839.0	1710.0	Low Scaffold N50 (< 100 KB)
+Myotis_lucifugus__little_brown_bat__HLmyoLuc1	Myotis lucifugus	DNA Zoo Consortium		61531	95464383	11072.0	2836.0	1288.0	High inactivating mutations (> 2,000)
+Myotis_planiceps__flat-headed_Myotis__HLmyoPla1__GCA_036250175.1	Myotis planiceps	GCA_036250175.1	Scaffold	13500	83203680	6350.0	3065.0	5781.0	Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Myotis_pilosus__Ricketts_big-footed_Myotis__HLmyoRic2__GCA_036010255.1	Myotis pilosus	GCA_036010255.1	Contig	79957542	79957542	14934.0	250.0	12.0	Assembly status is Contig
+Myotis_davidii__Davids_myotis_bat__myoDav1__GCF_000327345.1	Myotis davidii	GCF_000327345.1	Scaffold	15182	3454484	11186.0	2210.0	1800.0	High inactivating mutations (> 2,000)
+Nycticeius_humeralis__evening_bat__HLnycHum2__GCA_007922795.1	Nycticeius humeralis	GCA_007922795.1	Scaffold	14267	15095	10219.0	1686.0	3291.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Pipistrellus_pipistrellus__common_pipistrelle__HLpipPip1__GCA_004026625.1	Pipistrellus pipistrellus	GCA_004026625.1	Scaffold	26707	33992	11766.0	1150.0	2280.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Cynopterus_brachyotis__lesser_short-nosed_fruit_bat__HLcynBra1__GCA_009793145.1	Cynopterus brachyotis	GCA_009793145.1	Scaffold	16627	251278	9484.0	1683.0	4029.0	High missing sequences (> 2,000)
+Eidolon_helvum__straw-colored_fruit_bat__HLeidHel2	Eidolon helvum	DNA Zoo Consortium		12384	81966912	9010.0	3123.0	3063.0	High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Craseonycteris_thonglongyai__hog-nosed_bat__HLcraTho1__GCA_004027555.1	Craseonycteris thonglongyai	GCA_004027555.1	Scaffold	23218	25762	13418.0	637.0	1141.0	Low Scaffold N50 (< 100 KB)
+Hipposideros_armiger__great_roundleaf_bat__HLhipArm1__GCA_001890085.1	Hipposideros armiger	GCA_001890085.1	Scaffold	39863	2328177	12552.0	616.0	2028.0	High missing sequences (> 2,000)
+Hipposideros_galeritus__Cantors_roundleaf_bat__HLhipGal1__GCA_004027415.1	Hipposideros galeritus	GCA_004027415.1	Scaffold	33704	37985	13581.0	588.0	1027.0	Low Scaffold N50 (< 100 KB)
+Hipposideros_larvatus__Intermediate_roundleaf_bat__HLhipLar3	Hipposideros larvatus	Sciencedb https://doi.org/10.57760/sciencedb.11285		32329	118242423	12232.0	938.0	2026.0	High missing sequences (> 2,000)
+Lyroderma_lyra__Indian_false_vampire__HLmegLyr2__GCA_004026885.1	Lyroderma lyra	GCA_004026885.1	Scaffold	71674	96489	14369.0	408.0	419.0	Low Scaffold N50 (< 100 KB)
+Blarina_brevicauda__Short-tailed_shrew__HLblaBrev1__GCA_051295465.1	Blarina brevicauda	GCA_051295465.1	Contig	2920142	2920142	13360.0	802.0	1034.0	Assembly status is Contig
+Cryptotis_parvus__least_shrew__HLcryPar1__GCA_021461705.1	Cryptotis parvus	GCA_021461705.1	Contig	112257	112257	1072.0	10302.0	3822.0	Assembly status is Contig | Low intact ORFs (< 8,000) | High missing sequences (> 2,000) | High inactivating mutations (> 2,000)
+Sorex_cinereus__cinereus_shrew__HLsorCin1__GCA_026122425.1	Sorex cinereus	GCA_026122425.1	Scaffold	52203	2625934	10450.0	1050.0	3696.0	High missing sequences (> 2,000)
+Sorex_fumeus__smoky_shrew__HLsorFum1__GCF_029834395.1	Sorex fumeus	GCF_029834395.1	Contig	42400022	42400022	14285.0	642.0	269.0	Assembly status is Contig
+Sorex_hoyi__Pygmy_shrew__HLsorHoyi1__GCA_051176035.1	Sorex hoyi	GCA_051176035.1	Contig	7586340	7586340	13814.0	534.0	848.0	Assembly status is Contig
+Sorex_maritimensis__Maritime_shrew__HLsorMar1__GCA_030324115.1	Sorex maritimensis	GCA_030324115.1	Scaffold	39490	105017	9783.0	993.0	4420.0	High missing sequences (> 2,000)
+Desmana_moschata__Insectivores__HLdesMos1__GCA_965120235.1	Desmana moschata	GCA_965120235.1	Scaffold	28485	55067	13496.0	553.0	1147.0	Low Scaffold N50 (< 100 KB)
+Scalopus_aquaticus__eastern_mole__HLscaAqu1__GCA_004024925.1	Scalopus aquaticus	GCA_004024925.1	Scaffold	72421	94879	14172.0	410.0	614.0	Low Scaffold N50 (< 100 KB)
+Uropsilus_gracilis__gracile_shrew_mole__HLuroGra1__GCA_004024945.1	Uropsilus gracilis	GCA_004024945.1	Scaffold	43618	55035	11514.0	977.0	2705.0	Low Scaffold N50 (< 100 KB) | High missing sequences (> 2,000)
+Manis_javanica__Malayan_pangolin__HLmanJav3__GCA_024605085.1	Manis javanica	GCA_024605085.1	Contig	15813259	15813259	14524.0	565.0	107.0	Assembly status is Contig
+Phataginus_tricuspis__Tree_pangolin__HLmanTri1__GCA_004765945.1	Phataginus tricuspis	GCA_004765945.1	Scaffold	23755	25241	13247.0	888.0	1061.0	Low Scaffold N50 (< 100 KB)
+Tolypeutes_matacus__southern_three-banded_armadillo__HLtolMat1__GCA_004025125.1	Tolypeutes matacus	GCA_004025125.1	Scaffold	9441	10217	3538.0	1167.0	10491.0	Low Scaffold N50 (< 100 KB) | Low Contig N50 (< 10 KB) | Low intact ORFs (< 8,000) | High missing sequences (> 2,000)
+Bettongia_gaimardi__Tasmanian_bettong__HLbetGaim1A__GCA_050230965.1	Bettongia gaimardi	GCA_050230965.1	Scaffold	87363	2927997	11260.0	1121.0	2815.0	High missing sequences (> 2,000)
+Deirochelys_reticularia_miaria__Western_chicken_turtle__HLdeiRetiMia1__GCA_048301635.1	Deirochelys reticularia miaria	GCA_048301635.1	Contig	83018800	83018800				Assembly status is Contig
+Emydura_macquarii_macquarii__Murray_river_turtle__HLemyMacqMac1__GCF_026122565.2	Emydura macquarii macquarii	GCF_026122565.2	Contig	17066353	17066353				Assembly status is Contig
