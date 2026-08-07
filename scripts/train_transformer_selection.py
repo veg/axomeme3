@@ -1723,13 +1723,22 @@ class PhyloAxialTransformer(nn.Module):
         std_aa_half = torch.sqrt(var_aa)
         std_pooled = torch.cat([std_aa_half, std_aa_half], dim=-1)
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff, Std] representations
+        # Stream Fusion: Projects concatenated multi-stream representations with 100% BlockLinear track disentanglement
+        # Group all Codon tracks into first half and all Amino Acid tracks into second half
+        codon_dim = self.embed_dim // 2
+        
         if getattr(self, 'num_streams', 5) == 5:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled, std_pooled], dim=-1))
+            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled, std_pooled]
         elif getattr(self, 'num_streams', 5) == 4:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled], dim=-1))
+            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled]
         else:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled], dim=-1))
+            streams = [mean_pooled, max_pooled, attn_pooled]
+            
+        codon_concat = torch.cat([s[:, :codon_dim] for s in streams], dim=-1)
+        aa_concat = torch.cat([s[:, codon_dim:] for s in streams], dim=-1)
+        disentangled_input = torch.cat([codon_concat, aa_concat], dim=-1)
+        
+        pooled_repr = self.stream_fusion(disentangled_input)
         
         # 10-Bin Ordinal LRT Logits, Direct Continuous LRT Regression & Evolutionary Rates
         logits_lrt_ordinal = self.lrt_ordinal_head(pooled_repr)
