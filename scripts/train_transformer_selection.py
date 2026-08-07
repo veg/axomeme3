@@ -970,6 +970,11 @@ class PhyloRowAttention(nn.Module):
         self.nonsyn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
         self.syn_head_bias = nn.Parameter(torch.zeros(num_heads, 1, 1))
         
+        # Dynamic Site-Level Tree Rate Scaler (MEME alpha_s site rate scaler intuition)
+        self.site_tree_scaler = nn.Linear(embed_dim, 1)
+        nn.init.zeros_(self.site_tree_scaler.weight)
+        nn.init.zeros_(self.site_tree_scaler.bias)
+        
         self.out_proj = BlockLinear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
         
@@ -999,7 +1004,13 @@ class PhyloRowAttention(nn.Module):
             bias = dist_matrix.unsqueeze(1) if dist_matrix.dim() == 3 else dist_matrix.unsqueeze(0).unsqueeze(1)
             tree_bias = F.softplus(self.phylo_w1 * bias + self.phylo_b1) * F.softplus(self.phylo_w2)
             
-        scores = scores - tree_bias
+        # Compute Dynamic Site-Level Tree Rate Scaler gamma_s (MEME alpha_s site rate scaler intuition)
+        # Scales tree distance penalty dynamically based on site conservation vs variability
+        valid_m = (~padding_mask).float().unsqueeze(-1) if padding_mask is not None else torch.ones(batch_size, num_species, 1, device=x.device)
+        site_feat = (x * valid_m).sum(dim=1) / valid_m.sum(dim=1).clamp(min=1.0) # [batch_size, embed_dim]
+        gamma_s = F.softplus(self.site_tree_scaler(site_feat)).unsqueeze(1).unsqueeze(-1) # [batch_size, 1, 1, 1]
+        
+        scores = scores - tree_bias * (1.0 + gamma_s)
         
         if nonsyn_mask is not None:
             scores = scores + self.nonsyn_head_bias * nonsyn_mask.unsqueeze(1)
