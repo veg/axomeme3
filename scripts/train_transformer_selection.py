@@ -1719,16 +1719,19 @@ class PhyloAxialTransformer(nn.Module):
         aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
         diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
         
-        # 4b. Tree-Weighted Laplacian Variance (Second 128 dims: Pairwise feature diff squared / tree distance)
-        # Divides pairwise feature differences by pairwise tree distance matrix dist, suppressing 1D ladder drift
+        # 4b. Tree-Weighted Laplacian Variance (Second 128 dims: Pairwise feature diff squared / normalized tree distance)
+        # LayerNorm bounds feature magnitude to scale ~11.3, preventing gradient explosion and prediction collapse
+        mean_dist = dist_matrix.mean(dim=[-2, -1], keepdim=True).unsqueeze(-1)
+        dist_norm = dist_matrix.unsqueeze(-1) / (mean_dist + 1e-4)
+        
         feat_diff_sq = (aa_site_repr.unsqueeze(2) - aa_site_repr.unsqueeze(1)) ** 2
         valid_pair_mask = valid_mask.unsqueeze(2) * valid_mask.unsqueeze(1)
-        dist_safe = (dist_matrix + 1e-4).unsqueeze(-1)
         
-        phylo_rate = (feat_diff_sq / dist_safe) * valid_pair_mask
-        phylo_var_half = phylo_rate.mean(dim=[1, 2])
+        phylo_rate = (feat_diff_sq / (dist_norm + 1e-4)) * valid_pair_mask
+        phylo_var_raw = phylo_rate.mean(dim=[1, 2])
+        phylo_var_half = F.layer_norm(phylo_var_raw, (aa_dim_half,))
         
-        # Stream 4 combines 128d baseline diff_aa_half + 128d phylo_var_half into full 256d Stream 4
+        # Stream 4 combines 128d baseline diff_aa_half + 128d LayerNorm phylo_var_half into full 256d Stream 4
         stream4_pooled = torch.cat([diff_aa_half, phylo_var_half], dim=-1)
         
         # Stream Fusion: Projects concatenated [Mean, Max, Attn, Tree_Weighted_Stream4] representations
