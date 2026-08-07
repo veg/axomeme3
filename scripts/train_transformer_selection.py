@@ -1552,7 +1552,7 @@ class RankConsistentCoralHead(nn.Module):
 
 
 class PhyloAxialTransformer(nn.Module):
-    def __init__(self, num_tokens=66, embed_dim=128, num_heads=8, num_layers=4, window_size=1, max_species=256, dropout=0.1, max_k=32, num_streams=4, pure_coral=False, use_ordinal=True, num_thresholds=12):
+    def __init__(self, num_tokens=66, embed_dim=128, num_heads=8, num_layers=4, window_size=1, max_species=256, dropout=0.1, max_k=32, num_streams=5, pure_coral=False, use_ordinal=True, num_thresholds=12):
         super().__init__()
         self.embed_dim = embed_dim
         self.window_size = window_size
@@ -1708,40 +1708,26 @@ class PhyloAxialTransformer(nn.Module):
         attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # 4. Tree-Weighted Hybrid Amino Acid Difference + Laplacian Variance Stream
-        # Preserves baseline LRT range scale + 159x signal jump on 1D ladder toggling bursts
+        # 4. Factorized Amino Acid Selection Difference Stream (Axomeme 2.0 Original)
         aa_dim_half = self.embed_dim // 2
         aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, embed_dim//2]
-        
-        # 4a. Original Factorized AA Difference (First 128 dims: preserves baseline LRT range scale 100%)
         aa_mean_pooled = (aa_site_repr * valid_mask).sum(dim=1) / species_counts
         aa_site_masked = aa_site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
         aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
         diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
+        diff_pooled = torch.cat([diff_aa_half, diff_aa_half], dim=-1)
         
-        # 4b. Soft-Gated Tree-Weighted Laplacian Variance (Second 128 dims)
-        # Tanh magnitude gating suppresses null sites to zero while passing selection bursts at full strength (~11.3)
-        mean_dist = dist_matrix.mean(dim=[-2, -1], keepdim=True).unsqueeze(-1)
-        dist_norm = dist_matrix.unsqueeze(-1) / (mean_dist + 1e-4)
+        # 5. Dedicated Amino Acid Standard Deviation Stream (Captures 50:50 splits & multi-allele toggling)
+        diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
+        var_aa = (diff_aa ** 2).sum(dim=1) / species_counts + 1e-6
+        std_aa_half = torch.sqrt(var_aa)
+        std_pooled = torch.cat([std_aa_half, std_aa_half], dim=-1)
         
-        feat_diff_sq = (aa_site_repr.unsqueeze(2) - aa_site_repr.unsqueeze(1)) ** 2
-        valid_pair_mask = valid_mask.unsqueeze(2) * valid_mask.unsqueeze(1)
-        
-        phylo_rate = (feat_diff_sq / (dist_norm + 1e-4)) * valid_pair_mask
-        phylo_var_raw = phylo_rate.mean(dim=[1, 2])
-        
-        # Soft Tanh Magnitude Gate: Zeroes out null sites (norm ~0.2) and passes selection sites (norm ~45) at full strength
-        raw_norm = torch.norm(phylo_var_raw, dim=-1, keepdim=True)
-        gate = torch.tanh(raw_norm / 10.0)
-        rms_norm = phylo_var_raw / (torch.sqrt(torch.mean(phylo_var_raw**2, dim=-1, keepdim=True)) + 1e-4)
-        phylo_var_half = gate * rms_norm
-        
-        # Stream 4 combines 128d baseline diff_aa_half + 128d Soft-Gated phylo_var_half into full 256d Stream 4
-        stream4_pooled = torch.cat([diff_aa_half, phylo_var_half], dim=-1)
-        
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Tree_Weighted_Stream4] representations
-        if getattr(self, 'num_streams', 4) == 4:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, stream4_pooled], dim=-1))
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff, Std] representations
+        if getattr(self, 'num_streams', 5) == 5:
+            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled, std_pooled], dim=-1))
+        elif getattr(self, 'num_streams', 5) == 4:
+            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled], dim=-1))
         else:
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled], dim=-1))
         
