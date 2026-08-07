@@ -1708,20 +1708,25 @@ class PhyloAxialTransformer(nn.Module):
         attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # 4. Factorized Amino Acid Selection Difference Stream (Immune to high dS codon noise)
+        # 4. Multi-Moment Amino Acid Selection Stream (Moments 2 & 3: Std Dev & Skewness)
+        # Immune to codon wobble noise, captures 50:50 splits, multi-allele toggling & single-branch bursts
         aa_dim_half = self.embed_dim // 2
-        aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, 64]
+        aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, embed_dim//2]
         aa_mean_pooled = (aa_site_repr * valid_mask).sum(dim=1) / species_counts
-        aa_site_masked = aa_site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
-        aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
-        diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
         
-        # Re-expand factorized AA difference back to full embed_dim for stream fusion
-        diff_pooled = torch.cat([diff_aa_half, diff_aa_half], dim=-1)
+        diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
+        var_aa = (diff_aa ** 2).sum(dim=1) / species_counts + 1e-6
+        std_aa_half = torch.sqrt(var_aa)
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Diff_AA] representations
+        z_aa = diff_aa / (std_aa_half.unsqueeze(1) + 1e-6)
+        skew_aa_half = (z_aa ** 3 * valid_mask).sum(dim=1) / species_counts
+        
+        # Concatenate Moment 2 (Std Dev for 50:50 & multi-allele splits) and Moment 3 (Skewness for single-branch bursts)
+        moment_pooled = torch.cat([std_aa_half, F.relu(skew_aa_half)], dim=-1)
+        
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Statistical_Moments] representations
         if getattr(self, 'num_streams', 4) == 4:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, diff_pooled], dim=-1))
+            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, moment_pooled], dim=-1))
         else:
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled], dim=-1))
         
@@ -2418,7 +2423,26 @@ def train_full_model(db_path="meme_results.db", msa_dir="msa", epochs=5, batch_s
                     jit_tag = " [XLA JIT Compile]" if is_jit_compilation else ""
                     print(f"   [PROFILER Batch {batch_idx+1:>3d}]{jit_tag} Total: {total_step_sec:.4f}s ({sites_per_sec:>6.0f} sites/s) | Data: {data_fetch_sec:.4f}s | H2D: {h2d_sec:.4f}s | Fwd: {fwd_sec:.4f}s | Loss: {loss_sec:.4f}s | Bwd+Opt: {bwd_sec:.4f}s", flush=True)
                 if should_print:
-                    print(f"  Micro-Batch {batch_idx+1}/{len(train_loader)} (Accum Step {min(actual_total_batches, (batch_idx//accum_steps)+1)}/{actual_total_batches}) | Loss: {raw_loss.detach().cpu().item():.4f}", flush=True)
+                    mem_str = ""
+                    if device.type == 'cuda':
+                        vram_gb = torch.cuda.memory_allocated() / (1024**3)
+                        mem_str += f" | VRAM: {vram_gb:.2f} GB"
+                    elif device.type == 'xla':
+                        try:
+                            import torch_xla.core.xla_model as xm
+                            m_info = xm.get_memory_info(device)
+                            u_mb = m_info['bytes_used'] / (1024 * 1024)
+                            t_mb = m_info['total_bytes'] / (1024 * 1024)
+                            mem_str += f" | TPU VRAM: {u_mb:.0f}/{t_mb:.0f} MB"
+                        except Exception:
+                            pass
+                    try:
+                        import psutil
+                        ram_gb = psutil.Process(os.getpid()).memory_info().rss / (1024**3)
+                        mem_str += f" | RAM: {ram_gb:.2f} GB"
+                    except Exception:
+                        pass
+                    print(f"  Micro-Batch {batch_idx+1}/{len(train_loader)} (Accum Step {min(actual_total_batches, (batch_idx//accum_steps)+1)}/{actual_total_batches}) | Loss: {raw_loss.detach().cpu().item():.4f}{mem_str}", flush=True)
                     
             t_last_batch = time.time()
                 
@@ -2496,6 +2520,16 @@ def train_full_model(db_path="meme_results.db", msa_dir="msa", epochs=5, batch_s
                 print(f"  - TPU VRAM Memory Used:      {u_mb:.1f} MB / {t_mb:.1f} MB ({u_mb/t_mb*100:.1f}%)")
             except Exception:
                 pass
+        elif device.type == 'cuda':
+            v_used = torch.cuda.memory_allocated() / (1024**3)
+            v_total = torch.cuda.get_device_properties(device).total_memory / (1024**3)
+            print(f"  - GPU VRAM Memory Used:      {v_used:.2f} GB / {v_total:.2f} GB ({v_used/v_total*100:.1f}%)")
+        try:
+            import psutil
+            ram_gb = psutil.Process(os.getpid()).memory_info().rss / (1024**3)
+            print(f"  - Host System RAM Used:      {ram_gb:.2f} GB")
+        except Exception:
+            pass
         
         is_best = (val_spearman > best_spearman) or (epoch == epochs) or (best_spearman == -1.0)
         if is_best:
