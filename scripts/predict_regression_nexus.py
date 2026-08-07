@@ -1297,8 +1297,10 @@ fprintf(stdout, Format(T, 1, 1));
     if layer_indices:
         ckpt_num_layers = max(layer_indices) + 1
         
-    ckpt_num_streams = 4
-    if 'stream_fusion.0.weight' in state_dict:
+    ckpt_num_streams = 5
+    if 'stream_fusion.0.block_codon.weight' in state_dict:
+        ckpt_num_streams = state_dict['stream_fusion.0.block_codon.weight'].shape[1] // (ckpt_embed_dim // 2)
+    elif 'stream_fusion.0.weight' in state_dict:
         ckpt_num_streams = state_dict['stream_fusion.0.weight'].shape[1] // ckpt_embed_dim
         
     ckpt_num_thresholds = 12
