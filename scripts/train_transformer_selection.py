@@ -1719,8 +1719,8 @@ class PhyloAxialTransformer(nn.Module):
         aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
         diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
         
-        # 4b. Tree-Weighted Laplacian Variance (Second 128 dims: Pairwise feature diff squared / normalized tree distance)
-        # LayerNorm bounds feature magnitude to scale ~11.3, preventing gradient explosion and prediction collapse
+        # 4b. Soft-Gated Tree-Weighted Laplacian Variance (Second 128 dims)
+        # Tanh magnitude gating suppresses null sites to zero while passing selection bursts at full strength (~11.3)
         mean_dist = dist_matrix.mean(dim=[-2, -1], keepdim=True).unsqueeze(-1)
         dist_norm = dist_matrix.unsqueeze(-1) / (mean_dist + 1e-4)
         
@@ -1729,9 +1729,14 @@ class PhyloAxialTransformer(nn.Module):
         
         phylo_rate = (feat_diff_sq / (dist_norm + 1e-4)) * valid_pair_mask
         phylo_var_raw = phylo_rate.mean(dim=[1, 2])
-        phylo_var_half = F.layer_norm(phylo_var_raw, (aa_dim_half,))
         
-        # Stream 4 combines 128d baseline diff_aa_half + 128d LayerNorm phylo_var_half into full 256d Stream 4
+        # Soft Tanh Magnitude Gate: Zeroes out null sites (norm ~0.2) and passes selection sites (norm ~45) at full strength
+        raw_norm = torch.norm(phylo_var_raw, dim=-1, keepdim=True)
+        gate = torch.tanh(raw_norm / 10.0)
+        rms_norm = phylo_var_raw / (torch.sqrt(torch.mean(phylo_var_raw**2, dim=-1, keepdim=True)) + 1e-4)
+        phylo_var_half = gate * rms_norm
+        
+        # Stream 4 combines 128d baseline diff_aa_half + 128d Soft-Gated phylo_var_half into full 256d Stream 4
         stream4_pooled = torch.cat([diff_aa_half, phylo_var_half], dim=-1)
         
         # Stream Fusion: Projects concatenated [Mean, Max, Attn, Tree_Weighted_Stream4] representations
