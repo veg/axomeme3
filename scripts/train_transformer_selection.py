@@ -1708,37 +1708,31 @@ class PhyloAxialTransformer(nn.Module):
         attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # 4. Multi-Moment Codon & Amino Acid Selection Stream (Moments 2 & 3: Std Dev & Skewness)
-        # Captures 50:50 splits, multi-allele toggling, dN/dS ratios & synonymous wobble variance
-        half_dim = self.embed_dim // 2
-        quarter_dim = self.embed_dim // 4
+        # 4. Hybrid Amino Acid Difference + Multi-Moment Stream (Preserves baseline LRT scale + 50:50/multi-allele detection)
+        aa_dim_half = self.embed_dim // 2
+        aa_quarter_dim = self.embed_dim // 4
+        aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, embed_dim//2]
         
-        # Codon/Nucleotide Stream Moments (First 128 dims)
-        codon_site_repr = site_repr[:, :, :half_dim]
-        codon_mean_pooled = (codon_site_repr * valid_mask).sum(dim=1) / species_counts
-        diff_codon = (codon_site_repr - codon_mean_pooled.unsqueeze(1)) * valid_mask
-        var_codon = (diff_codon ** 2).sum(dim=1) / species_counts + 1e-6
-        std_codon = torch.sqrt(var_codon)
-        z_codon = diff_codon / (std_codon.unsqueeze(1) + 1e-6)
-        skew_codon = (z_codon ** 3 * valid_mask).sum(dim=1) / species_counts
-        codon_moment = torch.cat([std_codon[:, :quarter_dim], F.relu(skew_codon[:, :quarter_dim])], dim=-1)
-        
-        # Amino Acid Stream Moments (Second 128 dims)
-        aa_site_repr = site_repr[:, :, half_dim:]
+        # 4a. Original Factorized AA Difference (First 128 dims: preserves baseline LRT range scale 100%)
         aa_mean_pooled = (aa_site_repr * valid_mask).sum(dim=1) / species_counts
+        aa_site_masked = aa_site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
+        aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
+        diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
+        
+        # 4b. Multi-Moment Features (Second 128 dims: Std Dev & Skewness for 50:50 and 25:25:25:25 splits)
         diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
         var_aa = (diff_aa ** 2).sum(dim=1) / species_counts + 1e-6
         std_aa = torch.sqrt(var_aa)
         z_aa = diff_aa / (std_aa.unsqueeze(1) + 1e-6)
         skew_aa = (z_aa ** 3 * valid_mask).sum(dim=1) / species_counts
-        aa_moment = torch.cat([std_aa[:, :quarter_dim], F.relu(skew_aa[:, :quarter_dim])], dim=-1)
+        moment_aa_half = torch.cat([std_aa[:, :aa_quarter_dim], F.relu(skew_aa[:, :aa_quarter_dim])], dim=-1)
         
-        # Concatenate 128d Codon moments + 128d AA moments into full 256d Stream 4
-        moment_pooled = torch.cat([codon_moment, aa_moment], dim=-1)
+        # Concatenate 128d baseline diff_aa_half + 128d moment_aa_half into full 256d Stream 4
+        stream4_pooled = torch.cat([diff_aa_half, moment_aa_half], dim=-1)
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Statistical_Moments] representations
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Hybrid_Stream4] representations
         if getattr(self, 'num_streams', 4) == 4:
-            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, moment_pooled], dim=-1))
+            pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, stream4_pooled], dim=-1))
         else:
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled], dim=-1))
         
