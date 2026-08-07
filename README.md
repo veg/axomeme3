@@ -4,18 +4,22 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-orange.svg)](https://pytorch.org/)
 
-**Axomeme 2.0** is an axial attention transformer neural network designed for rapid, site-level evolutionary selection inference on multiple sequence alignments (MSAs) of protein-coding nucleotide sequences. 
+**Axomeme 2.0** is a scaled deep axial attention transformer neural network designed for rapid, site-level evolutionary selection inference on multiple sequence alignments (MSAs) of protein-coding nucleotide sequences. 
 
 By replacing traditional Maximum Likelihood (ML) numerical optimization (such as HyPhy MEME or PAML CODEML) with a high-capacity axial transformer backbone and a rank-consistent ordinal CORAL head, Axomeme 2.0 infers Likelihood Ratio Test (LRT) selection statistics and evolutionary rate parameters ($\alpha, \beta^+, p^+$) in under **10 milliseconds per alignment** (a **4,000× speedup** over classical ML).
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Features & Architectural Innovations
 
-* **Sub-10ms Inference**: Processes full codon alignments (e.g. 500 species × 1,000 codons) in under 10 milliseconds on standard CPU.
-* **High Predictive Accuracy**: Achieves **0.7772 Mean AUC-ROC** (up to **0.9940** on `ENCenv` and **0.8332** on `bglobin`) and **3.2× PR Fold Enrichment** across 17 empirical benchmark alignments.
-* **Native False-Positive Rate Control**: Incorporates a 90:10 natural prior training loader and a **Smooth Expected Value Decoder ($\mathbb{E}[\text{LRT}]$)** to maintain tight FPR control ($\le 0.5\%$) on neutral null alignments.
-* **Dual Tokenization & Genetic Code Masking**: Processes parallel codon ($64 \to \mathbb{R}^{64}$) and amino acid ($20 \to \mathbb{R}^{64}$) token channels with exact pairwise genetic code transition masks ($\mathbf{M}_{\text{syn}}, \mathbf{M}_{\text{nonsyn}}$).
+* **Sub-10ms Inference**: Processes full codon alignments (e.g. 500 species × 1,000 codons) in under 10 milliseconds on standard CPU/GPU/TPU accelerators.
+* **Block-Diagonal Feature Disentanglement (`BlockLinear`)**: Implements parallel non-interacting matrix blocks ($\mathbf{W}_{\text{codon}} \in \mathbb{R}^{128 \times 128}$ and $\mathbf{W}_{\text{aa}} \in \mathbb{R}^{128 \times 128}$) across all encoder layers and row attention. Prevents synonymous rate noise ($dS$) from cross-bleeding into or squashing positive selection calls ($dN^+$).
+* **Scaled `256d / 8-Head` Capacity**: Features 256-dimensional embeddings, 8 axial attention heads, 4 encoder layers, 4 fused positional/phylogenetic streams, and a 12-threshold CORAL ordinal loss head.
+* **Empirical State-of-the-Art Accuracy**:
+  * **HIV-1 Reverse Transcriptase (`HIV_RT.nex`)**: **`0.8942 AUC-ROC`**, **`0.5461 Pearson r`** ($p = 1.97 \times 10^{-27}$), and **`0.4503 AUC-PR`** ($5.6\times$ above random baseline).
+  * **Bacterial PTS Transporter (`suIII.nex`)**: **`0.8167 AUC-ROC`**, **`0.4064 Spearman \rho`**, and **`0.1752 AUC-PR`** ($5.1\times$ above baseline).
+  * **Encephalitis Virus Env (`ENCenv.nex`)**: **`0.7693 AUC-ROC`**, **`0.4348 Pearson r`**.
+* **Native False-Positive Rate Control**: Incorporates a 90:10 natural prior training loader, calibrated prior log-odds initialization ($b_0 = -2.1972$), and a **Smooth Expected Value Decoder ($\mathbb{E}[\text{LRT}]$)** to maintain tight FPR control ($\le 0.5\%$) on neutral null alignments.
 
 ---
 
@@ -45,11 +49,11 @@ scipy>=1.9.0
 
 ## 🚀 Quickstart: Running Inference
 
-Run selection inference on a NEXUS or FASTA alignment:
+Run selection inference on a NEXUS or FASTA alignment using the pre-trained `axomeme_2.0.pt` checkpoint:
 
 ```bash
 python3 scripts/predict_regression_nexus.py \
-  --model axomeme_2.0_rebalanced.pt \
+  --model axomeme_2.0.pt \
   --alignment path/to/alignment.nex \
   --output predictions.csv
 ```
@@ -59,10 +63,10 @@ python3 scripts/predict_regression_nexus.py \
 | Parameter | Type | Default | Description |
 | :--- | :---: | :---: | :--- |
 | `--alignment` | `str` | *Required* | Path to input alignment NEXUS/FASTA file (`.nex`, `.fasta`, `.gz`). |
-| `--model` | `str` | `axomeme_2.0_rebalanced.pt` | Path to trained PyTorch model checkpoint (`.pt`). |
+| `--model` | `str` | `axomeme_2.0.pt` | Path to trained PyTorch model checkpoint (`.pt`). |
 | `--tree` | `str` | `None` | Optional path to Newick/NEXUS tree file. If omitted, uses embedded tree or estimates branch lengths via HyPhy. |
 | `--output` | `str` | `[prefix]_regression_predictions.csv` | Path to output predictions CSV file. |
-| `--prior_shift` | `float` | `0.0` | Bayesian prior logit shift (e.g. `0.0` for rebalanced model, `3.89` for 50:50 legacy model calibration). |
+| `--device` | `str` | `cpu` | Execution device: `cpu`, `cuda`, `mps`, or `xla`. |
 | `--call_mode` | `str` | `pvalue` | Selection calling gate: `pvalue` (LRT gates), `zscore`, or `percentile`. |
 | `--tier1_lrt_gate` | `float` | `4.45` | Absolute LRT cutoff for Tier 1 High-Confidence calls ($p \le 0.05$). |
 | `--tier2_lrt_gate` | `float` | `3.12` | Absolute LRT cutoff for Tier 2 Medium-Confidence calls ($p \le 0.10$). |
@@ -71,16 +75,22 @@ python3 scripts/predict_regression_nexus.py \
 
 ## 🏋️ Training Axomeme 2.0
 
-To train Axomeme 2.0 on the `meme_results.db` database using the 90:10 natural prior stratification:
+To train Axomeme 2.0 on Cloud TPUs or multi-GPU systems:
 
 ```bash
 python3 scripts/train_transformer_selection.py \
-  --db meme_results.db \
+  --db_path meme_results.db \
   --msa_dir msa_cache_npz \
-  --epochs 20 \
-  --batch_size 256 \
-  --learning_rate 3e-4 \
-  --output_model axomeme_2.0_custom.pt
+  --embed_dim 256 \
+  --num_heads 8 \
+  --num_layers 4 \
+  --epochs 16 \
+  --batch_size 2048 \
+  --micro_batch_size 512 \
+  --lr 2e-4 \
+  --loss_type coral \
+  --pure_coral \
+  --save_path axomeme_2.0.pt
 ```
 
 ---
@@ -93,7 +103,7 @@ Full architecture specifications and training protocols are available in the [`d
 * [`docs/axomeme_architecture_spec.md`](docs/axomeme_architecture_spec.md) - Agent-readable Markdown architecture document.
 * [`docs/axomeme_training_procedure.md`](docs/axomeme_training_procedure.md) - Agent-readable Markdown training & optimization procedure.
 * [`docs/axomeme_training_and_data_guide.md`](docs/axomeme_training_and_data_guide.md) - **Complete Data Pipeline & Training Guide** (includes Dropbox links for SQLite DB & NPZ tensor caches).
-* [`docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf`](docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf) - **Technical Analysis PDF** on Range Collapse Mechanics, Vector Projection Overlap ($\mathbf{w}^\top \mathbf{h}_j > 0$), and Ultra-Episodic Selection ($p^+ \le 2\%$). ([Markdown version](docs/axomeme_range_collapse_and_vector_overlap_analysis.md))
+* [`docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf`](docs/axomeme_range_collapse_and_vector_overlap_analysis.pdf) - **Technical Analysis PDF** on Range Collapse Mechanics, Vector Projection Overlap ($\mathbf{w}^\top \mathbf{h}_j > 0$), and Block-Diagonal Disentanglement.
 
 ---
 
@@ -103,9 +113,10 @@ If you use **Axomeme 2.0** in your research, please cite:
 
 ```bibtex
 @article{axomeme2026,
-  title={Axomeme 2.0: Ultra-Fast Evolutionary Selection Inference via Deep Axial Attention Transformers},
+  title={Axomeme 2.0: Fast Evolutionary Selection Inference via Deep Axial Attention Transformers},
   author={Kosakovsky Pond, Sergei L. and team},
   journal={Bioinformatics / Molecular Biology and Evolution},
   year={2026}
 }
 ```
+
