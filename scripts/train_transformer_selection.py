@@ -2315,9 +2315,9 @@ def train_full_model(db_path="meme_results.db", msa_dir="msa", epochs=5, batch_s
             bin5 = [s for s in train_active if s[2][0] > math.log(21.0)]
             
             total_target = epoch_size_limit if epoch_size_limit else min(len(train_sites), 262144)
-            # Use balanced active prior weighting (80% Neutral, 20% Active split across 5 bins)
-            # Provides 2.5x higher gradient signal to active selection bins to prevent range compression
-            n_neutral = int(total_target * 0.80)
+            # Use natural empirical prior weighting (92% Neutral, 8% Active split across 5 bins)
+            # Matches natural genome-wide empirical prior, eliminating baseline shift and controlling FPR <= 5%
+            n_neutral = int(total_target * 0.92)
             n_per_bin = max(1, (total_target - n_neutral) // 5)
             
             def sample_bin(bin_list, n_needed):
