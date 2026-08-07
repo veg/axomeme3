@@ -1717,18 +1717,17 @@ class PhyloAxialTransformer(nn.Module):
         diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
         diff_pooled = torch.cat([diff_aa_half, diff_aa_half], dim=-1)
         
-        # 5. Dedicated Amino Acid Standard Deviation Stream (Captures 50:50 splits & multi-allele toggling)
+        # 5. Dedicated Amino Acid Feature Variance Stream (Captures 50:50 splits & multi-allele toggling without square-root noise amplification)
         diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
-        var_aa = (diff_aa ** 2).sum(dim=1) / species_counts + 1e-6
-        std_aa_half = torch.sqrt(var_aa)
-        std_pooled = torch.cat([std_aa_half, std_aa_half], dim=-1)
+        var_aa_half = (diff_aa ** 2).sum(dim=1) / species_counts
+        var_pooled = torch.cat([var_aa_half, var_aa_half], dim=-1)
         
         # Stream Fusion: Projects concatenated multi-stream representations with 100% BlockLinear track disentanglement
         # Group all Codon tracks into first half and all Amino Acid tracks into second half
         codon_dim = self.embed_dim // 2
         
         if getattr(self, 'num_streams', 5) == 5:
-            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled, std_pooled]
+            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled, var_pooled]
         elif getattr(self, 'num_streams', 5) == 4:
             streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled]
         else:
