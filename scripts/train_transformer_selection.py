@@ -1599,8 +1599,13 @@ class PhyloAxialTransformer(nn.Module):
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
+        self.num_pooling_experts = 6
+        self.pooling_gate = nn.Linear(embed_dim, self.num_pooling_experts)
+        nn.init.zeros_(self.pooling_gate.weight)
+        nn.init.zeros_(self.pooling_gate.bias)
+        
         self.stream_fusion = nn.Sequential(
-            BlockLinear(num_streams * embed_dim, embed_dim),
+            BlockLinear(embed_dim, embed_dim),
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
@@ -1711,15 +1716,21 @@ class PhyloAxialTransformer(nn.Module):
         valid_mask = (~padding_mask).float().unsqueeze(-1)
         species_counts = valid_mask.sum(dim=1).clamp(min=1.0)
         
-        # 1. Masked Mean Pooling across species
+        # Multi-Expert Species Pooling Ensemble (MoPS - Mixture-of-Pooling-Streams)
+        # Dynamic neural gate routes probability mass across specialist pooling experts
+        
+        # Expert 1: mean_pooled (Equilibrium Consensus Background)
         mean_pooled = (site_repr * valid_mask).sum(dim=1) / species_counts
         
-        # 2. Masked Max Pooling across species
+        # Expert 2: max_pooled (Deep Mutant Outlier Burst)
         site_repr_masked = site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
         max_pooled = torch.max(site_repr_masked, dim=1)[0]
         
-        # 3. Categorical Amino Acid Pooling across species (Replaces single-scalar query with 20-class allele matrix)
-        # Prevents multi-allele toggling (Flu 226) and parallel drug resistance (HIV-RT 188) from being squashed
+        # Expert 3: min_pooled (Purifying Constraint Floor)
+        site_repr_min_masked = site_repr.masked_fill(padding_mask.unsqueeze(-1), 1e4)
+        min_pooled = torch.min(site_repr_min_masked, dim=1)[0]
+        
+        # Expert 4: cat_pooled (Categorical 20-Class Allele Matrix Histogram)
         a_cent = msa_aas[:, :, central_idx] # [batch_size, num_species]
         aa_mask_20 = F.one_hot(a_cent.clamp(0, 19), num_classes=20).float() * valid_mask # [batch_size, num_species, 20]
         
@@ -1729,44 +1740,29 @@ class PhyloAxialTransformer(nn.Module):
         e_aa_20 = torch.matmul(aa_mask_20.transpose(1, 2), site_repr) / aa_counts_20.transpose(1, 2) # [batch_size, 20, 256]
         v_aa_20 = p_aa_20.unsqueeze(-1) * e_aa_20 # [batch_size, 20, 256]
         
-        # Disentangle Codon and Amino-Acid tracks across 20 amino acid categories for BlockLinear
         codon_dim = self.embed_dim // 2
-        v_codon = v_aa_20[:, :, :codon_dim].reshape(batch_size, -1) # [batch_size, 20 * 128 = 2560]
-        v_aa = v_aa_20[:, :, codon_dim:].reshape(batch_size, -1)    # [batch_size, 20 * 128 = 2560]
-        v_cat_disentangled = torch.cat([v_codon, v_aa], dim=-1)     # [batch_size, 5120]
+        v_codon = v_aa_20[:, :, :codon_dim].reshape(batch_size, -1)
+        v_aa = v_aa_20[:, :, codon_dim:].reshape(batch_size, -1)
+        v_cat_disentangled = torch.cat([v_codon, v_aa], dim=-1)
+        cat_pooled = self.cat_pooling_proj(v_cat_disentangled) # [batch_size, 256]
         
-        attn_pooled = self.cat_pooling_proj(v_cat_disentangled)    # [batch_size, 256]
-        
-        # 4. Factorized Amino Acid Selection Difference Stream (Axomeme 2.0 Original)
-        aa_dim_half = self.embed_dim // 2
-        aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, embed_dim//2]
-        aa_mean_pooled = (aa_site_repr * valid_mask).sum(dim=1) / species_counts
-        aa_site_masked = aa_site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
-        aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
-        diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
+        # Expert 5: diff_pooled (Factorized Max-Minus-Mean Selection Range)
+        diff_aa_half = F.relu(max_pooled[:, codon_dim:] - mean_pooled[:, codon_dim:])
         diff_pooled = torch.cat([diff_aa_half, diff_aa_half], dim=-1)
         
-        # 5. Dedicated Amino Acid Feature Variance Stream (Captures 50:50 splits & multi-allele toggling without square-root noise amplification)
-        diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
+        # Expert 6: var_pooled (2nd Central Moment / Population Feature Variance)
+        diff_aa = (site_repr[:, :, codon_dim:] - mean_pooled[:, codon_dim:].unsqueeze(1)) * valid_mask
         var_aa_half = (diff_aa ** 2).sum(dim=1) / species_counts
         var_pooled = torch.cat([var_aa_half, var_aa_half], dim=-1)
         
-        # Stream Fusion: Projects concatenated multi-stream representations with 100% BlockLinear track disentanglement
-        # Group all Codon tracks into first half and all Amino Acid tracks into second half
-        codon_dim = self.embed_dim // 2
+        # MoPS Dynamic Neural Routing:
+        # Evaluates empirical site conservation/entropy to dynamically route expert streams
+        experts = torch.stack([mean_pooled, max_pooled, min_pooled, cat_pooled, diff_pooled, var_pooled], dim=1) # [batch_size, 6, 256]
+        gate_logits = self.pooling_gate(mean_pooled) # [batch_size, 6]
+        gate_weights = F.softmax(gate_logits, dim=-1).unsqueeze(-1) # [batch_size, 6, 1]
         
-        if getattr(self, 'num_streams', 5) == 5:
-            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled, var_pooled]
-        elif getattr(self, 'num_streams', 5) == 4:
-            streams = [mean_pooled, max_pooled, attn_pooled, diff_pooled]
-        else:
-            streams = [mean_pooled, max_pooled, attn_pooled]
-            
-        codon_concat = torch.cat([s[:, :codon_dim] for s in streams], dim=-1)
-        aa_concat = torch.cat([s[:, codon_dim:] for s in streams], dim=-1)
-        disentangled_input = torch.cat([codon_concat, aa_concat], dim=-1)
-        
-        pooled_repr = self.stream_fusion(disentangled_input)
+        gated_pooled_repr = (experts * gate_weights).sum(dim=1) # [batch_size, 256]
+        pooled_repr = self.stream_fusion(gated_pooled_repr)
         
         # 10-Bin Ordinal LRT Logits, Direct Continuous LRT Regression & Evolutionary Rates
         logits_lrt_ordinal = self.lrt_ordinal_head(pooled_repr)
