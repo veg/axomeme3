@@ -1704,7 +1704,7 @@ class PhyloAxialTransformer(nn.Module):
         
         # 3. TPU-Friendly Sparsemax Attention Pooling across species (Exact zero tail truncation)
         attn_logits = self.species_attn_query(site_repr).squeeze(-1)
-        attn_logits = attn_logits.masked_fill(padding_mask, -1e9)
+        attn_logits = attn_logits.masked_fill(padding_mask, -1e4)
         attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
