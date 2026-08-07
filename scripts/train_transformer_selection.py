@@ -1583,6 +1583,11 @@ class PhyloAxialTransformer(nn.Module):
 
         self.lrt_ordinal_head = RankConsistentCoralHead(embed_dim, num_thresholds=num_thresholds)
         self.species_attn_query = nn.Linear(embed_dim, 1)
+        self.cat_pooling_proj = nn.Sequential(
+            BlockLinear(20 * embed_dim, embed_dim),
+            nn.GELU(),
+            nn.LayerNorm(embed_dim)
+        )
         self.stream_fusion = nn.Sequential(
             BlockLinear(num_streams * embed_dim, embed_dim),
             nn.GELU(),
@@ -1702,11 +1707,24 @@ class PhyloAxialTransformer(nn.Module):
         site_repr_masked = site_repr.masked_fill(padding_mask.unsqueeze(-1), -1e4)
         max_pooled = torch.max(site_repr_masked, dim=1)[0]
         
-        # 3. TPU-Friendly Sparsemax Attention Pooling across species (Exact zero tail truncation)
-        attn_logits = self.species_attn_query(site_repr).squeeze(-1)
-        attn_logits = attn_logits.masked_fill(padding_mask, -1e4)
-        attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
-        attn_pooled = (site_repr * attn_weights).sum(dim=1)
+        # 3. Categorical Amino Acid Pooling across species (Replaces single-scalar query with 20-class allele matrix)
+        # Prevents multi-allele toggling (Flu 226) and parallel drug resistance (HIV-RT 188) from being squashed
+        a_cent = msa_aas[:, :, central_idx] # [batch_size, num_species]
+        aa_mask_20 = F.one_hot(a_cent.clamp(0, 19), num_classes=20).float() * valid_mask # [batch_size, num_species, 20]
+        
+        aa_counts_20 = aa_mask_20.sum(dim=1, keepdim=True).clamp(min=1.0) # [batch_size, 1, 20]
+        p_aa_20 = aa_counts_20.squeeze(1) / species_counts # [batch_size, 20]
+        
+        e_aa_20 = torch.matmul(aa_mask_20.transpose(1, 2), site_repr) / aa_counts_20.transpose(1, 2) # [batch_size, 20, 256]
+        v_aa_20 = p_aa_20.unsqueeze(-1) * e_aa_20 # [batch_size, 20, 256]
+        
+        # Disentangle Codon and Amino-Acid tracks across 20 amino acid categories for BlockLinear
+        codon_dim = self.embed_dim // 2
+        v_codon = v_aa_20[:, :, :codon_dim].reshape(batch_size, -1) # [batch_size, 20 * 128 = 2560]
+        v_aa = v_aa_20[:, :, codon_dim:].reshape(batch_size, -1)    # [batch_size, 20 * 128 = 2560]
+        v_cat_disentangled = torch.cat([v_codon, v_aa], dim=-1)     # [batch_size, 5120]
+        
+        attn_pooled = self.cat_pooling_proj(v_cat_disentangled)    # [batch_size, 256]
         
         # 4. Factorized Amino Acid Selection Difference Stream (Axomeme 2.0 Original)
         aa_dim_half = self.embed_dim // 2
