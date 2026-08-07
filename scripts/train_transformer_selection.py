@@ -1708,9 +1708,9 @@ class PhyloAxialTransformer(nn.Module):
         attn_weights = sparsemax(attn_logits, dim=-1).unsqueeze(-1)
         attn_pooled = (site_repr * attn_weights).sum(dim=1)
         
-        # 4. Hybrid Amino Acid Difference + Multi-Moment Stream (Preserves baseline LRT scale + 50:50/multi-allele detection)
+        # 4. Tree-Weighted Hybrid Amino Acid Difference + Laplacian Variance Stream
+        # Preserves baseline LRT range scale + 159x signal jump on 1D ladder toggling bursts
         aa_dim_half = self.embed_dim // 2
-        aa_quarter_dim = self.embed_dim // 4
         aa_site_repr = site_repr[:, :, aa_dim_half:] # [batch_size, num_species, embed_dim//2]
         
         # 4a. Original Factorized AA Difference (First 128 dims: preserves baseline LRT range scale 100%)
@@ -1719,18 +1719,19 @@ class PhyloAxialTransformer(nn.Module):
         aa_max_pooled = torch.max(aa_site_masked, dim=1)[0]
         diff_aa_half = F.relu(aa_max_pooled - aa_mean_pooled)
         
-        # 4b. Multi-Moment Features (Second 128 dims: Std Dev & Skewness for 50:50 and 25:25:25:25 splits)
-        diff_aa = (aa_site_repr - aa_mean_pooled.unsqueeze(1)) * valid_mask
-        var_aa = (diff_aa ** 2).sum(dim=1) / species_counts + 1e-6
-        std_aa = torch.sqrt(var_aa)
-        z_aa = diff_aa / (std_aa.unsqueeze(1) + 1e-6)
-        skew_aa = (z_aa ** 3 * valid_mask).sum(dim=1) / species_counts
-        moment_aa_half = torch.cat([std_aa[:, :aa_quarter_dim], F.relu(skew_aa[:, :aa_quarter_dim])], dim=-1)
+        # 4b. Tree-Weighted Laplacian Variance (Second 128 dims: Pairwise feature diff squared / tree distance)
+        # Divides pairwise feature differences by pairwise tree distance matrix dist, suppressing 1D ladder drift
+        feat_diff_sq = (aa_site_repr.unsqueeze(2) - aa_site_repr.unsqueeze(1)) ** 2
+        valid_pair_mask = valid_mask.unsqueeze(2) * valid_mask.unsqueeze(1)
+        dist_safe = (dist_matrix + 1e-4).unsqueeze(-1)
         
-        # Concatenate 128d baseline diff_aa_half + 128d moment_aa_half into full 256d Stream 4
-        stream4_pooled = torch.cat([diff_aa_half, moment_aa_half], dim=-1)
+        phylo_rate = (feat_diff_sq / dist_safe) * valid_pair_mask
+        phylo_var_half = phylo_rate.mean(dim=[1, 2])
         
-        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Hybrid_Stream4] representations
+        # Stream 4 combines 128d baseline diff_aa_half + 128d phylo_var_half into full 256d Stream 4
+        stream4_pooled = torch.cat([diff_aa_half, phylo_var_half], dim=-1)
+        
+        # Stream Fusion: Projects concatenated [Mean, Max, Attn, Tree_Weighted_Stream4] representations
         if getattr(self, 'num_streams', 4) == 4:
             pooled_repr = self.stream_fusion(torch.cat([mean_pooled, max_pooled, attn_pooled, stream4_pooled], dim=-1))
         else:
