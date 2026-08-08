@@ -1331,10 +1331,11 @@ fprintf(stdout, Format(T, 1, 1));
     
     model_dict = model.state_dict()
     filtered_state_dict = {k: v for k, v in state_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
-    if len(filtered_state_dict) < len(model_dict):
-        print(f"[!] Warning: Loaded {len(filtered_state_dict)}/{len(model_dict)} tensor weights. Output head shape mismatch detected (e.g. old Huber 64-token checkpoint vs 5-logit Focal-CORAL). Output head is uninitialized!")
+    head_mismatch = any(k.startswith('lrt_') for k in state_dict.keys() if k not in filtered_state_dict)
+    if head_mismatch:
+        print(f"[!] Warning: Loaded {len(filtered_state_dict)}/{len(state_dict)} checkpoint weights. Output head shape mismatch detected!")
     else:
-        print("[*] Successfully loaded 100% of checkpoint tensor weights into model!")
+        print(f"[*] Successfully loaded all {len(filtered_state_dict)}/{len(state_dict)} checkpoint tensor weights into model!")
     model.load_state_dict(filtered_state_dict, strict=False)
     model.eval()
     

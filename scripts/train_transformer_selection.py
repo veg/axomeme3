@@ -975,16 +975,36 @@ class PhyloRowAttention(nn.Module):
         nn.init.zeros_(self.site_tree_scaler.weight)
         nn.init.zeros_(self.site_tree_scaler.bias)
         
+        # Tree Rotary Position Embedding (Tree-RoPE)
+        # Projects 4D MDS continuous tree coordinates into 16 2D Givens rotation planes per head
+        self.rope_freqs = nn.Parameter(torch.randn(num_heads, 16, 4) * 0.05)
+        
         self.out_proj = BlockLinear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
         
-    def forward(self, x, dist_matrix, padding_mask=None, nonsyn_mask=None, syn_mask=None):
+    def forward(self, x, dist_matrix, mds_coords=None, padding_mask=None, nonsyn_mask=None, syn_mask=None):
         batch_size, num_species, _ = x.shape
         
         q = self.q_proj(x).view(batch_size, num_species, self.num_heads, self.head_dim).transpose(1, 2)
         k = self.k_proj(x).view(batch_size, num_species, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.v_proj(x).view(batch_size, num_species, self.num_heads, self.head_dim).transpose(1, 2)
         
+        # Tree-RoPE: Apply 4D MDS Rotary Position Phase Rotations to Query & Key
+        if mds_coords is not None:
+            # mds_coords: [batch_size, num_species, 4]
+            # Compute 16 rotation angles per species per head: [batch_size, num_heads, num_species, 16]
+            m_exp = mds_coords.unsqueeze(1).unsqueeze(3) # [batch_size, 1, num_species, 1, 4]
+            f_exp = self.rope_freqs.unsqueeze(0).unsqueeze(2) # [1, num_heads, 1, 16, 4]
+            angles = (m_exp * f_exp).sum(dim=-1) # [batch_size, num_heads, num_species, 16]
+            cos = torch.cos(angles)
+            sin = torch.sin(angles)
+            
+            q1, q2 = q[..., :16], q[..., 16:]
+            k1, k2 = k[..., :16], k[..., 16:]
+            
+            q = torch.cat([q1 * cos - q2 * sin, q1 * sin + q2 * cos], dim=-1)
+            k = torch.cat([k1 * cos - k2 * sin, k1 * sin + k2 * cos], dim=-1)
+            
         scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.head_dim)
         
         # Sequence Density Invariant Softmax Normalization
@@ -1599,13 +1619,15 @@ class PhyloAxialTransformer(nn.Module):
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
-        self.num_pooling_experts = 6
+        self.num_pooling_experts = 10
         self.pooling_gate = nn.Linear(embed_dim, self.num_pooling_experts)
         nn.init.zeros_(self.pooling_gate.weight)
         nn.init.zeros_(self.pooling_gate.bias)
         
+        # Support both legacy 5-stream concatenated checkpoints (1280d) and MoPS gated checkpoints (256d)
+        fusion_in_dim = num_streams * embed_dim if num_streams > 1 else embed_dim
         self.stream_fusion = nn.Sequential(
-            BlockLinear(embed_dim, embed_dim),
+            BlockLinear(fusion_in_dim, embed_dim),
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
@@ -1706,7 +1728,8 @@ class PhyloAxialTransformer(nn.Module):
             else:
                 dist_dup = norm_dist_matrix.unsqueeze(1).expand(-1, window_size, -1, -1).contiguous().view(batch_size * window_size, num_species, num_species)
             
-            row_out = self.row_layers[i](row_in, dist_dup, padding_mask_dup, nonsyn_mask_dup, syn_mask_dup)
+            mds_dup = mds_coords.unsqueeze(1).expand(-1, window_size, -1, -1).contiguous().view(batch_size * window_size, num_species, 4)
+            row_out = self.row_layers[i](row_in, dist_dup, mds_coords=mds_dup, padding_mask=padding_mask_dup, nonsyn_mask=nonsyn_mask_dup, syn_mask=syn_mask_dup)
             row_out = self.row_norms[i](row_in + row_out)
             x = row_out.reshape(batch_size, window_size, num_species, self.embed_dim).transpose(1, 2)
             
@@ -1755,14 +1778,47 @@ class PhyloAxialTransformer(nn.Module):
         var_aa_half = (diff_aa ** 2).sum(dim=1) / species_counts
         var_pooled = torch.cat([var_aa_half, var_aa_half], dim=-1)
         
-        # MoPS Dynamic Neural Routing:
-        # Evaluates empirical site conservation/entropy to dynamically route expert streams
-        experts = torch.stack([mean_pooled, max_pooled, min_pooled, cat_pooled, diff_pooled, var_pooled], dim=1) # [batch_size, 6, 256]
-        gate_logits = self.pooling_gate(mean_pooled) # [batch_size, 6]
-        gate_weights = F.softmax(gate_logits, dim=-1).unsqueeze(-1) # [batch_size, 6, 1]
+        # Expert 7: skew_pooled (3rd Central Moment / Asymmetric Lineage Acceleration)
+        skew_aa_half = (diff_aa ** 3).sum(dim=1) / species_counts
+        skew_pooled = torch.cat([skew_aa_half, skew_aa_half], dim=-1)
         
-        gated_pooled_repr = (experts * gate_weights).sum(dim=1) # [batch_size, 256]
-        pooled_repr = self.stream_fusion(gated_pooled_repr)
+        # Expert 8: kurt_pooled (4th Central Moment / Rare Outlier Tailness)
+        kurt_aa_half = (diff_aa ** 4).sum(dim=1) / species_counts
+        kurt_pooled = torch.cat([kurt_aa_half, kurt_aa_half], dim=-1)
+        
+        # Expert 9: lse_pooled (Smooth Log-Sum-Exp Max/Mean Interpolation)
+        site_clamp = torch.clamp(site_repr, min=-10.0, max=10.0)
+        lse_pooled = torch.logsumexp(site_clamp.masked_fill(padding_mask.unsqueeze(-1), -1e4), dim=1) - torch.log(species_counts)
+        
+        # Expert 10: phylo_mean_pooled (Tree-Weighted Consensus)
+        d_species = dist_matrix.mean(dim=-1) if dist_matrix.dim() == 3 else dist_matrix[..., 0].mean(dim=-1) # [batch_size, num_species]
+        if d_species.dim() == 2:
+            d_species = d_species.unsqueeze(-1) # [batch_size, num_species, 1]
+        tree_w = 1.0 / (d_species + 1.0)
+        phylo_mean_pooled = (site_repr * valid_mask * tree_w).sum(dim=1) / species_counts
+        
+        # Check whether checkpoint is legacy 5-stream concatenated (1280d) vs MoPS gated (256d)
+        is_legacy_5stream = hasattr(self.stream_fusion[0], 'block_codon') and (self.stream_fusion[0].block_codon.weight.shape[1] > self.embed_dim // 2)
+        
+        if is_legacy_5stream:
+            streams = [mean_pooled, max_pooled, cat_pooled, diff_pooled, var_pooled]
+            codon_concat = torch.cat([s[:, :codon_dim] for s in streams], dim=-1)
+            aa_concat = torch.cat([s[:, codon_dim:] for s in streams], dim=-1)
+            disentangled_input = torch.cat([codon_concat, aa_concat], dim=-1)
+            pooled_repr = self.stream_fusion(disentangled_input)
+        else:
+            # MoPS Dynamic Neural Routing over 10 Specialist Experts:
+            experts = torch.stack([
+                mean_pooled, max_pooled, min_pooled, cat_pooled, 
+                diff_pooled, var_pooled, skew_pooled, kurt_pooled, 
+                lse_pooled, phylo_mean_pooled
+            ], dim=1) # [batch_size, 10, 256]
+            
+            gate_logits = self.pooling_gate(mean_pooled) # [batch_size, 10]
+            gate_weights = F.softmax(gate_logits, dim=-1).unsqueeze(-1) # [batch_size, 10, 1]
+            
+            gated_pooled_repr = (experts * gate_weights).sum(dim=1) # [batch_size, 256]
+            pooled_repr = self.stream_fusion(gated_pooled_repr)
         
         # 10-Bin Ordinal LRT Logits, Direct Continuous LRT Regression & Evolutionary Rates
         logits_lrt_ordinal = self.lrt_ordinal_head(pooled_repr)
