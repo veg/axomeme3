@@ -1583,7 +1583,7 @@ class RankConsistentCoralHead(nn.Module):
 
 
 class PhyloAxialTransformer(nn.Module):
-    def __init__(self, num_tokens=66, embed_dim=128, num_heads=8, num_layers=4, window_size=1, max_species=256, dropout=0.1, max_k=32, num_streams=5, pure_coral=False, use_ordinal=True, num_thresholds=12):
+    def __init__(self, num_tokens=66, embed_dim=128, num_heads=8, num_layers=4, window_size=1, max_species=256, dropout=0.1, max_k=32, num_streams=1, pure_coral=False, use_ordinal=True, num_thresholds=12):
         super().__init__()
         self.embed_dim = embed_dim
         self.window_size = window_size
@@ -2685,6 +2685,7 @@ if __name__ == "__main__":
     parser.add_argument("--embed_dim", type=int, default=128, help="Embedding dimension (default: 128)")
     parser.add_argument("--num_layers", type=int, default=4, help="Number of axial transformer layers (default: 4)")
     parser.add_argument("--num_heads", type=int, default=8, help="Number of attention heads (default: 8)")
+    parser.add_argument("--num_streams", type=int, default=1, help="Number of species pooling streams (default: 1 = MoPS 10-Expert Gated Mixture Mode)")
     parser.add_argument("--profile", type=lambda x: (str(x).lower() == 'true'), default=False, help="Enable high-resolution per-step performance profiling (default: False)")
     parser.add_argument("--pure_coral", action="store_true", help="Enable pure CORAL ordinal training/evaluation, disabling direct continuous regression head feedback and evaluation hybrid maxing")
     args = parser.parse_args()
