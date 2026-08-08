@@ -1614,8 +1614,13 @@ class PhyloAxialTransformer(nn.Module):
 
         self.lrt_ordinal_head = RankConsistentCoralHead(embed_dim, num_thresholds=num_thresholds)
         self.species_attn_query = nn.Linear(embed_dim, 1)
-        self.cat_pooling_proj = nn.Sequential(
-            BlockLinear(20 * embed_dim, embed_dim),
+        codon_dim = embed_dim // 2
+        self.cat_stream_proj = nn.Sequential(
+            nn.Linear(codon_dim + 1, 32),
+            nn.GELU()
+        )
+        self.cat_fusion_proj = nn.Sequential(
+            BlockLinear(20 * 32, embed_dim),
             nn.GELU(),
             nn.LayerNorm(embed_dim)
         )
@@ -1761,13 +1766,22 @@ class PhyloAxialTransformer(nn.Module):
         p_aa_20 = aa_counts_20.squeeze(1) / species_counts # [batch_size, 20]
         
         e_aa_20 = torch.matmul(aa_mask_20.transpose(1, 2), site_repr) / aa_counts_20.transpose(1, 2) # [batch_size, 20, 256]
-        v_aa_20 = p_aa_20.unsqueeze(-1) * e_aa_20 # [batch_size, 20, 256]
         
         codon_dim = self.embed_dim // 2
-        v_codon = v_aa_20[:, :, :codon_dim].reshape(batch_size, -1)
-        v_aa = v_aa_20[:, :, codon_dim:].reshape(batch_size, -1)
-        v_cat_disentangled = torch.cat([v_codon, v_aa], dim=-1)
-        cat_pooled = self.cat_pooling_proj(v_cat_disentangled) # [batch_size, 256]
+        e_aa_half = e_aa_20[:, :, codon_dim:] # [batch_size, 20, 128]
+        
+        # Un-engineered end-to-end category frequency feature concatenation
+        cat_feats = torch.cat([e_aa_half, p_aa_20.unsqueeze(-1)], dim=-1) # [batch_size, 20, 129]
+        if hasattr(self, 'cat_stream_proj'):
+            cat_sub_emb = self.cat_stream_proj(cat_feats) # [batch_size, 20, 32]
+            cat_sub_flat = cat_sub_emb.reshape(batch_size, -1) # [batch_size, 640]
+            cat_pooled = self.cat_fusion_proj(cat_sub_flat) # [batch_size, 256]
+        else:
+            v_aa_20 = p_aa_20.unsqueeze(-1) * e_aa_20
+            v_codon = v_aa_20[:, :, :codon_dim].reshape(batch_size, -1)
+            v_aa = v_aa_20[:, :, codon_dim:].reshape(batch_size, -1)
+            v_cat_disentangled = torch.cat([v_codon, v_aa], dim=-1)
+            cat_pooled = self.cat_pooling_proj(v_cat_disentangled)
         
         # Expert 5: diff_pooled (Factorized Max-Minus-Mean Selection Range)
         diff_aa_half = F.relu(max_pooled[:, codon_dim:] - mean_pooled[:, codon_dim:])
